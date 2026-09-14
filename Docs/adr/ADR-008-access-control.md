@@ -34,4 +34,10 @@
 - مثبت: کنترل دسترسی شفاف، ممیزی‌پذیر و مبتنی بر Scope.
 - منفی: نیاز به هماهنگی عملیاتی با مالک IAM برای تعریف/تخصیص Permission (Q-004) و نقش‌ها (Q-006).
 
-**منابع:** `Docs/PROJECT-BASELINE-v0.1.md` (DEC-008)، `Docs/Organizational-Structure-Big-Picture-Scenario.md` (§۵، §۷–§۱۰)، `Docs/open-questions.md` (Q-004، Q-006)
+## متمم ۱ (2026-09-14) — شفاف‌سازی مرز Authorization با IAM
+- **وضعیت Q-004:** IAM مرجع Role و Policy/Permission است (DEC-020). OrgStructure هیچ سیستم Authorization موازی برای Role/Policy نمی‌سازد.
+- **بررسی قابلیت موجود IAM (بدون Gap):** `Role` با RoleType (System/Custom/Organization/Geographic)، `Permission` با ساختار Module→SubModule→Action، `RolePermission`، `UserPolicy`، `DelegatedAdminScope` (ScopeType: Organization/GeographicUnit)، و Claimهای توکن (`organization_id`, `geographic_unit_id`, `role`, `permission`) موجود است — بنابراین تعریف Permissionهای دامنه‌ای و Scope سازمانی در IAM ممکن است و نیازی به Change مستقل نیست.
+- **Q-006 (مالکیت):** تمام Roleها و Permissionها در IAM تعریف می‌شوند؛ OrgStructure صرفاً مصرف و enforce می‌کند (DEC-021). `Post.*`/`Employee.*`/`Authority.*` فعلاً الگوی دسته‌بندی‌اند؛ نام‌گذاری نهایی باز است (Q-006).
+- **سازگاری Organization Scope:** قبل از هر مدل موازی، قابلیت موجود IAM بررسی شد (بالا)؛ Scope در OrgStructure با مدل دسترسی IAM سازگار می‌ماند.
+
+**منابع:** `Docs/PROJECT-BASELINE-v0.1.md` (DEC-008، DEC-020، DEC-021)، `Docs/Organizational-Structure-Big-Picture-Scenario.md` (§۵، §۷–§۱۰)، `Docs/open-questions.md` (Q-004 — بسته، Q-006 — فقط نام‌گذاری)، `EnterpriseIAM.Domain` (Entities: Role/Permission/RolePermission/UserPolicy/DelegatedAdminScope/Policy، Enums: RoleType/PolicyType، Constants: ClaimTypes)

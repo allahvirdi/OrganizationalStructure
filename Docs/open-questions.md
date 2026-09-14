@@ -13,12 +13,12 @@
 
 | شناسه  | سؤال | منبع/زمینه | اولویت | مسئول پاسخ | وضعیت |
 |--------|------|-----------|--------|------------|-------|
-| Q-001 | افزودن `Region=3` به `OrganizationType` در IAM چه زمانی و توسط چه کسی انجام می‌شود؟ (فعلاً فقط `Organization=0, Department=1, Unit=2` وجود دارد) | تعارض C-1 در Phase 0 | بالا (فوری) | مالک IAM | Open |
+| Q-001 | ✅ افزودن `Region=3` به IAM مجاز شد — پیاده‌سازی در مخزن IAM به‌صورت تسک مستقل (بسته شد) | تعارض C-1 در Phase 0 | بالا (فوری) | کارفرما | Closed — DEC-019 |
 | Q-002 | ✅ پروتکل اتصال IAM: الگوی BFF ✅ (بسته شد) | متن Baseline: OIDC/OpenIddict؛ واقعیت IAM: REST + JWT | بالا | کارفرما | Closed — DEC-018 |
 | Q-003 | Schema نهایی جدول واسط (Staging) Import پرسنل چیست؟ | `Organizational-Structure-Big-Picture-Scenario` + درخواست Import | متوسط | Business / کارفرما | Open |
-| Q-004 | Permissionهای دامنه‌ای (`Post.*`, `Employee.*`, `Authority.*`) چگونه در IAM ثبت/تخصیص می‌شوند؟ آیا IAM باید گسترش یابد؟ | DEC-008 | بالا | مالک IAM | Open |
+| Q-004 | ✅ IAM مرجع Role/Policy/Permission شد؛ OrgStructure بدون Authorization موازی، فقط مصرف + enforce می‌کند (بسته شد) | DEC-008 / DEC-020 | بالا | کارفرما | Closed — DEC-020 |
 | Q-005 | سیاست نگهداری، آرشیو و حذف PII پرسنلی چیست؟ (مدت نگهداری، حق حذف، Anonymization) | Security Baseline | متوسط | Security Lead | Open |
-| Q-006 | نقش‌ها و Permissionهای نهایی این سامانه با نام و املای دقیق چه هستند؟ آیا در IAM ساخته می‌شوند؟ | DEC-008، الگوی ADR-003 پروژه خواهر | بالا | کارفرما + مالک IAM | Open |
+| Q-006 | فهرست دقیق و نام‌گذاری نهایی Permissionهای اختصاصی سامانه (`Post.*`/`Employee.*`/`Authority.*` فعلاً الگوی دسته‌بندی‌اند) — مالکیت Role/Permission در IAM حل شد، فقط نام‌گذاری نهایی باز است | DEC-008، DEC-021 | بالا | کارفرما + مالک IAM | Open (فقط نام‌گذاری) |
 | Q-007 | تفکیک دقیق مسئولیت داده پرسنلی بین IAM (`EmployeeIdentifier`, Lifecycle, Bulk Import) و OrgStructure | همپوشانی Employee با IAM | بالا | کارفرما + مالک IAM | Open |
 | Q-008 | آیا `GeographicUnit` (استان/منطقه) از IAM مصرف می‌شود یا فقط `Organization` تخت سازمانی مبنای Scope است؟ | تعارض نام‌گذاری استان/منطقه | متوسط | کارفرما | Open |
 
@@ -33,6 +33,9 @@
 | — | Permission دامنه‌ای در OrgStructure، ثبت/تخصیص در IAM | DEC-008 / ADR-008 | 2026-09-14 |
 | — | PII با Always Encrypted | DEC-009 / ADR-006 | 2026-09-14 |
 | Q-002 | پروتکل اتصال IAM: الگوی BFF | DEC-018 / ADR-002 | 2026-09-14 |
+| Q-001 | مجوز افزودن Region=3 به IAM (پیاده‌سازی در مخزن IAM) | DEC-019 / ADR-009 | 2026-09-14 |
+| Q-004 | IAM مرجع Role/Policy/Permission؛ بدون Authorization موازی | DEC-020 / ADR-008 | 2026-09-14 |
+| Q-006 (مالکیت) | تمام Role/Permissionها در IAM تعریف می‌شوند؛ `Post.*`/`Employee.*` فعلاً الگوست | DEC-021 / ADR-008 | 2026-09-14 |
 
 ---
 

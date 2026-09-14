@@ -30,6 +30,9 @@
 | DEC-016 | 2026-09-14 | Schema جدول واسط Import ابتدا طراحی پیشنهادی می‌شود؛ پیاده‌سازی پس از تأیید Business | Accepted | — | کارفرما |
 | DEC-017 | 2026-09-14 | تغییرات لازم در کد IAM فقط با تأیید صریح کارفرما مجاز است | Accepted | ADR-002 | کارفرما |
 | DEC-018 | 2026-09-14 | Q-002: پروتکل اتصال IAM با الگوی BFF (HttpOnly session cookie + اعتبارسنجی سرورside، fail-closed) | Accepted | ADR-002 / `Docs/Architecture/iam-integration.md` | کارفرما |
+| DEC-019 | 2026-09-14 | Q-001: مجوز افزودن `Region=3` به `OrganizationType` در IAM (مقادیر ۰–۲ بدون تغییر)؛ پیاده‌سازی در مخزن IAM به‌صورت تسک مستقل | Accepted | ADR-009 | کارفرما |
+| DEC-020 | 2026-09-14 | Q-004: IAM مرجع Role و Policy/Permission است؛ OrgStructure هیچ Authorization Master موازی نمی‌سازد و فقط مصرف + enforce می‌کند | Accepted | ADR-008 | کارفرما |
+| DEC-021 | 2026-09-14 | Q-006 (مالکیت): تمام Roleها و Permissionها در IAM تعریف می‌شوند؛ `Post.*`/`Employee.*`/`Authority.*` فعلاً الگوی دسته‌بندی‌اند نه نام نهایی | Accepted | ADR-008 | کارفرما |
 
 ---
 
@@ -37,7 +40,7 @@
 
 | شناسه   | موضوع | وابسته به |
 |---------|-------|-----------|
-| —       | جزئیات پروتکل اتصال IAM (الگوی BFF یا اعتبارسنجی مستقیم JWT) | `open-questions.md` Q-002 |
+| —       | (در حال حاضر موردی در انتظار نیست) | — |
 | —       | Schema نهایی جدول واسط | `open-questions.md` Q-003 |
 
 ---
