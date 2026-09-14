@@ -3,19 +3,19 @@
 > این فایل باید در **پایان هر Session** به‌روز شود.
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
-**آخرین به‌روزرسانی:** `2026-09-14 11:40`
-**Session مربوطه:** `Session-20260914-1040`
+**آخرین به‌روزرسانی:** `2026-09-14`
+**Session مربوطه:** `Session-20260914-Phase1`
 
 ---
 
 ## فاز جاری
-`Phase 0 — Project Baseline`
+`Phase 1 — Architecture Foundation (Freeze)` ✅ تکمیل شد
 
 ## درصد پیشرفت فاز جاری
-`100%` (فقط تأیید کامیت و هماهنگی IAM باقی است)
+`100%`
 
 ## درصد پیشرفت کلی پروژه
-`15%`
+`25%`
 
 ## فایل‌های ایجاد شده در این Session
 - ساختار ریشه: `Backend/`, `Frontend/`, `.gitignore`, `.editorconfig`, `README.md`
@@ -28,34 +28,41 @@
 - `Docs/api-contracts/README.md`
 - `Docs/SessionReports/Session-20260914-1040.md`
 
-## فایل‌های تغییر یافته در این Session
-- (اسناد پایه موجود `01`, `02`, Big Picture, `PROJECT-BASELINE-FA`, `Operational-Templates` در کامیت سطح بعد بازبینی شده‌اند)
+## فایل‌های ایجاد شده در فاز ۱ (Backend)
+- اسکلت Solution: `Backend/src/OrganizationalStructure.slnx` با ۴ پروژه لایهای (net10.0)
+- Domain Common: `BaseEntity`, `AuditableEntity`, `TenantEntity`, `FullAuditableEntity`, `IAuditable`, `ITenantScoped`, `IDomainEvent`, `EntityStatus`
+- Domain Abstractions: `IClock`, `ICurrentUser`, `ITenantContext`
+- Application Common: `Error`/`ErrorType`, `Result`/`Result<T>`
+- Infrastructure: `OrganizationalStructureDbContext` (Global Filters), `AuditSaveChangesInterceptor`, `OrganizationalStructureDbContextFactory`, `SystemClock`, `CurrentUserTenantContext`, `DependencyInjection`
+- API: `Program.cs` (Serilog/DI/Swagger/Health), `ClaimNames`, `HttpContextCurrentUser`, `ExceptionHandlingMiddleware`, `appsettings`
+- Tests: `Backend/tests/OrganizationalStructure.ArchitectureTests` (۴ Fitness Function، همه سبز)
 
 ## فایل‌های باقیمانده (برای فاز جاری)
-- تأیید کامیت کلی (ADR + اسناد پایه + تسک ۶..۱۰)
-- حال کامل.
+- هیچ — فاز ۱ تکمیل شد.
 
 ## قدم بعدی دقیق
-`پس از تأیید کامیت: هماهنگی مالک IAM برای Q-001/Q-004/Q-006؛ سپس ارائه تسک‌های ≤۱۵ دقیقه‌ای فاز ۱ (اسکلت Solution + IAM Integration)`
+`Phase 2 — Domain Modeling: نهایی‌سازی Aggregateها (Post, Employee, Assignment, Authority) + ERD؛ پیش‌نیاز: هماهنگی مالک IAM برای Q-001 (Region=3) و Q-004/Q-006 (Permission)`
 
 ## مشکلات / Blockers
-- `OrganizationType.Region=3` هنوز در IAM نیست (Q-001).
-- پروتکل اتصال IAM نهایی نشده (Q-002) — پیش‌نیاز فاز ۱.
-- Schema جدول واسط (Q-003) و نحوه تخصیص Permission در IAM (Q-004/Q-006) باز است.
+- `OrganizationType.Region=3` هنوز در IAM نیست (Q-001) — برای Phase 2/۳ مهم است.
+- Schema جدول واسط (Q-003) برای Phase 7 باز است.
+- نحوه ثبت/تخصیص Permission در IAM (Q-004/Q-006) برای Phase 4 باز است.
+- ⚠️ آسیب‌پذیری `Microsoft.OpenApi 2.3.0` (NU1903) — ثبت‌شده، حل در Phase 8.
 
 ## تصمیمات گرفته‌شده در این Session
 - DEC-001 تا DEC-017 (مرجع: `Docs/decision-log.md`)
 - ADR-001 تا ADR-009 (مرجع: `Docs/adr/`)
+- Q-002 (پروتکل IAM) با الگوی **BFF** حل شد — `HttpContextCurrentUser` مبتنی بر BFF پیادهسازی شد.
 
 ## وضعیت کامیت‌ها
-- تعداد کامیت‌های این Session (همه پس از تأیید انسان): 4 انجام‌شده؛ ۱ کامیت در انتظار تأیید
-- آخرین پیام کامیت: `docs(phase0): add decision log and open questions`
+- تعداد کامیت‌های Phase 1 (همه پس از تأیید انسان): ۷
+- آخرین پیام کامیت: `test(phase1): add architecture fitness function tests`
 
 ## یادآوری قوانین اجباری
 - تایم‌باکس ۱۵ دقیقه‌ای رعایت شد؟ `بله`
-- XML Documentation فارسی اضافه شد؟ `بی‌ربط در این مرحله (بدون کد)`
+- XML Documentation فارسی اضافه شد؟ `بله — همه کلاس/متد/پراپرتی جدید`
 - هیچ TODO یا Incomplete Code وجود ندارد؟ `بله`
-- Session Report ایجاد شد؟ `بله`
+- Session Report ایجاد شد؟ `در حال ایجاد`
 
 ---
 

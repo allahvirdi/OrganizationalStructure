@@ -24,6 +24,30 @@
 
 ---
 
+## [2026-09-14] - Session-20260914-Phase1 / Phase 1
+### Added
+- اسکلت Solution با ۴ پروژه لایهای (net10.0) + وابستگیهای Clean Architecture
+- Domain Common: BaseEntity/AuditableEntity/TenantEntity/FullAuditableEntity + IAuditable/ITenantScoped/IDomainEvent + EntityStatus
+- Domain Abstractions: IClock/ICurrentUser/ITenantContext
+- Application Common: Error/ErrorType + Result/Result{T}
+- Infrastructure: DbContext با Global Filters (TenantId/IsDeleted)، AuditSaveChangesInterceptor، DbContextFactory، SystemClock، CurrentUserTenantContext، DI
+- API: Program.cs (Serilog/DI/Swagger/Health)، ClaimNames، HttpContextCurrentUser (BFF)، ExceptionHandlingMiddleware (RFC 7807)، appsettings
+- `Backend/tests/OrganizationalStructure.ArchitectureTests` — ۴ Fitness Function (همه سبز)
+
+### Changed
+- بهبود Global Filter مستأجر در DbContext: ارزیابی داینامیک `CurrentTenantId` در هر کوئری (بهجای قفل در ساخت مدل)
+
+### Fixed
+- خطای Build ناشی از `Microsoft.Extensions.DependencyInjection.Abstractions` ناقص در Application (با افزودن پکیج)
+- خطای HealthChecks در Infrastructure (با افزودن `Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`)
+
+### Removed
+- فایلهای نمونه `Class1.cs` از سه پروژه لایهای
+
+### Decisions / ADRs
+- Q-002 (پروتکل IAM) با الگوی BFF قطعی شد
+- ⚠️ آسیب‌پذیری شناختهشده `Microsoft.OpenApi 2.3.0` (NU1903) ثبت شد — حل در Phase 8
+
 ## [2026-09-14] - Session-20260914-1040 / Phase 0
 ### Added
 - ایجاد ساختار ریشه پروژه: `Backend/`, `Frontend/`, `.gitignore`, `.editorconfig`, `README.md`

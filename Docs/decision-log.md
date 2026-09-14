@@ -29,6 +29,7 @@
 | DEC-015 | 2026-09-14 | تفکیک MVP Core / MVP Secondary / Deferred | Accepted | — | کارفرما |
 | DEC-016 | 2026-09-14 | Schema جدول واسط Import ابتدا طراحی پیشنهادی می‌شود؛ پیاده‌سازی پس از تأیید Business | Accepted | — | کارفرما |
 | DEC-017 | 2026-09-14 | تغییرات لازم در کد IAM فقط با تأیید صریح کارفرما مجاز است | Accepted | ADR-002 | کارفرما |
+| DEC-018 | 2026-09-14 | Q-002: پروتکل اتصال IAM با الگوی BFF (HttpOnly session cookie + اعتبارسنجی سرورside، fail-closed) | Accepted | ADR-002 / `Docs/Architecture/iam-integration.md` | کارفرما |
 
 ---
 
