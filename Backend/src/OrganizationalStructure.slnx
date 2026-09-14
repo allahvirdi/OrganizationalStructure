@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="OrganizationalStructure.API/OrganizationalStructure.API.csproj" />
+  <Project Path="OrganizationalStructure.Application/OrganizationalStructure.Application.csproj" />
+  <Project Path="OrganizationalStructure.Domain/OrganizationalStructure.Domain.csproj" />
+  <Project Path="OrganizationalStructure.Infrastructure/OrganizationalStructure.Infrastructure.csproj" />
+</Solution>
