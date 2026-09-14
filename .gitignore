@@ -1,0 +1,64 @@
+# =========================
+# .NET / Visual Studio
+# =========================
+bin/
+obj/
+*.user
+*.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+*.suo
+*.user
+*.nupkg
+*.snupkg
+*.ncrunch*
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.env
+.env.local
+.env.*.local
+
+# =========================
+# Secrets / Local config
+# =========================
+appsettings.Local.json
+appsettings.Development.local.json
+secrets.json
+*.pfx
+*.key
+
+# =========================
+# Test / Coverage
+# =========================
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+playwright-report/
+test-results/
+
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
