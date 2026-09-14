@@ -1,0 +1,66 @@
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Domain.Abstractions;
+using OrganizationalStructure.Domain.Common;
+
+namespace OrganizationalStructure.Infrastructure.Persistence;
+
+/// <summary>
+/// DbContext اصلی سامانه.
+/// </summary>
+/// <remarks>
+/// Global Query Filter برای جداسازی داده به‌ازای مستأجر و نادیده‌گرفتن رکوردهای Soft Delete شده
+/// روی تمام موجودیت‌های مشتق از <see cref="TenantEntity"/> اعمال می‌شود (Multi-tenancy + ADR-005).
+/// </remarks>
+public sealed class OrganizationalStructureDbContext : DbContext
+{
+    private readonly ITenantContext _tenantContext;
+
+    /// <summary>
+    /// ساخت نمونه‌ی DbContext.
+    /// </summary>
+    /// <param name="options">تنظیمات پایگاه داده</param>
+    /// <param name="tenantContext">متن مستأجر جاری برای Global Query Filter</param>
+    public OrganizationalStructureDbContext(
+        DbContextOptions<OrganizationalStructureDbContext> options,
+        ITenantContext tenantContext)
+        : base(options)
+    {
+        _tenantContext = tenantContext;
+    }
+
+    /// <summary>
+    /// پیکربندی مدل و اعمال Global Query Filters.
+    /// </summary>
+    /// <param name="modelBuilder">سازنده مدل</param>
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrganizationalStructureDbContext).Assembly);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(ITenantScoped).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = Expression.Parameter(entityType.ClrType, "e");
+                var property = Expression.Property(parameter, nameof(ITenantScoped.TenantId));
+                var body = Expression.Equal(property, Expression.Constant(_tenantContext.TenantId));
+
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(
+                    Expression.Lambda(body, parameter));
+            }
+
+            if (typeof(TenantEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = Expression.Parameter(entityType.ClrType, "e");
+                var body = Expression.Equal(
+                    Expression.Property(parameter, nameof(TenantEntity.IsDeleted)),
+                    Expression.Constant(false));
+
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(
+                    Expression.Lambda(body, parameter));
+            }
+        }
+
+        base.OnModelCreating(modelBuilder);
+    }
+}
