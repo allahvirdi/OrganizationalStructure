@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
+  * { border-color: #e9eef2; }
+  body { @apply bg-[#f7f9fb] text-ink-900 antialiased dark:bg-[#111b22] dark:text-white; }
+  button, input, select { font: inherit; }
+}
+
+@layer components {
+  .surface { @apply rounded-2xl border border-ink-100 bg-white shadow-card dark:border-white/10 dark:bg-[#18252d]; }
+  .muted { @apply text-ink-500 dark:text-ink-300; }
+  .icon-button { @apply inline-flex h-10 w-10 items-center justify-center rounded-xl text-ink-500 transition hover:bg-ink-50 hover:text-brand-600 dark:text-ink-300 dark:hover:bg-white/10 dark:hover:text-brand-300; }
+  .input { @apply h-11 w-full rounded-xl border border-ink-200 bg-white px-4 text-sm text-ink-800 outline-none transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:border-white/10 dark:bg-white/5 dark:text-white; }
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: #b9c8d3; border-radius: 999px; }
+.dark ::-webkit-scrollbar-thumb { background: #486070; }
