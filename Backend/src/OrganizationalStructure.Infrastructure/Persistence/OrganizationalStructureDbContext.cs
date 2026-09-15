@@ -1,7 +1,9 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Domain.Common;
+using OrganizationalStructure.Domain.Entities;
 
 namespace OrganizationalStructure.Infrastructure.Persistence;
 
@@ -16,9 +18,18 @@ namespace OrganizationalStructure.Infrastructure.Persistence;
 /// <b>هر بار اجرای کوئری</b> ارزیابی می‌کند (نه هنگام ساخت مدل)، بنابراین مقدار مستأجر
 /// به‌صورت داینامیک از متن مستأجر جاری خوانده می‌شود.
 /// </remarks>
-public sealed class OrganizationalStructureDbContext : DbContext
+public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
 {
     private readonly ITenantContext _tenantContext;
+
+    /// <inheritdoc />
+    public DbSet<Post> Posts => Set<Post>();
+
+    /// <inheritdoc />
+    public DbSet<Employee> Employees => Set<Employee>();
+
+    /// <inheritdoc />
+    public DbSet<EmployeePostAssignment> Assignments => Set<EmployeePostAssignment>();
 
     /// <summary>
     /// ساخت نمونه‌ی DbContext.
