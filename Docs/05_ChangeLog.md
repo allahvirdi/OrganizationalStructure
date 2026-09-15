@@ -24,6 +24,16 @@
 
 ---
 
+## [2026-09-15] - Q-006 Approval / Permission Catalog
+### Added
+-
+
+### Changed
+- وضعیت Permission Catalog: `Proposed` به `Approved` (۲۷ Permission، قالب سه‌بخشی)
+
+### Decisions / ADRs
+- DEC-025 (Q-006: نام نهایی ۲۷ Permission مصوب کارفرما)؛ Q-006 بسته شد؛ ثبت در IAM اقدام مالک IAM
+
 ## [2026-09-15] - Session-20260915-Phase3-Close / Phase 3 (بستن فاز)
 ### Added
 - بستن Phase 3: همه Sliceها کامل (پست/پرسنل/مسئولیت/اختیار) + ۸۹ تست سبز + قراردادهای API

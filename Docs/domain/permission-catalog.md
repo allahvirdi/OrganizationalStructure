@@ -1,13 +1,14 @@
-# Permission Catalog (پیشنهادی) — سامانه ساختار سازمانی
+# Permission Catalog — سامانه ساختار سازمانی
 
-**آخرین به‌روزرسانی:** `2026-09-14`
-**وضعیت:** `Proposed / Pending Approval` (تأیید کارفرما + مالک IAM)
-**مرجع تصمیم:** DEC-023 / ADR-008 (متمم ۱)
+**آخرین به‌روزرسانی:** `2026-09-15`
+**وضعیت:** `Approved` (مصوب کارفرما — DEC-025)؛ ثبت در IAM اقدام مالک IAM است
+**مرجع تصمیم:** DEC-023 / DEC-025 / ADR-008 (متمم ۱)
 
 > **قوانین:**
 > - مالکیت Role/Policy/Permission با IAM است؛ این سامانه هیچ Role/Policy موازی نمی‌سازد.
-> - این فهرست **پیشنهاد نهایی** است و بدون تأیید کارفرما + مالک IAM نباید در IAM ثبت شود.
-> - OrgStructure فقط این Permissionها را مصرف و در سطح Domain enforce می‌کند.
+> - این فهرست ۲۷ Permission با قالب سه‌بخشی `OrganizationStructure.{Resource}.{Action}` مصوب شد.
+> - ثبت در IAM فقط توسط مالک IAM انجام می‌شود.
+> - OrgStructure فقط این Permissionها را مصرف و در سطح Domain enforce می‌کند (Phase 4).
 
 ---
 

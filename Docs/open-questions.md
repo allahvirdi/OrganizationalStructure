@@ -18,7 +18,7 @@
 | Q-003 | Schema نهایی جدول واسط (Staging) Import پرسنل چیست؟ | `Organizational-Structure-Big-Picture-Scenario` + درخواست Import | متوسط | Business / کارفرما | Open |
 | Q-004 | ✅ IAM مرجع Role/Policy/Permission شد؛ OrgStructure بدون Authorization موازی، فقط مصرف + enforce می‌کند (بسته شد) | DEC-008 / DEC-020 | بالا | کارفرما | Closed — DEC-020 |
 | Q-005 | ✅ عدم حذف فیزیکی پرسنل؛ پایان فعالیت = غیرفعال‌سازی با حفظ سابقه؛ بدون Anonymization در MVP (بسته شد) | DEC-022 | متوسط | کارفرما | Closed — DEC-022 |
-| Q-006 | کاتالوگ پیشنهادی ۲۰ Permission ثبت شد؛ تأیید نهایی نام‌ها توسط کارفرما + مالک IAM باقی است (ثبت در IAM فقط پس از تأیید) | DEC-008، DEC-021، DEC-023 | بالا | کارفرما + مالک IAM | Proposed / Pending Approval |
+| Q-006 | ✅ نام نهایی ۲۷ Permission مصوب کارفرما شد (بسته شد)؛ ثبت در IAM اقدام مالک IAM است | DEC-008، DEC-021، DEC-023، DEC-025 | بالا | کارفرما | Closed — DEC-025 |
 | Q-007 | تفکیک دقیق مسئولیت داده پرسنلی بین IAM (`EmployeeIdentifier`, Lifecycle, Bulk Import) و OrgStructure | همپوشانی Employee با IAM | بالا | کارفرما + مالک IAM | Open |
 | Q-008 | آیا `GeographicUnit` (استان/منطقه) از IAM مصرف می‌شود یا فقط `Organization` تخت سازمانی مبنای Scope است؟ | تعارض نام‌گذاری استان/منطقه | متوسط | کارفرما | Open |
 
@@ -37,6 +37,7 @@
 | Q-004 | IAM مرجع Role/Policy/Permission؛ بدون Authorization موازی | DEC-020 / ADR-008 | 2026-09-14 |
 | Q-006 (مالکیت) | تمام Role/Permissionها در IAM تعریف می‌شوند؛ `Post.*`/`Employee.*` فعلاً الگوست | DEC-021 / ADR-008 | 2026-09-14 |
 | Q-005 | عدم حذف فیزیکی پرسنل؛ غیرفعال‌سازی با حفظ سابقه | DEC-022 | 2026-09-14 |
+| Q-006 (نام‌گذاری) | نام نهایی ۲۷ Permission (قالب سه‌بخشی) مصوب شد | DEC-025 / ADR-008 | 2026-09-15 |
 
 ---
 
