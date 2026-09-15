@@ -42,6 +42,9 @@ public static class DependencyInjection
             options.AddInterceptors(new AuditSaveChangesInterceptor(clock, currentUser));
         });
 
+        services.AddScoped<Application.Common.Interfaces.IAppDbContext>(
+            sp => sp.GetRequiredService<OrganizationalStructureDbContext>());
+
         services.AddHealthChecks()
             .AddDbContextCheck<OrganizationalStructureDbContext>(
                 name: "organizational-structure-db",
