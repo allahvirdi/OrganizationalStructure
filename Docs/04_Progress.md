@@ -4,18 +4,18 @@
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
 **آخرین به‌روزرسانی:** `2026-09-14`
-**Session مربوطه:** `Session-20260914-Phase1`
+**Session مربوطه:** `Session-20260914-Phase2`
 
 ---
 
 ## فاز جاری
-`Phase 1 — Architecture Foundation (Freeze)` ✅ تکمیل شد
+`Phase 2 — Domain Modeling` ✅ تکمیل شد
 
 ## درصد پیشرفت فاز جاری
 `100%`
 
 ## درصد پیشرفت کلی پروژه
-`25%`
+`35%`
 
 ## فایل‌های ایجاد شده در این Session
 - ساختار ریشه: `Backend/`, `Frontend/`, `.gitignore`, `.editorconfig`, `README.md`
@@ -37,26 +37,34 @@
 - API: `Program.cs` (Serilog/DI/Swagger/Health), `ClaimNames`, `HttpContextCurrentUser`, `ExceptionHandlingMiddleware`, `appsettings`
 - Tests: `Backend/tests/OrganizationalStructure.ArchitectureTests` (۴ Fitness Function، همه سبز)
 
+## فایل‌های ایجاد شده در فاز ۲ (Domain)
+- `Domain/Entities/Post.cs` + `Domain/Events/PostEvents.cs` + `Domain/ValueObjects/Responsibility.cs`
+- `Domain/Entities/Employee.cs` + `EmployeePostAssignment.cs` + `Domain/Events/EmployeeEvents.cs`
+- `Domain/Encryption/` (`EncryptionType`, `PiiEncryptedAttribute`)
+- تکمیل `Employee` با `UnlinkFromUser`/`ChangePersonnelCode`
+- `tests/OrganizationalStructure.Domain.UnitTests` (۱۸ تست سبز)
+- `Docs/Architecture/erd.md` (ERD مفهومی + منطقی)
+
 ## فایل‌های باقیمانده (برای فاز جاری)
-- هیچ — فاز ۱ تکمیل شد.
+- هیچ — فاز ۲ تکمیل شد.
 
 ## قدم بعدی دقیق
-`Phase 2 — Domain Modeling: نهایی‌سازی Aggregateها (Post, Employee, Assignment, Authority) + ERD؛ پیش‌نیاز: هماهنگی مالک IAM برای Q-001 (Region=3) و Q-004/Q-006 (Permission)`
+`Phase 3 — Backend Core Vertical Slices: پیکربندی EF + Migration اولیه + CQRS برای Post (Create/Update/Move/Activate)؛ پیش‌نیاز: Q-006 (نام‌گذاری Permission) برای Phase 4`
 
 ## مشکلات / Blockers
-- `OrganizationType.Region=3` هنوز در IAM نیست (Q-001) — برای Phase 2/۳ مهم است.
+- `Region=3` در IAM اضافه و کامیت شد (`74efe19` در مخزن IAM) ✅ — Q-001 بسته است.
 - Schema جدول واسط (Q-003) برای Phase 7 باز است.
-- نحوه ثبت/تخصیص Permission در IAM (Q-004/Q-006) برای Phase 4 باز است.
+- نام‌گذاری نهایی Permissionها (Q-006) برای Phase 4 باز است.
 - ⚠️ آسیب‌پذیری `Microsoft.OpenApi 2.3.0` (NU1903) — ثبت‌شده، حل در Phase 8.
 
 ## تصمیمات گرفته‌شده در این Session
-- DEC-001 تا DEC-017 (مرجع: `Docs/decision-log.md`)
+- DEC-001 تا DEC-021 (مرجع: `Docs/decision-log.md`)
 - ADR-001 تا ADR-009 (مرجع: `Docs/adr/`)
-- Q-002 (پروتکل IAM) با الگوی **BFF** حل شد — `HttpContextCurrentUser` مبتنی بر BFF پیادهسازی شد.
+- Q-001/Q-002/Q-004 بسته شدند؛ Q-006 فقط در نام‌گذاری باز است.
 
 ## وضعیت کامیت‌ها
-- تعداد کامیت‌های Phase 1 (همه پس از تأیید انسان): ۷
-- آخرین پیام کامیت: `test(phase1): add architecture fitness function tests`
+- تعداد کامیت‌های Phase 2 (همه پس از تأیید انسان): ۵
+- آخرین پیام کامیت: `docs(phase2): add conceptual and logical ERD`
 
 ## یادآوری قوانین اجباری
 - تایم‌باکس ۱۵ دقیقه‌ای رعایت شد؟ `بله`

@@ -24,6 +24,26 @@
 
 ---
 
+## [2026-09-14] - Session-20260914-Phase2 / Phase 2
+### Added
+- Aggregate `Post` (Factory، تغییر والد، صاحب‌امضا، مسئولیت‌ها، فعال/غیرفعال) + ۷ رویداد دامنه + Value Object `Responsibility`
+- Aggregate `Employee` (ثبت، ویرایش، اتصال/قطع کاربر، اصلاح کد پرسنلی، فعال/غیرفعال) + `EmployeePostAssignment` (چندپستی + اصلی/تاریخی) + ۶ رویداد دامنه
+- `PiiEncryptedAttribute`/`EncryptionType` برای اعلام سیاست رمزنگاری در دامنه
+- `OrganizationalStructure.Domain.UnitTests` — ۱۸ تست واحد سبز
+- `Docs/Architecture/erd.md` — ERD مفهومی + منطقی
+
+### Changed
+-
+
+### Fixed
+-
+
+### Removed
+-
+
+### Decisions / ADRs
+- بدون تصمیم جدید در فاز ۲؛ اتکا به DEC-001..021 و ADR-001..009
+
 ## [2026-09-14] - Session-20260914-Phase1 / Phase 1
 ### Added
 - اسکلت Solution با ۴ پروژه لایهای (net10.0) + وابستگیهای Clean Architecture
