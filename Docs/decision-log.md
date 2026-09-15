@@ -35,6 +35,7 @@
 | DEC-021 | 2026-09-14 | Q-006 (مالکیت): تمام Roleها و Permissionها در IAM تعریف می‌شوند؛ `Post.*`/`Employee.*`/`Authority.*` فعلاً الگوی دسته‌بندی‌اند نه نام نهایی | Accepted | ADR-008 | کارفرما |
 | DEC-022 | 2026-09-14 | Q-005: اطلاعات پرسنلی هرگز حذف فیزیکی نمی‌شوند؛ پایان همکاری/بازنشستگی/فوت/استعفا = غیرفعال‌سازی Employee با حفظ سابقه؛ بدون Anonymization در MVP (Archive آینده حذف نیست) | Accepted | — | کارفرما |
 | DEC-023 | 2026-09-14 | Q-006: کاتالوگ پیشنهادی ۲۰ Permission دامنه‌ای ثبت شد (وضعیت Proposed/Pending Approval)؛ ثبت در IAM فقط پس از تأیید کارفرما + مالک IAM؛ بدون Role/Policy موازی در OrgStructure | Proposed / Pending Approval | ADR-008 | کارفرما |
+| DEC-024 | 2026-09-15 | Domain Decision تفکیک ۴ مفهوم (IAM Role ≠ Post ≠ Responsibility ≠ Authority)؛ Responsibility و Authority موجودیت مستقل با Assignment تاریخ‌دار و Scope سازمانی؛ حذف `Post.HasSigningAuthority` و Responsibility VO؛ Breaking داخلی API (بدون Consumer خارجی)؛ `FindResponsible` در MVP پیاده‌سازی نمی‌شود؛ بدون Seed تا تأیید Business Catalog | Accepted | ADR-011 | کارفرما |
 
 ---
 
