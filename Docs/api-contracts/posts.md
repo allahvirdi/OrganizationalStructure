@@ -1,0 +1,120 @@
+# API Contract — Posts (پست‌های سازمانی)
+
+**نسخه:** `v1`
+**پیشوند:** `/api/v1/posts`
+**وضعیت:** مصوب Phase 3 (Slice پست)
+**تصریح‌دهی:** فعلاً بدون احراز هویت؛ Policyها در Phase 4 (DEC-008/ADR-008)
+
+---
+
+## مدل‌ها
+
+### PostDto (Response)
+```json
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "organizationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "code": "MGR-001",
+  "title": "مدیر اداره",
+  "description": null,
+  "parentId": null,
+  "hasSigningAuthority": true,
+  "responsibilities": [{ "title": "تأیید مرخصی", "description": null }],
+  "isActive": true
+}
+```
+
+### PostTreeDto (Response — subtree)
+```json
+{
+  "id": "...",
+  "code": "MGR-001",
+  "title": "مدیر اداره",
+  "hasSigningAuthority": true,
+  "isActive": true,
+  "children": [ { "...": "گره فرزند بازگشتی" } ]
+}
+```
+
+### PagedResult (Response — search)
+```json
+{
+  "items": [ { "...": "PostDto" } ],
+  "totalCount": 42,
+  "page": 1,
+  "pageSize": 20,
+  "totalPages": 3
+}
+```
+
+### Error Contract (یکپارچه — ProblemDetails)
+```json
+{
+  "title": "Post.DuplicateCode",
+  "detail": "پستی با کد MGR-001 در این سازمان از قبل وجود دارد.",
+  "status": 409
+}
+```
+
+| کد خطا | وضعیت HTTP |
+|---|---|
+| `Post.NotFound` / `Post.ParentNotFound` | 404 |
+| `Post.DuplicateCode` / `Post.CrossOrganizationMove` / `Post.CycleDetected` | 409 |
+| خطای اعتبارسنجی (`Validation.Failed`) | 400 |
+
+---
+
+## Endpointها
+
+### ایجاد پست — `POST /api/v1/posts`
+Request:
+```json
+{
+  "organizationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "code": "MGR-001",
+  "title": "مدیر اداره",
+  "description": null,
+  "parentId": null,
+  "hasSigningAuthority": false
+}
+```
+- موفق: `201 Created` + شناسه (GUID) + هدر `Location`
+- ناموفق: `400` (اعتبارسنجی) / `404` (والد ناموجود) / `409` (کد تکراری یا ناسازگاری سازمانی)
+
+### ویرایش پست — `PUT /api/v1/posts/{id}`
+Request: `{ "code": "...", "title": "...", "description": "..." }`
+- موفق: `204 No Content`
+- ناموفق: `400` / `404` / `409`
+
+### جابجایی پست — `POST /api/v1/posts/{id}/move`
+Request: `{ "newParentId": "..." }` (خالی یعنی ریشه)
+- موفق: `204 No Content`
+- ناموفق: `400` / `404` / `409` (چرخه یا بین‌سازمانی)
+
+### تعیین وضعیت — `PATCH /api/v1/posts/{id}/status`
+Request: `{ "isActive": false }`
+- موفق: `204 No Content`
+- ناموفق: `400` / `404`
+
+### دریافت پست — `GET /api/v1/posts/{id}`
+- موفق: `200` + PostDto
+- ناموفق: `404`
+
+### فرزندان مستقیم — `GET /api/v1/posts/{id}/children`
+- موفق: `200` + آرایه PostDto (مرتب‌سازی با Code)
+- ناموفق: `404`
+
+### زیرشاخه — `GET /api/v1/posts/{id}/subtree?maxDepth=5`
+- موفق: `200` + PostTreeDto (سقف عمق ۱..۲۰، پیش‌فرض امن ۲۰)
+- ناموفق: `400` (عمق نامعتبر) / `404`
+
+### جستجو — `GET /api/v1/posts?organizationId=&searchTerm=&isActive=&page=1&pageSize=20`
+- موفق: `200` + PagedResult (pageSize حداکثر ۱۰۰)
+- ناموفق: `400` (صفحه‌بندی نامعتبر)
+
+---
+
+## Versioning و Pagination
+- نسخه‌بندی مسیر: `/api/v1/...` (تغییر ناسازگار فقط با نسخه جدید)
+- صفحه‌بندی: `page` (از ۱) + `pageSize` (۱..۱۰۰) + `totalCount`/`totalPages` در پاسخ
+- مرتب‌سازی پیش‌فرض جستجو: `Code` صعودی
