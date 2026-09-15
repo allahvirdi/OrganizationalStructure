@@ -1,0 +1,144 @@
+using FluentAssertions;
+using OrganizationalStructure.Application.Common;
+using OrganizationalStructure.Application.Employees.CreateEmployee;
+using OrganizationalStructure.Application.Employees.LinkEmployeeUser;
+using OrganizationalStructure.Application.Employees.SetEmployeeStatus;
+using OrganizationalStructure.Application.Posts.ManageResponsibilities;
+using OrganizationalStructure.Application.Posts.SetSigningAuthority;
+using OrganizationalStructure.Infrastructure.Persistence;
+
+namespace OrganizationalStructure.Application.UnitTests;
+
+/// <summary>
+/// تست‌های تکمیلی Handlerهای Slice پرسنل و Authority (مثبت و منفی).
+/// </summary>
+public sealed class RemainingHandlerTests
+{
+    private static (OrganizationalStructureDbContext Db, TestClock Clock, TestCurrentUser User)
+        CreateContext()
+    {
+        var tenantId = Guid.NewGuid();
+        var db = TestDbContextFactory.Create(tenantId);
+        return (db, new TestClock(), new TestCurrentUser(tenantId));
+    }
+
+    private static async Task<Guid> SeedEmployeeAsync(
+        OrganizationalStructureDbContext db, TestClock clock, TestCurrentUser user)
+    {
+        var handler = new CreateEmployeeCommandHandler(db, clock, user);
+        var result = await handler.Handle(
+            new CreateEmployeeCommand("00000021", "علی", "رضایی", "0012345678",
+                null, null, null, null, null, null),
+            CancellationToken.None);
+        result.IsSuccess.Should().BeTrue();
+        return result.Value;
+    }
+
+    private static async Task<Guid> SeedPostAsync(
+        OrganizationalStructureDbContext db,
+        TestClock clock,
+        TestCurrentUser user)
+    {
+        var handler = new Posts.CreatePost.CreatePostCommandHandler(db, clock, user);
+        var result = await handler.Handle(
+            new Posts.CreatePost.CreatePostCommand(Guid.NewGuid(), "T-001", "t", null, null, false),
+            CancellationToken.None);
+        result.IsSuccess.Should().BeTrue();
+        return result.Value;
+    }
+
+    /// <summary>
+    /// تعیین وضعیت پرسنل (مثبت و منفی).
+    /// </summary>
+    [Fact]
+    public async Task SetEmployeeStatus_Existing_ShouldSucceed_Missing_ShouldFail()
+    {
+        var (db, clock, user) = CreateContext();
+        var employeeId = await SeedEmployeeAsync(db, clock, user);
+        var handler = new SetEmployeeStatusCommandHandler(db, clock);
+
+        (await handler.Handle(new SetEmployeeStatusCommand(employeeId, false), CancellationToken.None))
+            .IsSuccess.Should().BeTrue();
+
+        (await handler.Handle(new SetEmployeeStatusCommand(Guid.NewGuid(), false), CancellationToken.None))
+            .IsFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// اتصال کاربر (مثبت و منفی).
+    /// </summary>
+    [Fact]
+    public async Task LinkUser_Existing_ShouldSucceed_Missing_ShouldFail()
+    {
+        var (db, clock, user) = CreateContext();
+        var employeeId = await SeedEmployeeAsync(db, clock, user);
+        var handler = new LinkEmployeeUserCommandHandler(db, clock);
+
+        (await handler.Handle(new LinkEmployeeUserCommand(employeeId, Guid.NewGuid()), CancellationToken.None))
+            .IsSuccess.Should().BeTrue();
+
+        (await handler.Handle(new LinkEmployeeUserCommand(Guid.NewGuid(), Guid.NewGuid()), CancellationToken.None))
+            .IsFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// تعیین صاحب‌امضا (مثبت و منفی).
+    /// </summary>
+    [Fact]
+    public async Task SetSigningAuthority_Existing_ShouldSucceed_Missing_ShouldFail()
+    {
+        var (db, clock, user) = CreateContext();
+        var postId = await SeedPostAsync(db, clock, user);
+        var handler = new SetSigningAuthorityCommandHandler(db, clock);
+
+        (await handler.Handle(new SetSigningAuthorityCommand(postId, true), CancellationToken.None))
+            .IsSuccess.Should().BeTrue();
+
+        (await handler.Handle(new SetSigningAuthorityCommand(Guid.NewGuid(), true), CancellationToken.None))
+            .IsFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// افزودن و حذف مسئولیت (مثبت و منفی).
+    /// </summary>
+    [Fact]
+    public async Task AddRemoveResponsibility_ShouldWork_Missing_ShouldFail()
+    {
+        var (db, clock, user) = CreateContext();
+        var postId = await SeedPostAsync(db, clock, user);
+        var addHandler = new AddResponsibilityCommandHandler(db, clock);
+        var removeHandler = new RemoveResponsibilityCommandHandler(db, clock);
+
+        (await addHandler.Handle(new AddResponsibilityCommand(postId, "R", null), CancellationToken.None))
+            .IsSuccess.Should().BeTrue();
+
+        (await removeHandler.Handle(new RemoveResponsibilityCommand(postId, "R"), CancellationToken.None))
+            .IsSuccess.Should().BeTrue();
+
+        (await addHandler.Handle(new AddResponsibilityCommand(Guid.NewGuid(), "R", null), CancellationToken.None))
+            .IsFailure.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// انتساب موفق و پایان موفق (مثبت).
+    /// </summary>
+    [Fact]
+    public async Task AssignThenEnd_ShouldSucceed()
+    {
+        var (db, clock, user) = CreateContext();
+        var employeeId = await SeedEmployeeAsync(db, clock, user);
+        var postId = await SeedPostAsync(db, clock, user);
+        var assignHandler = new Employees.AssignPost.AssignPostCommandHandler(db, clock);
+        var endHandler = new Employees.EndAssignment.EndAssignmentCommandHandler(db, clock);
+
+        var assign = await assignHandler.Handle(
+            new Employees.AssignPost.AssignPostCommand(employeeId, postId, null, null, false),
+            CancellationToken.None);
+        assign.IsSuccess.Should().BeTrue();
+
+        var end = await endHandler.Handle(
+            new Employees.EndAssignment.EndAssignmentCommand(employeeId, postId, new DateOnly(2026, 9, 30)),
+            CancellationToken.None);
+        end.IsSuccess.Should().BeTrue();
+    }
+}

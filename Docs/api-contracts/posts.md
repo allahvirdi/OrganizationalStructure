@@ -96,6 +96,21 @@ Request: `{ "isActive": false }`
 - موفق: `204 No Content`
 - ناموفق: `400` / `404`
 
+### تعیین صاحب‌امضا — `PATCH /api/v1/posts/{id}/signing-authority`
+Request: `{ "hasSigningAuthority": true }`
+- موفق: `204 No Content`
+- ناموفق: `400` / `404`
+
+### افزودن مسئولیت — `POST /api/v1/posts/{id}/responsibilities`
+Request: `{ "title": "تأیید مرخصی", "description": null }`
+- موفق: `204 No Content`
+- ناموفق: `400` / `404`
+
+### حذف مسئولیت — `DELETE /api/v1/posts/{id}/responsibilities`
+Request body: `{ "title": "تأیید مرخصی" }`
+- موفق: `204 No Content`
+- ناموفق: `400` / `404`
+
 ### دریافت پست — `GET /api/v1/posts/{id}`
 - موفق: `200` + PostDto
 - ناموفق: `404`

@@ -5,9 +5,11 @@ using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Application.Posts.GetPostById;
 using OrganizationalStructure.Application.Posts.GetPostChildren;
 using OrganizationalStructure.Application.Posts.GetPostSubtree;
+using OrganizationalStructure.Application.Posts.ManageResponsibilities;
 using OrganizationalStructure.Application.Posts.MovePost;
 using OrganizationalStructure.Application.Posts.SearchPosts;
 using OrganizationalStructure.Application.Posts.SetPostStatus;
+using OrganizationalStructure.Application.Posts.SetSigningAuthority;
 using OrganizationalStructure.Application.Posts.UpdatePost;
 
 namespace OrganizationalStructure.API.Controllers;
@@ -104,6 +106,60 @@ public sealed class PostsController : ApiControllerBase
     }
 
     /// <summary>
+    /// تعیین وضعیت صاحب‌امضا بودن پست.
+    /// </summary>
+    [HttpPatch("{id:guid}/signing-authority")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> SetSigningAuthority(
+        Guid id,
+        [FromBody] SetSigningAuthorityRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new SetSigningAuthorityCommand(id, request.HasSigningAuthority),
+            cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// افزودن مسئولیت به پست.
+    /// </summary>
+    [HttpPost("{id:guid}/responsibilities")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> AddResponsibility(
+        Guid id,
+        [FromBody] AddResponsibilityRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new AddResponsibilityCommand(id, request.Title, request.Description),
+            cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// حذف مسئولیت از پست.
+    /// </summary>
+    [HttpDelete("{id:guid}/responsibilities")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> RemoveResponsibility(
+        Guid id,
+        [FromBody] RemoveResponsibilityRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new RemoveResponsibilityCommand(id, request.Title),
+            cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
     /// دریافت پست با شناسه.
     /// </summary>
     [HttpGet("{id:guid}")]
@@ -188,3 +244,22 @@ public sealed record MovePostRequest(Guid? NewParentId);
 /// </summary>
 /// <param name="IsActive">وضعیت جدید</param>
 public sealed record SetPostStatusRequest(bool IsActive);
+
+/// <summary>
+/// بدنه درخواست تعیین صاحب‌امضا.
+/// </summary>
+/// <param name="HasSigningAuthority">وضعیت جدید صاحب‌امضا بودن</param>
+public sealed record SetSigningAuthorityRequest(bool HasSigningAuthority);
+
+/// <summary>
+/// بدنه درخواست افزودن مسئولیت.
+/// </summary>
+/// <param name="Title">عنوان مسئولیت</param>
+/// <param name="Description">شرح اختیاری</param>
+public sealed record AddResponsibilityRequest(string Title, string? Description);
+
+/// <summary>
+/// بدنه درخواست حذف مسئولیت.
+/// </summary>
+/// <param name="Title">عنوان مسئولیت</param>
+public sealed record RemoveResponsibilityRequest(string Title);
