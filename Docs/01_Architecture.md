@@ -55,7 +55,9 @@ Backend/
 | ADR-005 | Multi-tenancy و Organization Scope | Accepted |
 | ADR-006 | حفاظت PII (Always Encrypted) | Accepted |
 | ADR-007 | تعلیق RabbitMQ/Outbox و REST-only در MVP | Accepted |
-| ADR-008 | Access Control: Role/Permission/Scope دامنه‌ای | Accepted |
+| ADR-008 | Access Control: IAM مرجع Role/Policy؛ بدون Authorization موازی (+ متمم ۱) | Accepted |
+| ADR-009 | افزودن Region=3 به OrganizationType در IAM | Accepted |
+| ADR-010 | فیلدهای تکمیلی پرسنل (تاریخ تولد، سابقه حراست، موبایل پژواک) | Accepted |
 
 ---
 

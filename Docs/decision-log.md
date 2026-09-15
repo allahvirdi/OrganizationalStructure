@@ -33,6 +33,8 @@
 | DEC-019 | 2026-09-14 | Q-001: مجوز افزودن `Region=3` به `OrganizationType` در IAM (مقادیر ۰–۲ بدون تغییر)؛ پیاده‌سازی در مخزن IAM به‌صورت تسک مستقل | Accepted | ADR-009 | کارفرما |
 | DEC-020 | 2026-09-14 | Q-004: IAM مرجع Role و Policy/Permission است؛ OrgStructure هیچ Authorization Master موازی نمی‌سازد و فقط مصرف + enforce می‌کند | Accepted | ADR-008 | کارفرما |
 | DEC-021 | 2026-09-14 | Q-006 (مالکیت): تمام Roleها و Permissionها در IAM تعریف می‌شوند؛ `Post.*`/`Employee.*`/`Authority.*` فعلاً الگوی دسته‌بندی‌اند نه نام نهایی | Accepted | ADR-008 | کارفرما |
+| DEC-022 | 2026-09-14 | Q-005: اطلاعات پرسنلی هرگز حذف فیزیکی نمی‌شوند؛ پایان همکاری/بازنشستگی/فوت/استعفا = غیرفعال‌سازی Employee با حفظ سابقه؛ بدون Anonymization در MVP (Archive آینده حذف نیست) | Accepted | — | کارفرما |
+| DEC-023 | 2026-09-14 | Q-006: کاتالوگ پیشنهادی ۲۰ Permission دامنه‌ای ثبت شد (وضعیت Proposed/Pending Approval)؛ ثبت در IAM فقط پس از تأیید کارفرما + مالک IAM؛ بدون Role/Policy موازی در OrgStructure | Proposed / Pending Approval | ADR-008 | کارفرما |
 
 ---
 

@@ -17,8 +17,8 @@
 | Q-002 | ✅ پروتکل اتصال IAM: الگوی BFF ✅ (بسته شد) | متن Baseline: OIDC/OpenIddict؛ واقعیت IAM: REST + JWT | بالا | کارفرما | Closed — DEC-018 |
 | Q-003 | Schema نهایی جدول واسط (Staging) Import پرسنل چیست؟ | `Organizational-Structure-Big-Picture-Scenario` + درخواست Import | متوسط | Business / کارفرما | Open |
 | Q-004 | ✅ IAM مرجع Role/Policy/Permission شد؛ OrgStructure بدون Authorization موازی، فقط مصرف + enforce می‌کند (بسته شد) | DEC-008 / DEC-020 | بالا | کارفرما | Closed — DEC-020 |
-| Q-005 | سیاست نگهداری، آرشیو و حذف PII پرسنلی چیست؟ (مدت نگهداری، حق حذف، Anonymization) | Security Baseline | متوسط | Security Lead | Open |
-| Q-006 | فهرست دقیق و نام‌گذاری نهایی Permissionهای اختصاصی سامانه (`Post.*`/`Employee.*`/`Authority.*` فعلاً الگوی دسته‌بندی‌اند) — مالکیت Role/Permission در IAM حل شد، فقط نام‌گذاری نهایی باز است | DEC-008، DEC-021 | بالا | کارفرما + مالک IAM | Open (فقط نام‌گذاری) |
+| Q-005 | ✅ عدم حذف فیزیکی پرسنل؛ پایان فعالیت = غیرفعال‌سازی با حفظ سابقه؛ بدون Anonymization در MVP (بسته شد) | DEC-022 | متوسط | کارفرما | Closed — DEC-022 |
+| Q-006 | کاتالوگ پیشنهادی ۲۰ Permission ثبت شد؛ تأیید نهایی نام‌ها توسط کارفرما + مالک IAM باقی است (ثبت در IAM فقط پس از تأیید) | DEC-008، DEC-021، DEC-023 | بالا | کارفرما + مالک IAM | Proposed / Pending Approval |
 | Q-007 | تفکیک دقیق مسئولیت داده پرسنلی بین IAM (`EmployeeIdentifier`, Lifecycle, Bulk Import) و OrgStructure | همپوشانی Employee با IAM | بالا | کارفرما + مالک IAM | Open |
 | Q-008 | آیا `GeographicUnit` (استان/منطقه) از IAM مصرف می‌شود یا فقط `Organization` تخت سازمانی مبنای Scope است؟ | تعارض نام‌گذاری استان/منطقه | متوسط | کارفرما | Open |
 
@@ -36,6 +36,7 @@
 | Q-001 | مجوز افزودن Region=3 به IAM (پیاده‌سازی در مخزن IAM) | DEC-019 / ADR-009 | 2026-09-14 |
 | Q-004 | IAM مرجع Role/Policy/Permission؛ بدون Authorization موازی | DEC-020 / ADR-008 | 2026-09-14 |
 | Q-006 (مالکیت) | تمام Role/Permissionها در IAM تعریف می‌شوند؛ `Post.*`/`Employee.*` فعلاً الگوست | DEC-021 / ADR-008 | 2026-09-14 |
+| Q-005 | عدم حذف فیزیکی پرسنل؛ غیرفعال‌سازی با حفظ سابقه | DEC-022 | 2026-09-14 |
 
 ---
 

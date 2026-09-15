@@ -160,4 +160,51 @@ public sealed class EmployeeTests
         employee.UnlinkFromUser(OccurredOn);
         employee.UserId.Should().BeNull();
     }
+
+    /// <summary>
+    /// ثبت اطلاعات تکمیلی (تاریخ تولد، سابقه، موبایل پژواک) باید موفق باشد و رویداد منتشر کند.
+    /// </summary>
+    [Fact]
+    public void UpdateSupplementaryInfo_ValidData_ShouldSucceedAndRaiseEvent()
+    {
+        var employee = CreateValidEmployee();
+        employee.ClearDomainEvents();
+
+        employee.UpdateSupplementaryInfo(
+            new DateOnly(1360, 5, 12),
+            new ValueObjects.HerasatServiceRecord(12, 3),
+            "09190000000",
+            OccurredOn);
+
+        employee.BirthDate.Should().Be(new DateOnly(1360, 5, 12));
+        employee.ServiceRecord.Should().Be(new ValueObjects.HerasatServiceRecord(12, 3));
+        employee.ServiceRecord!.ToString().Should().Be("12 سال و 3 ماه");
+        employee.PezhvakMobile.Should().Be("09190000000");
+        employee.DomainEvents.OfType<EmployeeUpdated>().Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// سابقه با ماه خارج از بازه باید خطا دهد.
+    /// </summary>
+    [Fact]
+    public void HerasatServiceRecord_InvalidMonths_ShouldThrow()
+    {
+        var act = () => new ValueObjects.HerasatServiceRecord(5, 12);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    /// <summary>
+    /// ویرایش اطلاعات تکمیلی با مقادیر یکسان نباید رویداد منتشر کند.
+    /// </summary>
+    [Fact]
+    public void UpdateSupplementaryInfo_SameValues_ShouldNotRaiseEvent()
+    {
+        var employee = CreateValidEmployee();
+        employee.ClearDomainEvents();
+
+        employee.UpdateSupplementaryInfo(employee.BirthDate, employee.ServiceRecord, employee.PezhvakMobile, OccurredOn);
+
+        employee.DomainEvents.Should().BeEmpty();
+    }
 }

@@ -74,7 +74,11 @@
 | LastName | PII (Randomized) NOT NULL | |
 | NationalCode | PII (Deterministic) NOT NULL | ایندکس جستجو روی هش/رمز |
 | Mobile | PII (Deterministic) NULL | |
-| IsActive | bit NOT NULL DEFAULT 1 | |
+| BirthDate | date NULL — PII (Randomized, ADR-010) | تاریخ تولد |
+| PezhvakMobile | PII (Deterministic) NULL — ADR-010 | موبایل پژواک |
+| ServiceYears | int NULL — ADR-010 | سال سابقه حراست (Owned VO) |
+| ServiceMonths | int NULL — ADR-010 | ماه سابقه حراست ۰..۱۱ (Owned VO) |
+| IsActive | bit NOT NULL DEFAULT 1 | پایان فعالیت = غیرفعال؛ هرگز حذف فیزیکی (DEC-022) |
 | Audit/SoftDelete/Version | استاندارد | |
 
 ### EmployeePostAssignments

@@ -24,6 +24,21 @@
 
 ---
 
+## [2026-09-14] - Session-20260914-Phase2-Extension / Phase 2 (توسعه مدل)
+### Added
+- فیلدهای تکمیلی Employee: `BirthDate` (PII Randomized)، `PezhvakMobile` (PII Deterministic)، `HerasatServiceRecord` (VO: سال+ماه، غیر PII) + متد `UpdateSupplementaryInfo`
+- `Domain/ValueObjects/HerasatServiceRecord.cs` + ۳ تست جدید (۲۲→۲۵ تست سبز: ۲۱ دامنه + ۴ معماری)
+- `Docs/domain/permission-catalog.md` — کاتالوگ پیشنهادی ۲۰ Permission (وضعیت Proposed/Pending Approval)
+- `Docs/adr/ADR-010-employee-supplementary-fields.md`
+
+### Changed
+- `Docs/Architecture/erd.md` — ستون‌های جدید Employees
+
+### Decisions / ADRs
+- DEC-022 (Q-005: عدم حذف فیزیکی پرسنل) — Closed
+- DEC-023 (Q-006: کاتالوگ پیشنهادی Permission) — Proposed / Pending Approval
+- ADR-010 (Accepted)
+
 ## [2026-09-14] - Session-20260914-Phase2 / Phase 2
 ### Added
 - Aggregate `Post` (Factory، تغییر والد، صاحب‌امضا، مسئولیت‌ها، فعال/غیرفعال) + ۷ رویداد دامنه + Value Object `Responsibility`

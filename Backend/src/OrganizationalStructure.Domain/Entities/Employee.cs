@@ -1,6 +1,7 @@
 using OrganizationalStructure.Domain.Common;
 using OrganizationalStructure.Domain.Encryption;
 using OrganizationalStructure.Domain.Events;
+using OrganizationalStructure.Domain.ValueObjects;
 
 namespace OrganizationalStructure.Domain.Entities;
 
@@ -66,8 +67,30 @@ public sealed class Employee : FullAuditableEntity
     public string? Mobile { get; private set; }
 
     /// <summary>
+    /// تاریخ تولد (اختیاری).
+    /// </summary>
+    /// <remarks>داده حساس — رمزنگاری تصادفی (Randomized)؛ فقط نمایشی/گزارشی (ADR-010).</remarks>
+    [PiiEncrypted(EncryptionType.Randomized)]
+    public DateOnly? BirthDate { get; private set; }
+
+    /// <summary>
+    /// شماره موبایل پژواک (اختیاری).
+    /// </summary>
+    /// <remarks>داده حساس — رمزنگاری قطعی (Deterministic) برای جستجو (ADR-010).</remarks>
+    [PiiEncrypted(EncryptionType.Deterministic)]
+    public string? PezhvakMobile { get; private set; }
+
+    /// <summary>
+    /// سابقه خدمت در حراست (اختیاری؛ غیر PII).
+    /// </summary>
+    public HerasatServiceRecord? ServiceRecord { get; private set; }
+
+    /// <summary>
     /// آیا پرسنل فعال است؟
     /// </summary>
+    /// <remarks>
+    /// پایان همکاری/بازنشستگی/فوت/استعفا باعث غیرفعال‌سازی می‌شود، نه حذف اطلاعات (DEC-022).
+    /// </remarks>
     public bool IsActive { get; private set; } = true;
 
     /// <summary>
@@ -87,6 +110,9 @@ public sealed class Employee : FullAuditableEntity
     /// <param name="mobile">شماره موبایل (اختیاری)</param>
     /// <param name="userId">شناسه کاربر IAM (اختیاری)</param>
     /// <param name="occurredOn">زمان وقوع (از ساعت تزریقی لایه کاربرد)</param>
+    /// <param name="birthDate">تاریخ تولد (اختیاری؛ ADR-010)</param>
+    /// <param name="serviceRecord">سابقه خدمت در حراست (اختیاری؛ ADR-010)</param>
+    /// <param name="pezhvakMobile">شماره موبایل پژواک (اختیاری؛ ADR-010)</param>
     /// <returns>پرسنل ایجادشده</returns>
     /// <exception cref="ArgumentException">در صورت نامعتبر بودن ورودی‌ها</exception>
     public static Employee Create(
@@ -98,7 +124,10 @@ public sealed class Employee : FullAuditableEntity
         string nationalCode,
         string? mobile,
         Guid? userId,
-        DateTimeOffset occurredOn)
+        DateTimeOffset occurredOn,
+        DateOnly? birthDate = null,
+        HerasatServiceRecord? serviceRecord = null,
+        string? pezhvakMobile = null)
     {
         if (id == Guid.Empty)
         {
@@ -140,6 +169,9 @@ public sealed class Employee : FullAuditableEntity
             NationalCode = nationalCode.Trim(),
             Mobile = string.IsNullOrWhiteSpace(mobile) ? null : mobile.Trim(),
             UserId = userId,
+            BirthDate = birthDate,
+            ServiceRecord = serviceRecord,
+            PezhvakMobile = string.IsNullOrWhiteSpace(pezhvakMobile) ? null : pezhvakMobile.Trim(),
             IsActive = true
         };
 
@@ -187,6 +219,32 @@ public sealed class Employee : FullAuditableEntity
         LastName = newLastName;
         NationalCode = newNationalCode;
         Mobile = newMobile;
+        AddDomainEvent(new EmployeeUpdated(Id, occurredOn));
+    }
+
+    /// <summary>
+    /// ویرایش اطلاعات تکمیلی پرسنل (تاریخ تولد، سابقه حراست، موبایل پژواک).
+    /// </summary>
+    /// <param name="birthDate">تاریخ تولد (اختیاری)</param>
+    /// <param name="serviceRecord">سابقه خدمت در حراست (اختیاری)</param>
+    /// <param name="pezhvakMobile">شماره موبایل پژواک (اختیاری)</param>
+    /// <param name="occurredOn">زمان وقوع</param>
+    public void UpdateSupplementaryInfo(
+        DateOnly? birthDate,
+        HerasatServiceRecord? serviceRecord,
+        string? pezhvakMobile,
+        DateTimeOffset occurredOn)
+    {
+        var newPezhvakMobile = string.IsNullOrWhiteSpace(pezhvakMobile) ? null : pezhvakMobile.Trim();
+
+        if (BirthDate == birthDate && Equals(ServiceRecord, serviceRecord) && PezhvakMobile == newPezhvakMobile)
+        {
+            return;
+        }
+
+        BirthDate = birthDate;
+        ServiceRecord = serviceRecord;
+        PezhvakMobile = newPezhvakMobile;
         AddDomainEvent(new EmployeeUpdated(Id, occurredOn));
     }
 
