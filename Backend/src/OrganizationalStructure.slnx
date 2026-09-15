@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="../tests/OrganizationalStructure.ArchitectureTests/OrganizationalStructure.ArchitectureTests.csproj" />
+  <Project Path="../tests/OrganizationalStructure.Domain.UnitTests/OrganizationalStructure.Domain.UnitTests.csproj" />
   <Project Path="OrganizationalStructure.API/OrganizationalStructure.API.csproj" />
   <Project Path="OrganizationalStructure.Application/OrganizationalStructure.Application.csproj" />
   <Project Path="OrganizationalStructure.Domain/OrganizationalStructure.Domain.csproj" />
