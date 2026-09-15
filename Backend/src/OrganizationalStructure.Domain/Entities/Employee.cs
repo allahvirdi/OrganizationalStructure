@@ -213,6 +213,44 @@ public sealed class Employee : FullAuditableEntity
     }
 
     /// <summary>
+    /// قطع ارتباط پرسنل از حساب کاربری IAM.
+    /// </summary>
+    /// <param name="occurredOn">زمان وقوع</param>
+    public void UnlinkFromUser(DateTimeOffset occurredOn)
+    {
+        if (UserId is null)
+        {
+            return;
+        }
+
+        UserId = null;
+        AddDomainEvent(new EmployeeUpdated(Id, occurredOn));
+    }
+
+    /// <summary>
+    /// اصلاح کد پرسنلی (یکتایی درون مستأجر در لایه کاربرد/پایگاه داده کنترل می‌شود).
+    /// </summary>
+    /// <param name="personnelCode">کد پرسنلی جدید</param>
+    /// <param name="occurredOn">زمان وقوع</param>
+    /// <exception cref="ArgumentException">در صورت خالی بودن کد پرسنلی</exception>
+    public void ChangePersonnelCode(string personnelCode, DateTimeOffset occurredOn)
+    {
+        if (string.IsNullOrWhiteSpace(personnelCode))
+        {
+            throw new ArgumentException("کد پرسنلی نمی‌تواند خالی باشد.", nameof(personnelCode));
+        }
+
+        var newCode = personnelCode.Trim();
+        if (PersonnelCode == newCode)
+        {
+            return;
+        }
+
+        PersonnelCode = newCode;
+        AddDomainEvent(new EmployeeUpdated(Id, occurredOn));
+    }
+
+    /// <summary>
     /// انتساب پرسنل به پست.
     /// </summary>
     /// <param name="postId">شناسه پست مقصد</param>
