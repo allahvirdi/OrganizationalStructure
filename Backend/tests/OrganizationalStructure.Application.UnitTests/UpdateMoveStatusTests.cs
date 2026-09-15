@@ -31,7 +31,7 @@ public sealed class UpdateMoveStatusTests
     {
         var handler = new CreatePostCommandHandler(db, clock, user);
         var result = await handler.Handle(
-            new CreatePostCommand(organizationId, code, $"عنوان {code}", null, parentId, false),
+            new CreatePostCommand(organizationId, code, $"عنوان {code}", null, parentId),
             CancellationToken.None);
         result.IsSuccess.Should().BeTrue();
         return result.Value;

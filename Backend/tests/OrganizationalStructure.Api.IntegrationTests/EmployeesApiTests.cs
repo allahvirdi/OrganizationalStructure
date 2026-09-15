@@ -39,8 +39,7 @@ public sealed class EmployeesApiTests : IClassFixture<TestWebApplicationFactory>
         code,
         title = $"عنوان {code}",
         description = (string?)null,
-        parentId = (Guid?)null,
-        hasSigningAuthority = false
+        parentId = (Guid?)null
     };
 
     /// <summary>

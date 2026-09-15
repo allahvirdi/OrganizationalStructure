@@ -24,6 +24,23 @@
 
 ---
 
+## [2026-09-15] - Responsibility/Authority Separation / Phase 3 (توسعه مدل)
+### Added
+- Aggregateهای `Responsibility` و `Authority` + Assignmentهای تاریخ‌دار (`PostResponsibilityAssignment`/`PostAuthorityAssignment`)
+- ۱۰ رویداد دامنه جدید + `AuthorityCodes.SigningAuthority` (Proposed)
+- Controllers جدید `Responsibilities`/`Authorities` (CRUD + Assign/End + Queries)
+- قراردادهای `responsibilities.md` و `authorities.md`
+- سند `Docs/domain/responsibility-routing.md` + بخش ۱۹ Big Picture
+- ۱۲ Permission پیشنهادی جدید در Permission Catalog
+
+### Changed
+- حذف `Post.HasSigningAuthority`، `Post.Responsibilities`، Responsibility VO و Endpointهای title-based قبلی
+- بازنویسی `PostDto` (تفصیلی با انتساب‌ها) + `PostSummaryDto` (فهرست) + محاسبه نشان امضا از Assignment
+- اسناد دامنه (BC، Aggregates، UL، Events، ERD) همگام‌سازی شد
+
+### Decisions / ADRs
+- DEC-024 + ADR-011 (تفکیک ۴ مفهوم)؛ Breaking داخلی API ثبت شد (بدون Consumer خارجی)
+
 ## [2026-09-14] - Session-20260914-Phase2-Extension / Phase 2 (توسعه مدل)
 ### Added
 - فیلدهای تکمیلی Employee: `BirthDate` (PII Randomized)، `PezhvakMobile` (PII Deterministic)، `HerasatServiceRecord` (VO: سال+ماه، غیر PII) + متد `UpdateSupplementaryInfo`

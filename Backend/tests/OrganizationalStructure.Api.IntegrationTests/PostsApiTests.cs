@@ -25,8 +25,7 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
         code,
         title = $"عنوان {code}",
         description = (string?)null,
-        parentId,
-        hasSigningAuthority = false
+        parentId
     };
 
     /// <summary>

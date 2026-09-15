@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
+using OrganizationalStructure.Domain.Constants;
 
 namespace OrganizationalStructure.Application.Posts.GetPostSubtree;
 
@@ -46,8 +47,18 @@ public sealed class GetPostSubtreeQueryHandler : IRequestHandler<GetPostSubtreeQ
         var posts = await _db.Posts
             .AsNoTracking()
             .Where(p => p.OrganizationId == root.OrganizationId)
-            .Select(p => new { p.Id, p.ParentId, p.Code, p.Title, p.HasSigningAuthority, p.IsActive })
+            .Select(p => new { p.Id, p.ParentId, p.Code, p.Title, p.IsActive })
             .ToListAsync(cancellationToken);
+
+        var signingPostIds = await (
+            from a in _db.AuthorityAssignments.AsNoTracking()
+            join u in _db.Authorities.AsNoTracking() on a.AuthorityId equals u.Id
+            where a.OrganizationId == root.OrganizationId
+                && a.IsActive && a.EndDate == null
+                && u.Code == AuthorityCodes.SigningAuthority
+            select a.PostId)
+            .ToListAsync(cancellationToken);
+        var signingSet = signingPostIds.ToHashSet();
 
         var childrenByParent = posts
             .Where(p => p.ParentId.HasValue)
@@ -62,7 +73,7 @@ public sealed class GetPostSubtreeQueryHandler : IRequestHandler<GetPostSubtreeQ
                 Id = current.Id,
                 Code = current.Code,
                 Title = current.Title,
-                HasSigningAuthority = current.HasSigningAuthority,
+                HasSigningAuthority = signingSet.Contains(current.Id),
                 IsActive = current.IsActive
             };
 

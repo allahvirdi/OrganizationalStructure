@@ -27,6 +27,7 @@
 - **Organization/User Master:** در IAM؛ فقط Reference — ADR-002
 - **Employee:** مالک داده پرسنلی در OrgStructure — ADR-003
 - **Post Tree:** درخت مستقل به‌ازای هر Organization؛ جابجایی بین Organization ممنوع — ADR-004
+- **Responsibility/Authority:** موجودیت مستقل با Assignment تاریخ‌دار و Scope سازمانی — ADR-011
 - **PII:** Always Encrypted — ADR-006
 
 ## ساختار برنامه‌ریزی‌شده Backend (۴ پروژه لایه‌ای طبق Baseline §۳.۲)
@@ -58,6 +59,7 @@ Backend/
 | ADR-008 | Access Control: IAM مرجع Role/Policy؛ بدون Authorization موازی (+ متمم ۱) | Accepted |
 | ADR-009 | افزودن Region=3 به OrganizationType در IAM | Accepted |
 | ADR-010 | فیلدهای تکمیلی پرسنل (تاریخ تولد، سابقه حراست، موبایل پژواک) | Accepted |
+| ADR-011 | تفکیک Responsibility/Authority مستقل با Assignment | Accepted |
 
 ---
 

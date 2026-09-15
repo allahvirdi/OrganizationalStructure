@@ -10,7 +10,7 @@ namespace OrganizationalStructure.Application.Posts.SearchPosts;
 /// <summary>
 /// پردازش‌گر پرس‌وجوی جستجوی صفحه‌بندی‌شده پست‌ها.
 /// </summary>
-public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, Result<PagedResult<PostDto>>>
+public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, Result<PagedResult<PostSummaryDto>>>
 {
     private readonly IAppDbContext _db;
     private readonly IMapper _mapper;
@@ -25,7 +25,7 @@ public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, 
     }
 
     /// <inheritdoc />
-    public async Task<Result<PagedResult<PostDto>>> Handle(
+    public async Task<Result<PagedResult<PostSummaryDto>>> Handle(
         SearchPostsQuery request,
         CancellationToken cancellationToken)
     {
@@ -55,12 +55,12 @@ public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, 
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
-        var result = new PagedResult<PostDto>(
-            _mapper.Map<IReadOnlyList<PostDto>>(items),
+        var result = new PagedResult<PostSummaryDto>(
+            _mapper.Map<IReadOnlyList<PostSummaryDto>>(items),
             totalCount,
             request.Page,
             request.PageSize);
 
-        return Result<PagedResult<PostDto>>.Success(result);
+        return Result<PagedResult<PostSummaryDto>>.Success(result);
     }
 }

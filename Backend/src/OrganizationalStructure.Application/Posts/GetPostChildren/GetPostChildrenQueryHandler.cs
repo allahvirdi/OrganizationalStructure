@@ -11,7 +11,7 @@ namespace OrganizationalStructure.Application.Posts.GetPostChildren;
 /// پردازش‌گر پرس‌وجوی فرزندان مستقیم پست.
 /// </summary>
 public sealed class GetPostChildrenQueryHandler
-    : IRequestHandler<GetPostChildrenQuery, Result<IReadOnlyList<PostDto>>>
+    : IRequestHandler<GetPostChildrenQuery, Result<IReadOnlyList<PostSummaryDto>>>
 {
     private readonly IAppDbContext _db;
     private readonly IMapper _mapper;
@@ -26,14 +26,14 @@ public sealed class GetPostChildrenQueryHandler
     }
 
     /// <inheritdoc />
-    public async Task<Result<IReadOnlyList<PostDto>>> Handle(
+    public async Task<Result<IReadOnlyList<PostSummaryDto>>> Handle(
         GetPostChildrenQuery request,
         CancellationToken cancellationToken)
     {
         var exists = await _db.Posts.AnyAsync(p => p.Id == request.PostId, cancellationToken);
         if (!exists)
         {
-            return Result<IReadOnlyList<PostDto>>.Failure(PostErrors.NotFound(request.PostId));
+            return Result<IReadOnlyList<PostSummaryDto>>.Failure(PostErrors.NotFound(request.PostId));
         }
 
         var children = await _db.Posts
@@ -42,6 +42,7 @@ public sealed class GetPostChildrenQueryHandler
             .OrderBy(p => p.Code)
             .ToListAsync(cancellationToken);
 
-        return Result<IReadOnlyList<PostDto>>.Success(_mapper.Map<IReadOnlyList<PostDto>>(children));
+        return Result<IReadOnlyList<PostSummaryDto>>.Success(
+            _mapper.Map<IReadOnlyList<PostSummaryDto>>(children));
     }
 }

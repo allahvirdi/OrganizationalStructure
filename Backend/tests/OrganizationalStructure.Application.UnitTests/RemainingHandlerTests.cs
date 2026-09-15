@@ -3,14 +3,15 @@ using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Employees.CreateEmployee;
 using OrganizationalStructure.Application.Employees.LinkEmployeeUser;
 using OrganizationalStructure.Application.Employees.SetEmployeeStatus;
-using OrganizationalStructure.Application.Posts.ManageResponsibilities;
-using OrganizationalStructure.Application.Posts.SetSigningAuthority;
+using OrganizationalStructure.Application.Responsibilities.AssignResponsibility;
+using OrganizationalStructure.Application.Responsibilities.CreateResponsibility;
+using OrganizationalStructure.Application.Responsibilities.EndResponsibilityAssignment;
 using OrganizationalStructure.Infrastructure.Persistence;
 
 namespace OrganizationalStructure.Application.UnitTests;
 
 /// <summary>
-/// تست‌های تکمیلی Handlerهای Slice پرسنل و Authority (مثبت و منفی).
+/// تست‌های تکمیلی Handlerهای Slice پرسنل و Responsibility (مثبت و منفی).
 /// </summary>
 public sealed class RemainingHandlerTests
 {
@@ -41,7 +42,7 @@ public sealed class RemainingHandlerTests
     {
         var handler = new Posts.CreatePost.CreatePostCommandHandler(db, clock, user);
         var result = await handler.Handle(
-            new Posts.CreatePost.CreatePostCommand(Guid.NewGuid(), "T-001", "t", null, null, false),
+            new Posts.CreatePost.CreatePostCommand(Guid.NewGuid(), "T-001", "t", null, null),
             CancellationToken.None);
         result.IsSuccess.Should().BeTrue();
         return result.Value;
@@ -82,44 +83,6 @@ public sealed class RemainingHandlerTests
     }
 
     /// <summary>
-    /// تعیین صاحب‌امضا (مثبت و منفی).
-    /// </summary>
-    [Fact]
-    public async Task SetSigningAuthority_Existing_ShouldSucceed_Missing_ShouldFail()
-    {
-        var (db, clock, user) = CreateContext();
-        var postId = await SeedPostAsync(db, clock, user);
-        var handler = new SetSigningAuthorityCommandHandler(db, clock);
-
-        (await handler.Handle(new SetSigningAuthorityCommand(postId, true), CancellationToken.None))
-            .IsSuccess.Should().BeTrue();
-
-        (await handler.Handle(new SetSigningAuthorityCommand(Guid.NewGuid(), true), CancellationToken.None))
-            .IsFailure.Should().BeTrue();
-    }
-
-    /// <summary>
-    /// افزودن و حذف مسئولیت (مثبت و منفی).
-    /// </summary>
-    [Fact]
-    public async Task AddRemoveResponsibility_ShouldWork_Missing_ShouldFail()
-    {
-        var (db, clock, user) = CreateContext();
-        var postId = await SeedPostAsync(db, clock, user);
-        var addHandler = new AddResponsibilityCommandHandler(db, clock);
-        var removeHandler = new RemoveResponsibilityCommandHandler(db, clock);
-
-        (await addHandler.Handle(new AddResponsibilityCommand(postId, "R", null), CancellationToken.None))
-            .IsSuccess.Should().BeTrue();
-
-        (await removeHandler.Handle(new RemoveResponsibilityCommand(postId, "R"), CancellationToken.None))
-            .IsSuccess.Should().BeTrue();
-
-        (await addHandler.Handle(new AddResponsibilityCommand(Guid.NewGuid(), "R", null), CancellationToken.None))
-            .IsFailure.Should().BeTrue();
-    }
-
-    /// <summary>
     /// انتساب موفق و پایان موفق (مثبت).
     /// </summary>
     [Fact]
@@ -140,5 +103,45 @@ public sealed class RemainingHandlerTests
             new Employees.EndAssignment.EndAssignmentCommand(employeeId, postId, new DateOnly(2026, 9, 30)),
             CancellationToken.None);
         end.IsSuccess.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// تعریف و انتساب مسئولیت (مثبت و منفی).
+    /// </summary>
+    [Fact]
+    public async Task CreateAndAssignResponsibility_ShouldWork_Missing_ShouldFail()
+    {
+        var (db, clock, user) = CreateContext();
+        var postId = await SeedPostAsync(db, clock, user);
+        var createHandler = new CreateResponsibilityCommandHandler(db, clock, user);
+        var assignHandler = new AssignResponsibilityCommandHandler(db, clock);
+        var endHandler = new EndResponsibilityAssignmentCommandHandler(db, clock);
+
+        var created = await createHandler.Handle(
+            new CreateResponsibilityCommand("SEC", "مسئول دبیرخانه", null),
+            CancellationToken.None);
+        created.IsSuccess.Should().BeTrue();
+
+        var duplicate = await createHandler.Handle(
+            new CreateResponsibilityCommand("SEC", "تکراری", null),
+            CancellationToken.None);
+        duplicate.IsFailure.Should().BeTrue();
+        duplicate.Error!.Type.Should().Be(ErrorType.Conflict);
+
+        var assigned = await assignHandler.Handle(
+            new AssignResponsibilityCommand("SEC", postId, null, null),
+            CancellationToken.None);
+        assigned.IsSuccess.Should().BeTrue();
+
+        var missingCode = await assignHandler.Handle(
+            new AssignResponsibilityCommand("NOPE", postId, null, null),
+            CancellationToken.None);
+        missingCode.IsFailure.Should().BeTrue();
+        missingCode.Error!.Type.Should().Be(ErrorType.NotFound);
+
+        var ended = await endHandler.Handle(
+            new EndResponsibilityAssignmentCommand(assigned.Value, new DateOnly(2026, 9, 30)),
+            CancellationToken.None);
+        ended.IsSuccess.Should().BeTrue();
     }
 }

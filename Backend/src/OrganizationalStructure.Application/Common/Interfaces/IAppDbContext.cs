@@ -24,6 +24,26 @@ public interface IAppDbContext
     DbSet<EmployeePostAssignment> Assignments { get; }
 
     /// <summary>
+    /// مجموعه مسئولیت‌های سازمانی.
+    /// </summary>
+    DbSet<Responsibility> Responsibilities { get; }
+
+    /// <summary>
+    /// مجموعه انتساب‌های مسئولیت به پست.
+    /// </summary>
+    DbSet<PostResponsibilityAssignment> ResponsibilityAssignments { get; }
+
+    /// <summary>
+    /// مجموعه اختیارهای سازمانی.
+    /// </summary>
+    DbSet<Authority> Authorities { get; }
+
+    /// <summary>
+    /// مجموعه انتساب‌های اختیار به پست.
+    /// </summary>
+    DbSet<PostAuthorityAssignment> AuthorityAssignments { get; }
+
+    /// <summary>
     /// ذخیره تغییرات در انتظار.
     /// </summary>
     /// <param name="cancellationToken">توکن لغو</param>

@@ -5,7 +5,7 @@ using FluentAssertions;
 namespace OrganizationalStructure.Api.IntegrationTests;
 
 /// <summary>
-/// تست‌های یکپارچگی صاحب‌امضا و مسئولیت پست.
+/// تست‌های یکپارچگی مسئولیت و اختیار (مدل Assignment-based).
 /// </summary>
 public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
 {
@@ -27,79 +27,114 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
             code,
             title = $"عنوان {code}",
             description = (string?)null,
-            parentId = (Guid?)null,
-            hasSigningAuthority = false
+            parentId = (Guid?)null
         });
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         return (await response.Content.ReadFromJsonAsync<Guid>())!;
     }
 
     /// <summary>
-    /// تعیین صاحب‌امضا باید در دریافت بعدی دیده شود.
+    /// چرخه کامل مسئولیت: تعریف، انتساب Code-based، مشاهده در پست، پایان.
     /// </summary>
     [Fact]
-    public async Task SetSigningAuthority_ShouldBeVisibleInGet()
+    public async Task Responsibility_FullCycle_ShouldWork()
     {
         var client = _factory.CreateClient();
-        var postId = await CreatePostAsync(client, "SA-001");
+        var postId = await CreatePostAsync(client, "RA-001");
 
-        var setResponse = await client.PatchAsJsonAsync(
-            $"/api/v1/posts/{postId}/signing-authority",
-            new { hasSigningAuthority = true });
-        setResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var createResponse = await client.PostAsJsonAsync(
+            "/api/v1/responsibilities",
+            new { code = "RESP-A1", title = "مسئول دبیرخانه", description = (string?)null });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var getResponse = await client.GetAsync($"/api/v1/posts/{postId}");
-        var body = await getResponse.Content.ReadAsStringAsync();
-        body.Should().Contain("\"hasSigningAuthority\":true");
+        var assignResponse = await client.PostAsJsonAsync(
+            "/api/v1/responsibilities/assignments",
+            new { responsibilityCode = "RESP-A1", postId, startDate = (string?)null, endDate = (string?)null });
+        assignResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var assignmentId = await assignResponse.Content.ReadFromJsonAsync<Guid>();
+
+        var postResponsibilities = await client.GetAsync($"/api/v1/posts/{postId}/responsibilities");
+        postResponsibilities.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await postResponsibilities.Content.ReadAsStringAsync()).Should().Contain("RESP-A1");
+
+        var byCode = await client.GetAsync("/api/v1/responsibilities/RESP-A1");
+        byCode.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var endResponse = await client.PostAsJsonAsync(
+            $"/api/v1/responsibilities/assignments/{assignmentId}/end",
+            new { endDate = "2026-09-30" });
+        endResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var afterEnd = await client.GetAsync($"/api/v1/posts/{postId}/responsibilities");
+        (await afterEnd.Content.ReadAsStringAsync()).Should().NotContain("RESP-A1");
     }
 
     /// <summary>
-    /// افزودن و حذف مسئولیت باید کار کند.
+    /// انتساب تکراری جاری باید ۴۰۹ دهد.
     /// </summary>
     [Fact]
-    public async Task Add_ThenRemove_Responsibility_ShouldWork()
+    public async Task Responsibility_DuplicateActiveAssignment_ShouldReturn409()
     {
         var client = _factory.CreateClient();
-        var postId = await CreatePostAsync(client, "RS-001");
+        var postId = await CreatePostAsync(client, "RA-002");
 
-        var addResponse = await client.PostAsJsonAsync(
-            $"/api/v1/posts/{postId}/responsibilities",
-            new { title = "تأیید مرخصی", description = (string?)null });
-        addResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        await client.PostAsJsonAsync(
+            "/api/v1/responsibilities",
+            new { code = "RESP-A2", title = "t", description = (string?)null });
 
-        var getAfterAdd = await client.GetAsync($"/api/v1/posts/{postId}");
-        (await getAfterAdd.Content.ReadAsStringAsync()).Should().Contain("تأیید مرخصی");
+        var first = await client.PostAsJsonAsync(
+            "/api/v1/responsibilities/assignments",
+            new { responsibilityCode = "RESP-A2", postId, startDate = (string?)null, endDate = (string?)null });
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var deleteRequest = new HttpRequestMessage(
-            HttpMethod.Delete,
-            $"/api/v1/posts/{postId}/responsibilities")
-        {
-            Content = JsonContent.Create(new { title = "تأیید مرخصی" })
-        };
-        var removeResponse = await client.SendAsync(deleteRequest);
-        removeResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
-
-        var getAfterRemove = await client.GetAsync($"/api/v1/posts/{postId}");
-        (await getAfterRemove.Content.ReadAsStringAsync()).Should().NotContain("تأیید مرخصی");
+        var second = await client.PostAsJsonAsync(
+            "/api/v1/responsibilities/assignments",
+            new { responsibilityCode = "RESP-A2", postId, startDate = (string?)null, endDate = (string?)null });
+        second.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     /// <summary>
-    /// عملیات روی پست ناموجود باید ۴۰۴ دهد.
+    /// چرخه کامل اختیار و نمایش نشان امضا در درخت.
     /// </summary>
     [Fact]
-    public async Task Authority_MissingPost_ShouldReturn404()
+    public async Task Authority_SigningBadge_ShouldAppearInSubtree()
+    {
+        var client = _factory.CreateClient();
+        var postId = await CreatePostAsync(client, "RA-003");
+
+        await client.PostAsJsonAsync(
+            "/api/v1/authorities",
+            new { code = "SIGNING_AUTHORITY", title = "اختیار امضا", description = (string?)null });
+
+        var assign = await client.PostAsJsonAsync(
+            "/api/v1/authorities/assignments",
+            new { authorityCode = "SIGNING_AUTHORITY", postId, startDate = (string?)null, endDate = (string?)null });
+        assign.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var subtree = await client.GetAsync($"/api/v1/posts/{postId}/subtree");
+        subtree.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await subtree.Content.ReadAsStringAsync()).Should().Contain("\"hasSigningAuthority\":true");
+
+        var detail = await client.GetAsync($"/api/v1/posts/{postId}");
+        (await detail.Content.ReadAsStringAsync()).Should().Contain("SIGNING_AUTHORITY");
+    }
+
+    /// <summary>
+    /// عملیات روی موجودیت ناموجود باید ۴۰۴ دهد.
+    /// </summary>
+    [Fact]
+    public async Task ResponsibilityAuthority_Missing_ShouldReturn404()
     {
         var client = _factory.CreateClient();
         var missingId = Guid.NewGuid();
 
-        var setResponse = await client.PatchAsJsonAsync(
-            $"/api/v1/posts/{missingId}/signing-authority",
-            new { hasSigningAuthority = true });
-        setResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        var addResponse = await client.PostAsJsonAsync(
-            $"/api/v1/posts/{missingId}/responsibilities",
-            new { title = "X", description = (string?)null });
-        addResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync("/api/v1/responsibilities/NOPE")).StatusCode
+            .Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync("/api/v1/authorities/NOPE")).StatusCode
+            .Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync($"/api/v1/posts/{missingId}/responsibilities")).StatusCode
+            .Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync($"/api/v1/posts/{missingId}/authorities")).StatusCode
+            .Should().Be(HttpStatusCode.NotFound);
     }
 }

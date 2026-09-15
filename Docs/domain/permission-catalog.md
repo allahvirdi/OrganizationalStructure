@@ -40,15 +40,29 @@
 | `OrganizationStructure.Employee.Import` | ورود از CSV/Excel/جدول واسط (فقط ستاد) | `POST /api/v1/import/*` | صفحه Import |
 | `OrganizationStructure.Employee.ViewSensitiveData` | مشاهده فیلدهای PII (نام، کد ملی، موبایل‌ها، تاریخ تولد) | پاسخ‌های شامل PII | نمایش/ماسک فیلدهای حساس در UI |
 
-## Authority (۵ مورد)
+## Authority (۵ مورد — بازنگری‌شده با ADR-011)
 
-| Permission | قابلیت / Use Case | API (برنامه‌ریزی‌شده) | UI |
+| Permission | قابلیت / Use Case | API | UI |
 |---|---|---|---|
-| `OrganizationStructure.Authority.View` | مشاهده مسئولیت/صاحب‌امضا بودن | `GET /api/v1/posts/{id}/authority` | نشان چارت / جزئیات پست |
-| `OrganizationStructure.Authority.Create` | تعریف مسئولیت برای پست | `POST /api/v1/posts/{id}/responsibilities` | فرم مسئولیت |
-| `OrganizationStructure.Authority.Update` | ویرایش مسئولیت | `PUT /api/v1/posts/{id}/responsibilities` | فرم ویرایش |
-| `OrganizationStructure.Authority.Disable` | حذف/غیرفعال مسئولیت | `DELETE /api/v1/posts/{id}/responsibilities` | عملیات حذف |
-| `OrganizationStructure.Authority.SigningAuthority` | تعیین/لغو صاحب‌امضا بودن | `PATCH /api/v1/posts/{id}/signing-authority` | عملیات صاحب‌امضا |
+| `OrganizationStructure.Authority.View` | مشاهده اختیارها و انتساب‌ها | `GET /api/v1/authorities*`، `GET /api/v1/posts/{id}/authorities` | نشان چارت / جزئیات پست |
+| `OrganizationStructure.Authority.Create` | تعریف اختیار | `POST /api/v1/authorities` | فرم اختیار |
+| `OrganizationStructure.Authority.Update` | ویرایش اختیار | `PUT /api/v1/authorities/{id}` | فرم ویرایش |
+| `OrganizationStructure.Authority.Disable` | غیرفعال اختیار | `PATCH /api/v1/authorities/{id}/disable` | عملیات ردیف |
+| `OrganizationStructure.Authority.Assign` | انتساب اختیار به پست | `POST /api/v1/authorities/assignments` | دیالوگ انتساب |
+| `OrganizationStructure.Authority.EndAssignment` | پایان انتساب اختیار | `POST /api/v1/authorities/assignments/{id}/end` | عملیات پایان |
+
+> `Authority.SigningAuthority` قبلی با مدل Assignment جایگزین شد (انتساب اختیار `SIGNING_AUTHORITY`).
+
+## Responsibility (۶ مورد — جدید، ADR-011)
+
+| Permission | قابلیت / Use Case | API | UI |
+|---|---|---|---|
+| `OrganizationStructure.Responsibility.View` | مشاهده مسئولیت‌ها و انتساب‌ها | `GET /api/v1/responsibilities*`، `GET /api/v1/posts/{id}/responsibilities` | فهرست / جزئیات پست |
+| `OrganizationStructure.Responsibility.Create` | تعریف مسئولیت | `POST /api/v1/responsibilities` | فرم مسئولیت |
+| `OrganizationStructure.Responsibility.Update` | ویرایش مسئولیت | `PUT /api/v1/responsibilities/{id}` | فرم ویرایش |
+| `OrganizationStructure.Responsibility.Disable` | غیرفعال مسئولیت | `PATCH /api/v1/responsibilities/{id}/disable` | عملیات ردیف |
+| `OrganizationStructure.Responsibility.Assign` | انتساب مسئولیت به پست | `POST /api/v1/responsibilities/assignments` | دیالوگ انتساب |
+| `OrganizationStructure.Responsibility.EndAssignment` | پایان انتساب مسئولیت | `POST /api/v1/responsibilities/assignments/{id}/end` | عملیات پایان |
 
 ---
 

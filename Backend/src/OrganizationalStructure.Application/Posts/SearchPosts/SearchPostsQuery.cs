@@ -17,4 +17,4 @@ public sealed record SearchPostsQuery(
     string? SearchTerm,
     bool? IsActive,
     int Page,
-    int PageSize) : IRequest<Result<PagedResult<PostDto>>>;
+    int PageSize) : IRequest<Result<PagedResult<PostSummaryDto>>>;

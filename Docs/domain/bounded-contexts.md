@@ -1,6 +1,6 @@
 # Bounded Contexts
 
-**آخرین به‌روزرسانی:** `2026-09-14`
+**آخرین به‌روزرسانی:** `2026-09-15`
 
 ---
 
@@ -21,29 +21,37 @@
 - **رابطه:** `UserId` به IAM Reference (اختیاری در صورت وجود حساب).
 - **پشتیبانی از Import** (CSV/Excel/Staging) در سطح سرویس.
 
-## BC-3 — Authority & Responsibility
+## BC-3 — Responsibility (مسئولیت عملیاتی)
 
-مسئولیت سازمانی و اختیار امضا روی پست‌ها.
+مسئولیت‌های عملیاتی/وظیفه‌ای برای Business Routing و Automation.
 
-- **Aggregate Root:** `Post` (با مؤلفه‌های تکمیلی)
-- **مسئولیت:** تعریف آنکه یک Post آیا صاحب امضا/مسئولیت است، نمایش متمایز در چارت، ارائه قابل استعلام از طریق API.
-- **اصل:** اطلاعات معتبر Domain است، نه صرفاً UI.
+- **Aggregate Root:** `Responsibility` (با `PostResponsibilityAssignment` به‌عنوان عضو)
+- **مسئولیت:** تعریف مسئولیت با Code، انتساب Code-based به Post در Scope سازمانی، چرخه حیات تاریخ‌دار.
+- **اصل:** Responsibility یک IAM Role نیست و جایگزین Post نمی‌شود (ADR-011).
 
-## BC-4 — Access & Visibility
+## BC-4 — Authority (اختیار سازمانی)
+
+اختیارهای سازمانی/امضایی پست‌ها.
+
+- **Aggregate Root:** `Authority` (با `PostAuthorityAssignment` به‌عنوان عضو)
+- **مسئولیت:** تعریف اختیار با Code، انتساب به Post، نمایش متمایز صاحب‌امضا در چارت.
+- **اصل:** از Responsibility جداست و به Signing محدود نیست (ADR-011).
+
+## BC-5 — Access & Visibility
 
 کنترل دسترسی مبتنی بر Role/Permission/Organization Scope.
 
 - **مسئولیت:** Map کردن Claimهای IAM به Policy داخلی، اعمال Organization Scope، قواعد Visibility (ستاد/استان/منطقه + مشاهده سلسله‌مراتبی).
 - **اصل کلیدی:** رابطه سازمانی کاربر به‌تنهایی مجوز نیست.
 
-## BC-5 — Import (MVP Secondary)
+## BC-6 — Import (MVP Secondary)
 
 ورود اطلاعات پرسنلی از CSV، Excel و جدول واسط.
 
 - **مسئولیت:** Batch بندی، اعتبارسنجی، مدیریت خطا و Duplicate، Audit.
 - **دسترسی:** فقط نقش‌های مجاز ستادی.
 
-## BC-6 — Integration API (سرویس‌دهی)
+## BC-7 — Integration API (سرویس‌دهی)
 
 ارائه اطلاعات معتبر به سامانه‌های مصرف‌کننده.
 

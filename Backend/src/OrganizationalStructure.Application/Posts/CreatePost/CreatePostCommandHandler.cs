@@ -69,7 +69,6 @@ public sealed class CreatePostCommandHandler : IRequestHandler<CreatePostCommand
             request.Title,
             request.Description,
             request.ParentId,
-            request.HasSigningAuthority,
             _clock.UtcNow);
 
         _db.Posts.Add(post);

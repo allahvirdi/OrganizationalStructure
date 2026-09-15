@@ -1,16 +1,10 @@
+using OrganizationalStructure.Application.Authorities.DTOs;
+using OrganizationalStructure.Application.Responsibilities.DTOs;
+
 namespace OrganizationalStructure.Application.Posts.DTOs;
 
 /// <summary>
-/// نمایشی از مسئولیت پست برای انتقال داده.
-/// </summary>
-/// <param name="Title">عنوان مسئولیت</param>
-/// <param name="Description">شرح مسئولیت</param>
-public sealed record ResponsibilityDto(
-    string Title,
-    string? Description);
-
-/// <summary>
-/// DTO پست سازمانی.
+/// DTO تفصیلی پست سازمانی (همراه انتساب‌های جاری مسئولیت و اختیار).
 /// </summary>
 public sealed record PostDto
 {
@@ -45,15 +39,58 @@ public sealed record PostDto
     public Guid? ParentId { get; init; }
 
     /// <summary>
-    /// آیا صاحب امضا است؟
+    /// آیا فعال است؟
+    /// </summary>
+    public bool IsActive { get; init; }
+
+    /// <summary>
+    /// آیا پست در حال حاضر صاحب‌امضا است؟
+    /// (انتساب جاری به اختیار با کد پیشنهادی SIGNING_AUTHORITY)
     /// </summary>
     public bool HasSigningAuthority { get; init; }
 
     /// <summary>
-    /// مسئولیت‌ها.
+    /// انتساب‌های جاری مسئولیت.
     /// </summary>
-    public IReadOnlyList<ResponsibilityDto> Responsibilities { get; init; } =
-        Array.Empty<ResponsibilityDto>();
+    public IReadOnlyList<ResponsibilityAssignmentDto> Responsibilities { get; init; } =
+        Array.Empty<ResponsibilityAssignmentDto>();
+
+    /// <summary>
+    /// انتساب‌های جاری اختیار.
+    /// </summary>
+    public IReadOnlyList<AuthorityAssignmentDto> Authorities { get; init; } =
+        Array.Empty<AuthorityAssignmentDto>();
+}
+
+/// <summary>
+/// DTO خلاصه پست (فهرست‌ها و جستجو — بدون انتساب‌ها).
+/// </summary>
+public sealed record PostSummaryDto
+{
+    /// <summary>
+    /// شناسه پست.
+    /// </summary>
+    public Guid Id { get; init; }
+
+    /// <summary>
+    /// شناسه سازمان (مرجع IAM).
+    /// </summary>
+    public Guid OrganizationId { get; init; }
+
+    /// <summary>
+    /// کد پست.
+    /// </summary>
+    public string Code { get; init; } = string.Empty;
+
+    /// <summary>
+    /// عنوان پست.
+    /// </summary>
+    public string Title { get; init; } = string.Empty;
+
+    /// <summary>
+    /// شناسه والد مستقیم.
+    /// </summary>
+    public Guid? ParentId { get; init; }
 
     /// <summary>
     /// آیا فعال است؟
@@ -82,7 +119,7 @@ public sealed record PostTreeDto
     public string Title { get; init; } = string.Empty;
 
     /// <summary>
-    /// آیا صاحب امضا است؟
+    /// آیا پست در حال حاضر صاحب‌امضا است؟
     /// </summary>
     public bool HasSigningAuthority { get; init; }
 

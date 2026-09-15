@@ -1,7 +1,7 @@
 # ERD — مدل داده سامانه ساختار سازمانی
 
-**آخرین به‌روزرسانی:** `2026-09-14`
-**وضعیت:** طراحی Phase 2 — پیاده‌سازی EF در Phase 3
+**آخرین به‌روزرسانی:** `2026-09-15`
+**وضعیت:** منجمد Phase 2 + اصلاحیه ADR-011 (تفکیک Responsibility/Authority) — پیاده‌سازی EF در Phase 3
 
 > قراردادها: Multi-tenancy با `TenantId` (ADR-005)، Audit/Soft Delete روی جداول اصلی، PII با Always Encrypted (ADR-006)، بدون FK فیزیکی به IAM (ADR-002).
 
@@ -23,23 +23,32 @@
 │  Code (UQ/Org)   │         │  PersonnelCode   │
 │  Title           │         │  FirstName (PII) │
 │  ParentId (FK)   │         │  LastName (PII)  │
-│  SigningAuth     │         │  NationalCode    │
-│  IsActive        │         │  Mobile (PII)    │
-└────────┬─────────┘         └────────┬─────────┘
-         │                            │
-         │  PostId                    │  EmployeeId
-         │                            │
-         └────────────┬───────────────┘
-                      ▼
-         ┌──────────────────────────┐
-         │ EmployeePostAssignment   │
-         │  ──────────────────────  │
-         │  EmployeeId (FK)         │
-         │  PostId (FK, بدون ناوبری)│
-         │  FromDate / ToDate       │
-         │  IsPrimary               │
-         └──────────────────────────┘
+│  IsActive        │         │  NationalCode    │
+└────────┬─────────┘         │  Mobile (PII)    │
+         │                   └────────┬─────────┘
+         │  ┌────────────────┐        │ EmployeeId
+         │  │ Responsibility │        ▼
+         │  │  Code (UQ)     │  EmployeePostAssignment
+         │  └───────┬────────┘  (EmployeeId/PostId/From/To/Primary)
+         │          │ Assignment
+         │          ▼
+         │  PostResponsibilityAssignment
+         │  (OrgId/PostId/RespId/Start/End/Active)
+         │
+         │  ┌────────────────┐
+         │  │ Authority      │
+         │  │  Code (UQ)     │
+         │  └───────┬────────┘
+         │          │ Assignment
+         │          ▼
+         │  PostAuthorityAssignment
+         │  (OrgId/PostId/AuthId/Start/End/Active)
+         │
+         └──── (PostId FK) ──┘
 ```
+
+> تفکیک ADR-011: مسئولیت و اختیار موجودیت مستقل با Assignment تاریخ‌دارند؛
+> `Posts.HasSigningAuthority` و جدول `PostResponsibilities` حذف شدند.
 
 ## ۲. ERD منطقی (جدول‌ها)
 
@@ -53,7 +62,6 @@
 | Title | nvarchar(200) NOT NULL | |
 | Description | nvarchar(1000) NULL | |
 | ParentId | uniqueidentifier NULL, FK→Posts.Id | ایندکس |
-| HasSigningAuthority | bit NOT NULL DEFAULT 0 | |
 | IsActive | bit NOT NULL DEFAULT 1 | |
 | CreatedAt/CreatedById/UpdatedAt/UpdatedById | audit | |
 | IsDeleted/DeletedAt/DeletedById | soft delete | |
@@ -61,7 +69,56 @@
 
 - ایندکس یکتا: `(TenantId, OrganizationId, Code)` — فیلتر `IsDeleted = 0` در صورت پشتیبانی
 - ایندکس: `(TenantId, ParentId)` برای پیمایش درخت
-- Responsibilities به‌صورت Owned Collection (جدول `PostResponsibilities`: PostId FK + Title + Description)
+
+### Responsibilities
+| ستون | نوع | توضیح |
+|------|-----|-------|
+| Id | uniqueidentifier PK | |
+| TenantId | uniqueidentifier NOT NULL | ایندکس ترکیبی |
+| Code | nvarchar(100) NOT NULL | یکتا درون TenantId؛ Business Routing Key |
+| Title | nvarchar(200) NOT NULL | |
+| Description | nvarchar(1000) NULL | |
+| IsActive | bit NOT NULL DEFAULT 1 | |
+| Audit/SoftDelete/Version | استاندارد | |
+
+### PostResponsibilityAssignments
+| ستون | نوع | توضیح |
+|------|-----|-------|
+| Id | uniqueidentifier PK | |
+| TenantId | uniqueidentifier NOT NULL | |
+| ResponsibilityId | uniqueidentifier NOT NULL, FK→Responsibilities.Id | ایندکس |
+| OrganizationId | uniqueidentifier NOT NULL | Scope؛ مرجع IAM؛ ایندکس |
+| PostId | uniqueidentifier NOT NULL, FK→Posts.Id | ایندکس (بدون ناوبری در دامنه) |
+| StartDate/EndDate | date NULL | |
+| IsActive | bit NOT NULL DEFAULT 1 | پایان ≠ حذف |
+| Audit/SoftDelete | استاندارد | |
+
+- ایندکس یکتا: `(TenantId, PostId, ResponsibilityId)` با فیلتر `IsActive = 1 AND IsDeleted = 0`
+
+### Authorities
+| ستون | نوع | توضیح |
+|------|-----|-------|
+| Id | uniqueidentifier PK | |
+| TenantId | uniqueidentifier NOT NULL | ایندکس ترکیبی |
+| Code | nvarchar(100) NOT NULL | یکتا درون TenantId |
+| Title | nvarchar(200) NOT NULL | |
+| Description | nvarchar(1000) NULL | |
+| IsActive | bit NOT NULL DEFAULT 1 | |
+| Audit/SoftDelete/Version | استاندارد | |
+
+### PostAuthorityAssignments
+| ستون | نوع | توضیح |
+|------|-----|-------|
+| Id | uniqueidentifier PK | |
+| TenantId | uniqueidentifier NOT NULL | |
+| AuthorityId | uniqueidentifier NOT NULL, FK→Authorities.Id | ایندکس |
+| OrganizationId | uniqueidentifier NOT NULL | Scope؛ مرجع IAM؛ ایندکس |
+| PostId | uniqueidentifier NOT NULL, FK→Posts.Id | ایندکس (بدون ناوبری در دامنه) |
+| StartDate/EndDate | date NULL | |
+| IsActive | bit NOT NULL DEFAULT 1 | پایان ≠ حذف |
+| Audit/SoftDelete | استاندارد | |
+
+- ایندکس یکتا: `(TenantId, PostId, AuthorityId)` با فیلتر `IsActive = 1 AND IsDeleted = 0`
 
 ### Employees
 | ستون | نوع | توضیح |
@@ -97,8 +154,9 @@
 
 ## ۳. یادداشت‌های پیاده‌سازی (Phase 3)
 
-1. پیکربندی EF: `IEntityTypeConfiguration` به‌ازای هر Aggregate + Owned برای Responsibilities.
+1. پیکربندی EF: `IEntityTypeConfiguration` به‌ازای هر Aggregate.
 2. Global Query Filters از Phase 1 اعمال است (`TenantId` + `IsDeleted`).
 3. رمزنگاری PII در Phase 3 (ستون + هش جستجو برای Deterministic).
 4. Migration اولیه پس از تأیید ERD در همین فاز/فاز ۳.
 5. هیچ FK به جداول IAM ساخته نمی‌شود (فقط ستون Reference + ایندکس).
+6. اصلاحیه ADR-011: جداول `Responsibilities`/`PostResponsibilityAssignments`/`Authorities`/`PostAuthorityAssignments`؛ حذف `PostResponsibilities` و `Posts.HasSigningAuthority`.

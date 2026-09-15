@@ -8,4 +8,4 @@ namespace OrganizationalStructure.Application.Posts.GetPostChildren;
 /// پرس‌وجوی دریافت فرزندان مستقیم یک پست.
 /// </summary>
 /// <param name="PostId">شناسه پست والد</param>
-public sealed record GetPostChildrenQuery(Guid PostId) : IRequest<Result<IReadOnlyList<PostDto>>>;
+public sealed record GetPostChildrenQuery(Guid PostId) : IRequest<Result<IReadOnlyList<PostSummaryDto>>>;

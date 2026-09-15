@@ -29,7 +29,7 @@ public sealed class CreatePostTests
         var organizationId = Guid.NewGuid();
 
         var result = await handler.Handle(
-            new CreatePostCommand(organizationId, "MGR-001", "مدیر", null, null, false),
+            new CreatePostCommand(organizationId, "MGR-001", "مدیر", null, null),
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -47,11 +47,11 @@ public sealed class CreatePostTests
         var organizationId = Guid.NewGuid();
 
         await handler.Handle(
-            new CreatePostCommand(organizationId, "MGR-001", "مدیر", null, null, false),
+            new CreatePostCommand(organizationId, "MGR-001", "مدیر", null, null),
             CancellationToken.None);
 
         var result = await handler.Handle(
-            new CreatePostCommand(organizationId, "MGR-001", "مدیر دوم", null, null, false),
+            new CreatePostCommand(organizationId, "MGR-001", "مدیر دوم", null, null),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -68,7 +68,7 @@ public sealed class CreatePostTests
         var handler = new CreatePostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
-            new CreatePostCommand(Guid.NewGuid(), "MGR-001", "مدیر", null, Guid.NewGuid(), false),
+            new CreatePostCommand(Guid.NewGuid(), "MGR-001", "مدیر", null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -85,12 +85,12 @@ public sealed class CreatePostTests
         var handler = new CreatePostCommandHandler(db, clock, user);
 
         var parentResult = await handler.Handle(
-            new CreatePostCommand(Guid.NewGuid(), "PAR-001", "والد", null, null, false),
+            new CreatePostCommand(Guid.NewGuid(), "PAR-001", "والد", null, null),
             CancellationToken.None);
         parentResult.IsSuccess.Should().BeTrue();
 
         var result = await handler.Handle(
-            new CreatePostCommand(Guid.NewGuid(), "CHD-001", "فرزند", null, parentResult.Value, false),
+            new CreatePostCommand(Guid.NewGuid(), "CHD-001", "فرزند", null, parentResult.Value),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -106,7 +106,7 @@ public sealed class CreatePostTests
         var validator = new CreatePostCommandValidator();
 
         var result = validator.Validate(
-            new CreatePostCommand(Guid.NewGuid(), string.Empty, string.Empty, null, null, false));
+            new CreatePostCommand(Guid.NewGuid(), string.Empty, string.Empty, null, null));
 
         result.IsValid.Should().BeFalse();
     }

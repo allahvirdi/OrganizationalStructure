@@ -11,11 +11,9 @@ namespace OrganizationalStructure.Application.Posts.CreatePost;
 /// <param name="Title">عنوان پست</param>
 /// <param name="Description">شرح اختیاری</param>
 /// <param name="ParentId">شناسه والد مستقیم (خالی یعنی ریشه)</param>
-/// <param name="HasSigningAuthority">صاحب‌امضا بودن اولیه</param>
 public sealed record CreatePostCommand(
     Guid OrganizationId,
     string Code,
     string Title,
     string? Description,
-    Guid? ParentId,
-    bool HasSigningAuthority) : IRequest<Result<Guid>>;
+    Guid? ParentId) : IRequest<Result<Guid>>;

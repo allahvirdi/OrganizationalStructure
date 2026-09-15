@@ -9,7 +9,7 @@
 
 ## مدل‌ها
 
-### PostDto (Response)
+### PostDto (Response — تفصیلی)
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -18,8 +18,23 @@
   "title": "مدیر اداره",
   "description": null,
   "parentId": null,
+  "isActive": true,
   "hasSigningAuthority": true,
-  "responsibilities": [{ "title": "تأیید مرخصی", "description": null }],
+  "responsibilities": [{ "id": "...", "responsibilityCode": "SECRETARIAT", "...": "انتساب جاری" }],
+  "authorities": [{ "id": "...", "authorityCode": "SIGNING_AUTHORITY", "...": "انتساب جاری" }]
+}
+```
+
+> `hasSigningAuthority` از انتساب جاری به اختیار `SIGNING_AUTHORITY` محاسبه می‌شود (ADR-011).
+
+### PostSummaryDto (Response — فهرست/جستجو)
+```json
+{
+  "id": "...",
+  "organizationId": "...",
+  "code": "MGR-001",
+  "title": "مدیر اداره",
+  "parentId": null,
   "isActive": true
 }
 ```
@@ -96,20 +111,7 @@ Request: `{ "isActive": false }`
 - موفق: `204 No Content`
 - ناموفق: `400` / `404`
 
-### تعیین صاحب‌امضا — `PATCH /api/v1/posts/{id}/signing-authority`
-Request: `{ "hasSigningAuthority": true }`
-- موفق: `204 No Content`
-- ناموفق: `400` / `404`
-
-### افزودن مسئولیت — `POST /api/v1/posts/{id}/responsibilities`
-Request: `{ "title": "تأیید مرخصی", "description": null }`
-- موفق: `204 No Content`
-- ناموفق: `400` / `404`
-
-### حذف مسئولیت — `DELETE /api/v1/posts/{id}/responsibilities`
-Request body: `{ "title": "تأیید مرخصی" }`
-- موفق: `204 No Content`
-- ناموفق: `400` / `404`
+> **تغییر Breaking (ADR-011, DEC-024):** Endpointهای `PATCH .../signing-authority` و `POST/DELETE .../responsibilities` (title-based) حذف شدند و با مدل Assignment جایگزین شدند — مراجعه به `responsibilities.md` و `authorities.md`. هیچ Consumer خارجی نداشتند.
 
 ### دریافت پست — `GET /api/v1/posts/{id}`
 - موفق: `200` + PostDto
