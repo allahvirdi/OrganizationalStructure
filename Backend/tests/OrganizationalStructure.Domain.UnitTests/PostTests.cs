@@ -25,7 +25,6 @@ public sealed class PostTests
             "مدیر اداره",
             null,
             parentId,
-            false,
             OccurredOn);
     }
 
@@ -39,7 +38,7 @@ public sealed class PostTests
         var tenantId = Guid.NewGuid();
         var organizationId = Guid.NewGuid();
 
-        var post = Post.Create(id, tenantId, organizationId, "P-001", "مدیر", null, null, false, OccurredOn);
+        var post = Post.Create(id, tenantId, organizationId, "P-001", "مدیر", null, null, OccurredOn);
 
         post.Id.Should().Be(id);
         post.TenantId.Should().Be(tenantId);
@@ -57,7 +56,7 @@ public sealed class PostTests
         var id = Guid.NewGuid();
 
         var act = () => Post.Create(id, Guid.NewGuid(), Guid.NewGuid(),
-            "P-001", "مدیر", null, id, false, OccurredOn);
+            "P-001", "مدیر", null, id, OccurredOn);
 
         act.Should().Throw<ArgumentException>();
     }
@@ -136,36 +135,5 @@ public sealed class PostTests
         post.Activate(OccurredOn);
 
         post.DomainEvents.Should().BeEmpty();
-    }
-
-    /// <summary>
-    /// تغییر وضعیت صاحب‌امضا باید رویداد SigningAuthorityChanged منتشر کند.
-    /// </summary>
-    [Fact]
-    public void SetSigningAuthority_Changed_ShouldRaiseEvent()
-    {
-        var post = CreateValidPost();
-        post.ClearDomainEvents();
-
-        post.SetSigningAuthority(true, OccurredOn);
-
-        post.HasSigningAuthority.Should().BeTrue();
-        post.DomainEvents.OfType<SigningAuthorityChanged>().Should().ContainSingle();
-    }
-
-    /// <summary>
-    /// افزودن مسئولیت تکراری نباید دوباره اضافه شود.
-    /// </summary>
-    [Fact]
-    public void AddResponsibility_DuplicateTitle_ShouldNotDuplicate()
-    {
-        var post = CreateValidPost();
-        var responsibility = new ValueObjects.Responsibility("تأیید مرخصی");
-        post.ClearDomainEvents();
-
-        post.AddResponsibility(responsibility, OccurredOn);
-        post.AddResponsibility(new ValueObjects.Responsibility("تأیید مرخصی"), OccurredOn);
-
-        post.Responsibilities.Should().ContainSingle();
     }
 }

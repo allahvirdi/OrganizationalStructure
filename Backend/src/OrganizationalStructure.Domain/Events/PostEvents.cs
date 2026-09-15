@@ -57,22 +57,3 @@ public sealed record PostDeactivated(
     Guid PostId,
     DateTimeOffset OccurredOn) : IDomainEvent;
 
-/// <summary>
-/// رویداد دامنه: وضعیت صاحب‌امضا بودن پست تغییر کرد.
-/// </summary>
-/// <param name="PostId">شناسه پست</param>
-/// <param name="HasSigningAuthority">وضعیت جدید صاحب‌امضا بودن</param>
-/// <param name="OccurredOn">زمان وقوع</param>
-public sealed record SigningAuthorityChanged(
-    Guid PostId,
-    bool HasSigningAuthority,
-    DateTimeOffset OccurredOn) : IDomainEvent;
-
-/// <summary>
-/// رویداد دامنه: مجموعه مسئولیت‌های پست تغییر کرد.
-/// </summary>
-/// <param name="PostId">شناسه پست</param>
-/// <param name="OccurredOn">زمان وقوع</param>
-public sealed record PostResponsibilitiesChanged(
-    Guid PostId,
-    DateTimeOffset OccurredOn) : IDomainEvent;

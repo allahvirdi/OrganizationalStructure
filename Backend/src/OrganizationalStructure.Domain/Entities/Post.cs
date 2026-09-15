@@ -1,11 +1,10 @@
 using OrganizationalStructure.Domain.Common;
 using OrganizationalStructure.Domain.Events;
-using OrganizationalStructure.Domain.ValueObjects;
 
 namespace OrganizationalStructure.Domain.Entities;
 
 /// <summary>
-/// Aggregate Root پست سازمانی — یک گره در درخت ساختار سازمانی.
+/// Aggregate Root پست سازمانی — یک گره در درخت ساختار سازمانی و جایگاه فرد در ساختار.
 /// </summary>
 /// <remarks>
 /// قواعد دامنه‌ای:
@@ -14,13 +13,13 @@ namespace OrganizationalStructure.Domain.Entities;
 /// <item>هر Post حداکثر یک والد مستقیم (<c>ParentId</c>) و صفر یا چند فرزند مستقیم دارد.</item>
 /// <item>پست نمی‌تواند والد خودش باشد؛ جلوگیری از چرخه‌های چندسطحی در لایه کاربرد (با دسترسی به درخت) انجام می‌شود.</item>
 /// <item>جابجایی بین Organizationها ممنوع است (ADR-004).</item>
+/// <item>مسئولیت و اختیار، مفاهیم مستقل‌اند و از طریق Assignment به Post متصل می‌شوند، نه به‌صورت فیلد (ADR-011).</item>
 /// <item>غیرفعال‌سازی به معنی حذف تاریخی نیست.</item>
 /// </list>
 /// </remarks>
 public sealed class Post : FullAuditableEntity
 {
     private readonly List<Post> _children = new();
-    private readonly List<Responsibility> _responsibilities = new();
 
     /// <summary>
     /// سازنده موردنیاز EF Core.
@@ -65,16 +64,6 @@ public sealed class Post : FullAuditableEntity
     public IReadOnlyCollection<Post> Children => _children.AsReadOnly();
 
     /// <summary>
-    /// آیا این پست صاحب امضا است؟
-    /// </summary>
-    public bool HasSigningAuthority { get; private set; }
-
-    /// <summary>
-    /// مسئولیت‌های ویژه این پست.
-    /// </summary>
-    public IReadOnlyCollection<Responsibility> Responsibilities => _responsibilities.AsReadOnly();
-
-    /// <summary>
     /// آیا پست فعال است؟
     /// </summary>
     public bool IsActive { get; private set; } = true;
@@ -89,7 +78,6 @@ public sealed class Post : FullAuditableEntity
     /// <param name="title">عنوان پست</param>
     /// <param name="description">شرح اختیاری</param>
     /// <param name="parentId">شناسه والد مستقیم (خالی یعنی ریشه)</param>
-    /// <param name="hasSigningAuthority">صاحب‌امضا بودن اولیه</param>
     /// <param name="occurredOn">زمان وقوع (از ساعت تزریقی لایه کاربرد)</param>
     /// <returns>پست ایجادشده</returns>
     /// <exception cref="ArgumentException">در صورت نامعتبر بودن ورودی‌ها یا خودارجاعی والد</exception>
@@ -101,7 +89,6 @@ public sealed class Post : FullAuditableEntity
         string title,
         string? description,
         Guid? parentId,
-        bool hasSigningAuthority,
         DateTimeOffset occurredOn)
     {
         if (id == Guid.Empty)
@@ -143,7 +130,6 @@ public sealed class Post : FullAuditableEntity
             Title = title.Trim(),
             Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
             ParentId = parentId,
-            HasSigningAuthority = hasSigningAuthority,
             IsActive = true
         };
 
@@ -225,58 +211,6 @@ public sealed class Post : FullAuditableEntity
         var oldParentId = ParentId;
         ParentId = parentId;
         AddDomainEvent(new PostMoved(Id, oldParentId, parentId, occurredOn));
-    }
-
-    /// <summary>
-    /// تعیین وضعیت صاحب‌امضا بودن پست.
-    /// </summary>
-    /// <param name="hasSigningAuthority">وضعیت جدید</param>
-    /// <param name="occurredOn">زمان وقوع</param>
-    public void SetSigningAuthority(bool hasSigningAuthority, DateTimeOffset occurredOn)
-    {
-        if (HasSigningAuthority == hasSigningAuthority)
-        {
-            return;
-        }
-
-        HasSigningAuthority = hasSigningAuthority;
-        AddDomainEvent(new SigningAuthorityChanged(Id, hasSigningAuthority, occurredOn));
-    }
-
-    /// <summary>
-    /// افزودن مسئولیت به پست (در صورت تکراری نبودن عنوان).
-    /// </summary>
-    /// <param name="responsibility">مسئولیت</param>
-    /// <param name="occurredOn">زمان وقوع</param>
-    public void AddResponsibility(Responsibility responsibility, DateTimeOffset occurredOn)
-    {
-        if (_responsibilities.Any(r =>
-                string.Equals(r.Title, responsibility.Title, StringComparison.OrdinalIgnoreCase)))
-        {
-            return;
-        }
-
-        _responsibilities.Add(responsibility);
-        AddDomainEvent(new PostResponsibilitiesChanged(Id, occurredOn));
-    }
-
-    /// <summary>
-    /// حذف مسئولیت از پست بر اساس عنوان.
-    /// </summary>
-    /// <param name="title">عنوان مسئولیت</param>
-    /// <param name="occurredOn">زمان وقوع</param>
-    public void RemoveResponsibility(string title, DateTimeOffset occurredOn)
-    {
-        var existing = _responsibilities.FirstOrDefault(r =>
-            string.Equals(r.Title, title.Trim(), StringComparison.OrdinalIgnoreCase));
-
-        if (existing is null)
-        {
-            return;
-        }
-
-        _responsibilities.Remove(existing);
-        AddDomainEvent(new PostResponsibilitiesChanged(Id, occurredOn));
     }
 
     /// <summary>

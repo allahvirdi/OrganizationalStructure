@@ -34,7 +34,6 @@ public sealed class PostConfiguration : IEntityTypeConfiguration<Post>
             .HasForeignKey(p => p.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(p => p.HasSigningAuthority).IsRequired();
         builder.Property(p => p.IsActive).IsRequired();
 
         builder.Property(p => p.Version).IsRowVersion();
@@ -43,13 +42,5 @@ public sealed class PostConfiguration : IEntityTypeConfiguration<Post>
             .IsUnique();
 
         builder.HasIndex(p => new { p.TenantId, p.ParentId });
-
-        builder.OwnsMany(p => p.Responsibilities, owned =>
-        {
-            owned.ToTable("PostResponsibilities");
-            owned.WithOwner().HasForeignKey("PostId");
-            owned.Property(r => r.Title).IsRequired().HasMaxLength(200);
-            owned.Property(r => r.Description).HasMaxLength(1000);
-        });
     }
 }

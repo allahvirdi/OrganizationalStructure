@@ -34,6 +34,20 @@ public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
     /// <inheritdoc />
     public DbSet<EmployeePostAssignment> Assignments => Set<EmployeePostAssignment>();
 
+    /// <inheritdoc />
+    public DbSet<Responsibility> Responsibilities => Set<Responsibility>();
+
+    /// <inheritdoc />
+    public DbSet<PostResponsibilityAssignment> ResponsibilityAssignments =>
+        Set<PostResponsibilityAssignment>();
+
+    /// <inheritdoc />
+    public DbSet<Authority> Authorities => Set<Authority>();
+
+    /// <inheritdoc />
+    public DbSet<PostAuthorityAssignment> AuthorityAssignments =>
+        Set<PostAuthorityAssignment>();
+
     /// <summary>
     /// ساخت نمونه‌ی DbContext.
     /// </summary>
