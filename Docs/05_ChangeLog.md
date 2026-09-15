@@ -24,6 +24,17 @@
 
 ---
 
+## [2026-09-15] - Session-20260915-Phase3-Close / Phase 3 (بستن فاز)
+### Added
+- بستن Phase 3: همه Sliceها کامل (پست/پرسنل/مسئولیت/اختیار) + ۸۹ تست سبز + قراردادهای API
+- `Docs/SessionReports/Session-20260915-Phase3.md`
+
+### Changed
+-
+
+### Decisions / ADRs
+- بدون تصمیم جدید؛ اتکا به DEC-001..024 و ADR-001..011
+
 ## [2026-09-15] - Responsibility/Authority Separation / Phase 3 (توسعه مدل)
 ### Added
 - Aggregateهای `Responsibility` و `Authority` + Assignmentهای تاریخ‌دار (`PostResponsibilityAssignment`/`PostAuthorityAssignment`)
