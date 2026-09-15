@@ -43,12 +43,14 @@ public sealed class AssignPostCommandHandler : IRequestHandler<AssignPostCommand
 
         try
         {
-            employee.AssignToPost(
+            var assignment = employee.AssignToPost(
                 request.PostId,
                 request.FromDate,
                 request.ToDate,
                 request.IsPrimary,
                 _clock.UtcNow);
+
+            _db.Assignments.Add(assignment);
         }
         catch (InvalidOperationException ex)
         {

@@ -316,9 +316,10 @@ public sealed class Employee : FullAuditableEntity
     /// <param name="toDate">تاریخ پایان (اختیاری؛ خالی یعنی جاری)</param>
     /// <param name="isPrimary">آیا انتساب اصلی است؟</param>
     /// <param name="occurredOn">زمان وقوع</param>
+    /// <returns>انتساب ایجادشده (برای ثبت صریح در persistence)</returns>
     /// <exception cref="ArgumentException">در صورت نامعتبر بودن ورودی‌ها</exception>
     /// <exception cref="InvalidOperationException">در صورت انتساب فعال تکراری یا اصلیِ دوم</exception>
-    public void AssignToPost(
+    public EmployeePostAssignment AssignToPost(
         Guid postId,
         DateOnly? fromDate,
         DateOnly? toDate,
@@ -349,6 +350,7 @@ public sealed class Employee : FullAuditableEntity
         assignment.TenantId = TenantId;
         _assignments.Add(assignment);
         AddDomainEvent(new EmployeeAssignedToPost(Id, postId, isPrimary, occurredOn));
+        return assignment;
     }
 
     /// <summary>

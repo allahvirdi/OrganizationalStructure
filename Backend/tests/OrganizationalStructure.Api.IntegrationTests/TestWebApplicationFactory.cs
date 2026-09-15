@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Infrastructure.Persistence;
+using OrganizationalStructure.Infrastructure.Security;
 
 namespace OrganizationalStructure.Api.IntegrationTests;
 
@@ -50,17 +50,43 @@ public sealed class TestWebApplicationFactory
     /// <inheritdoc />
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((_, config) =>
-        {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:OrganizationalStructureDb"] = ConnectionString
-            });
-        });
-
         builder.ConfigureTestServices(services =>
         {
             services.AddScoped<ICurrentUser, TestCurrentUser>();
+
+            // محافظ PII تست‌-only با کلید ثابت (هرگز در Production استفاده نمی‌شود)
+            services.AddSingleton<IPiiProtector>(_ => new AesPiiProtector(
+                Microsoft.Extensions.Options.Options.Create(new PiiEncryptionOptions
+                {
+                    Key = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+                })));
+
+            // بازنویسی مستقیم اتصال DbContext به دیتابیس ایزوله تست.
+            // (override پیکربندی به‌تنهایی برای رشته اتصال اعمال نشد؛ این روش قطعی است)
+            var optionsDescriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(DbContextOptions<OrganizationalStructureDbContext>));
+            if (optionsDescriptor is not null)
+            {
+                services.Remove(optionsDescriptor);
+            }
+
+            var contextDescriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(OrganizationalStructureDbContext));
+            if (contextDescriptor is not null)
+            {
+                services.Remove(contextDescriptor);
+            }
+
+            services.AddDbContext<OrganizationalStructureDbContext>((sp, options) =>
+            {
+                options.UseSqlServer(
+                    ConnectionString,
+                    sql => sql.MigrationsAssembly(
+                        typeof(OrganizationalStructureDbContext).Assembly.FullName));
+                options.AddInterceptors(new AuditSaveChangesInterceptor(
+                    sp.GetRequiredService<IClock>(),
+                    sp.GetRequiredService<ICurrentUser>()));
+            });
         });
     }
 }
