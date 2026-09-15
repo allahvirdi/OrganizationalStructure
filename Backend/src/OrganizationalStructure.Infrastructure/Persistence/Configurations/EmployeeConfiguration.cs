@@ -29,11 +29,11 @@ public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasMaxLength(8)
             .IsFixedLength();
 
-        builder.Property(e => e.FirstName).IsRequired().HasMaxLength(200);
-        builder.Property(e => e.LastName).IsRequired().HasMaxLength(200);
-        builder.Property(e => e.NationalCode).IsRequired().HasMaxLength(20);
-        builder.Property(e => e.Mobile).HasMaxLength(20);
-        builder.Property(e => e.PezhvakMobile).HasMaxLength(20);
+        builder.Property(e => e.FirstName).IsRequired().HasMaxLength(512);
+        builder.Property(e => e.LastName).IsRequired().HasMaxLength(512);
+        builder.Property(e => e.NationalCode).IsRequired().HasMaxLength(512);
+        builder.Property(e => e.Mobile).HasMaxLength(512);
+        builder.Property(e => e.PezhvakMobile).HasMaxLength(512);
 
         builder.Property(e => e.IsActive).IsRequired();
 

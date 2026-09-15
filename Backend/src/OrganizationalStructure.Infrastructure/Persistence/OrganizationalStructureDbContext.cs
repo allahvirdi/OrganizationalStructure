@@ -1,8 +1,10 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Domain.Common;
+using OrganizationalStructure.Domain.Encryption;
 using OrganizationalStructure.Domain.Entities;
 
 namespace OrganizationalStructure.Infrastructure.Persistence;
@@ -21,6 +23,7 @@ namespace OrganizationalStructure.Infrastructure.Persistence;
 public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
 {
     private readonly ITenantContext _tenantContext;
+    private readonly IPiiProtector _piiProtector;
 
     /// <inheritdoc />
     public DbSet<Post> Posts => Set<Post>();
@@ -36,12 +39,15 @@ public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
     /// </summary>
     /// <param name="options">تنظیمات پایگاه داده</param>
     /// <param name="tenantContext">متن مستأجر جاری برای Global Query Filter</param>
+    /// <param name="piiProtector">محافظ داده‌های حساس برای تبدیل ستون‌های PII</param>
     public OrganizationalStructureDbContext(
         DbContextOptions<OrganizationalStructureDbContext> options,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IPiiProtector piiProtector)
         : base(options)
     {
         _tenantContext = tenantContext;
+        _piiProtector = piiProtector;
     }
 
     /// <summary>
@@ -56,6 +62,8 @@ public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrganizationalStructureDbContext).Assembly);
+
+        ApplyPiiConversions(modelBuilder);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
@@ -85,5 +93,43 @@ public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
         }
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    /// <summary>
+    /// اعمال تبدیل رمزنگاری روی ستون‌های PII پرسنل (ADR-006).
+    /// </summary>
+    /// <param name="modelBuilder">سازنده مدل</param>
+    private void ApplyPiiConversions(ModelBuilder modelBuilder)
+    {
+        var randomizedText = new ValueConverter<string, string>(
+            v => _piiProtector.Protect(v, EncryptionType.Randomized),
+            v => _piiProtector.Unprotect(v));
+
+        var deterministicText = new ValueConverter<string, string>(
+            v => _piiProtector.Protect(v, EncryptionType.Deterministic),
+            v => _piiProtector.Unprotect(v));
+
+        var randomizedNullableText = new ValueConverter<string?, string?>(
+            v => v == null ? null : _piiProtector.Protect(v, EncryptionType.Randomized),
+            v => v == null ? null : _piiProtector.Unprotect(v));
+
+        var deterministicNullableText = new ValueConverter<string?, string?>(
+            v => v == null ? null : _piiProtector.Protect(v, EncryptionType.Deterministic),
+            v => v == null ? null : _piiProtector.Unprotect(v));
+
+        var birthDateConverter = new ValueConverter<DateOnly?, string?>(
+            v => v.HasValue
+                ? _piiProtector.Protect(v.Value.ToString("yyyy-MM-dd"), EncryptionType.Randomized)
+                : null,
+            v => v == null
+                ? (DateOnly?)null
+                : DateOnly.Parse(_piiProtector.Unprotect(v)));
+
+        modelBuilder.Entity<Employee>().Property(e => e.FirstName).HasConversion(randomizedText);
+        modelBuilder.Entity<Employee>().Property(e => e.LastName).HasConversion(randomizedText);
+        modelBuilder.Entity<Employee>().Property(e => e.NationalCode).HasConversion(deterministicText);
+        modelBuilder.Entity<Employee>().Property(e => e.Mobile).HasConversion(deterministicNullableText);
+        modelBuilder.Entity<Employee>().Property(e => e.PezhvakMobile).HasConversion(deterministicNullableText);
+        modelBuilder.Entity<Employee>().Property(e => e.BirthDate).HasConversion(birthDateConverter);
     }
 }

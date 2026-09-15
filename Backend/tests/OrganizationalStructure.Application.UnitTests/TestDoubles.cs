@@ -1,6 +1,9 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Infrastructure.Persistence;
+using OrganizationalStructure.Infrastructure.Security;
 
 namespace OrganizationalStructure.Application.UnitTests;
 
@@ -70,7 +73,7 @@ public sealed class TestTenantContext : ITenantContext
 public static class TestDbContextFactory
 {
     /// <summary>
-    /// ساخت DbContext جدید با پایگاه درون‌حافظه‌ای یکتا.
+    /// ساخت DbContext جدید با پایگاه درون‌حافظه‌ای یکتا و محافظ PII واقعی (کلید تصادفی تست).
     /// </summary>
     /// <param name="tenantId">شناسه مستأجر ثابت</param>
     /// <returns>DbContext تست</returns>
@@ -81,6 +84,10 @@ public static class TestDbContextFactory
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        return new OrganizationalStructureDbContext(options, new TestTenantContext(tenant));
+        var key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        var protector = new AesPiiProtector(
+            Options.Create(new PiiEncryptionOptions { Key = key }));
+
+        return new OrganizationalStructureDbContext(options, new TestTenantContext(tenant), protector);
     }
 }

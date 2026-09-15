@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using OrganizationalStructure.Domain.Abstractions;
+using OrganizationalStructure.Infrastructure.Security;
 
 namespace OrganizationalStructure.Infrastructure.Persistence;
 
@@ -8,9 +11,9 @@ namespace OrganizationalStructure.Infrastructure.Persistence;
 /// کارخانه ساخت DbContext در زمان طراحی برای ابزار EF Core (Migration).
 /// </summary>
 /// <remarks>
-/// رشته اتصال از پیکربندی (appsettings / appsettings.{Environment} / متغیرهای محیطی) خوانده می‌شود
-/// تا هیچ رمزی در کد یا مخزن ثبت نشود. در زمان طراحی، ICurrentUser در دسترس نیست؛
-/// بنابراین DbContext بدون interceptor ساخته می‌شود.
+/// رشته اتصال و کلید رمزنگاری PII از پیکربندی (appsettings / appsettings.{Environment} /
+/// متغیرهای محیطی / User Secrets) خوانده می‌شود تا هیچ رمزی در کد یا مخزن ثبت نشود.
+/// در زمان طراحی، ICurrentUser در دسترس نیست؛ بنابراین DbContext بدون interceptor ساخته می‌شود.
 /// </remarks>
 public sealed class OrganizationalStructureDbContextFactory
     : IDesignTimeDbContextFactory<OrganizationalStructureDbContext>
@@ -35,17 +38,21 @@ public sealed class OrganizationalStructureDbContextFactory
         var connectionString = configuration.GetConnectionString("OrganizationalStructureDb")
             ?? throw new InvalidOperationException("رشته اتصال OrganizationalStructureDb در پیکربندی یافت نشد.");
 
+        var piiOptions = new PiiEncryptionOptions();
+        configuration.GetSection(PiiEncryptionOptions.SectionName).Bind(piiOptions);
+        IPiiProtector protector = new AesPiiProtector(Options.Create(piiOptions));
+
         var options = new DbContextOptionsBuilder<OrganizationalStructureDbContext>()
             .UseSqlServer(connectionString)
             .Options;
 
-        return new OrganizationalStructureDbContext(options, new DesignTimeTenantContext());
+        return new OrganizationalStructureDbContext(options, new DesignTimeTenantContext(), protector);
     }
 
     /// <summary>
-    /// متن مستأجر موقت برای زمان طراحی (اینترفیس‌ها بدون اجرای کامل نیستند).
+    /// متن مستأجر موقت برای زمان طراحی (فقط ساخت مدل، بدون اجرای کوئری).
     /// </summary>
-    private sealed class DesignTimeTenantContext : Domain.Abstractions.ITenantContext
+    private sealed class DesignTimeTenantContext : ITenantContext
     {
         /// <summary>
         /// شناسه مستأجر خالی در زمان طراحی.
