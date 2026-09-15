@@ -3,6 +3,7 @@
   <Project Path="../tests/OrganizationalStructure.Application.UnitTests/OrganizationalStructure.Application.UnitTests.csproj" />
   <Project Path="../tests/OrganizationalStructure.ArchitectureTests/OrganizationalStructure.ArchitectureTests.csproj" />
   <Project Path="../tests/OrganizationalStructure.Domain.UnitTests/OrganizationalStructure.Domain.UnitTests.csproj" />
+  <Project Path="../tests/OrganizationalStructure.Infrastructure.UnitTests/OrganizationalStructure.Infrastructure.UnitTests.csproj" />
   <Project Path="OrganizationalStructure.API/OrganizationalStructure.API.csproj" />
   <Project Path="OrganizationalStructure.Application/OrganizationalStructure.Application.csproj" />
   <Project Path="OrganizationalStructure.Domain/OrganizationalStructure.Domain.csproj" />

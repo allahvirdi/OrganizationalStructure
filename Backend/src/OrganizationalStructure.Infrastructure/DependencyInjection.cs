@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Infrastructure.Common;
 using OrganizationalStructure.Infrastructure.Persistence;
+using OrganizationalStructure.Infrastructure.Security;
 
 namespace OrganizationalStructure.Infrastructure;
 
@@ -28,6 +29,10 @@ public static class DependencyInjection
 
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<ITenantContext, CurrentUserTenantContext>();
+
+        services.Configure<PiiEncryptionOptions>(
+            configuration.GetSection(PiiEncryptionOptions.SectionName));
+        services.AddSingleton<IPiiProtector, AesPiiProtector>();
 
         // ICurrentUser به وسیله لایه API (پیاده‌سازی BFF) ثبت می‌شود.
         // DbContext و interceptor به صورت Scoped و مبتنی بر ICurrentUser/ITenantContext ثبت می‌شوند.
