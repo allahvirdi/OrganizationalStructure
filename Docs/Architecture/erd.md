@@ -69,7 +69,7 @@
 | Id | uniqueidentifier PK | |
 | TenantId | uniqueidentifier NOT NULL | ایندکس ترکیبی |
 | UserId | uniqueidentifier NULL | مرجع IAM؛ بدون FK؛ ایندکس |
-| PersonnelCode | nvarchar(50) NOT NULL | یکتا درون TenantId |
+| PersonnelCode | char(8) NOT NULL | عدد ۸ رقمی؛ یکتا درون TenantId |
 | FirstName | PII (Randomized) NOT NULL | |
 | LastName | PII (Randomized) NOT NULL | |
 | NationalCode | PII (Deterministic) NOT NULL | ایندکس جستجو روی هش/رمز |

@@ -34,7 +34,7 @@ public sealed class Employee : FullAuditableEntity
     public Guid? UserId { get; private set; }
 
     /// <summary>
-    /// کد پرسنلی (یکتا درون مستأجر).
+    /// کد پرسنلی: عدد ۸ رقمی (یکتا درون مستأجر).
     /// </summary>
     public string PersonnelCode { get; private set; } = string.Empty;
 
@@ -139,9 +139,9 @@ public sealed class Employee : FullAuditableEntity
             throw new ArgumentException("شناسه مستأجر معتبر نیست.", nameof(tenantId));
         }
 
-        if (string.IsNullOrWhiteSpace(personnelCode))
+        if (!IsValidPersonnelCode(personnelCode))
         {
-            throw new ArgumentException("کد پرسنلی نمی‌تواند خالی باشد.", nameof(personnelCode));
+            throw new ArgumentException("کد پرسنلی باید عدد ۸ رقمی باشد.", nameof(personnelCode));
         }
 
         if (string.IsNullOrWhiteSpace(firstName))
@@ -288,14 +288,14 @@ public sealed class Employee : FullAuditableEntity
     /// <summary>
     /// اصلاح کد پرسنلی (یکتایی درون مستأجر در لایه کاربرد/پایگاه داده کنترل می‌شود).
     /// </summary>
-    /// <param name="personnelCode">کد پرسنلی جدید</param>
+    /// <param name="personnelCode">کد پرسنلی جدید (عدد ۸ رقمی)</param>
     /// <param name="occurredOn">زمان وقوع</param>
-    /// <exception cref="ArgumentException">در صورت خالی بودن کد پرسنلی</exception>
+    /// <exception cref="ArgumentException">در صورت نامعتبر بودن قالب کد پرسنلی</exception>
     public void ChangePersonnelCode(string personnelCode, DateTimeOffset occurredOn)
     {
-        if (string.IsNullOrWhiteSpace(personnelCode))
+        if (!IsValidPersonnelCode(personnelCode))
         {
-            throw new ArgumentException("کد پرسنلی نمی‌تواند خالی باشد.", nameof(personnelCode));
+            throw new ArgumentException("کد پرسنلی باید عدد ۸ رقمی باشد.", nameof(personnelCode));
         }
 
         var newCode = personnelCode.Trim();
@@ -397,5 +397,34 @@ public sealed class Employee : FullAuditableEntity
 
         IsActive = false;
         AddDomainEvent(new EmployeeDeactivated(Id, occurredOn));
+    }
+
+    /// <summary>
+    /// بررسی قالب کد پرسنلی: دقیقاً ۸ رقم ASCII.
+    /// </summary>
+    /// <param name="personnelCode">کد پرسنلی</param>
+    /// <returns>درست در صورت معتبر بودن</returns>
+    private static bool IsValidPersonnelCode(string? personnelCode)
+    {
+        if (string.IsNullOrWhiteSpace(personnelCode))
+        {
+            return false;
+        }
+
+        var code = personnelCode.Trim();
+        if (code.Length != 8)
+        {
+            return false;
+        }
+
+        foreach (var ch in code)
+        {
+            if (ch is < '0' or > '9')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

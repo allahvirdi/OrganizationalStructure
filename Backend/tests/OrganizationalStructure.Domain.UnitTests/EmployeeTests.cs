@@ -20,7 +20,7 @@ public sealed class EmployeeTests
         return Employee.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            "EMP-001",
+            "00000001",
             "علی",
             "رضایی",
             "0012345678",
@@ -39,6 +39,24 @@ public sealed class EmployeeTests
 
         employee.IsActive.Should().BeTrue();
         employee.DomainEvents.Should().ContainSingle(e => e is EmployeeCreated);
+    }
+
+    /// <summary>
+    /// کد پرسنلی غیر ۸ رقمی باید خطا دهد.
+    /// </summary>
+    /// <param name="code">کد پرسنلی نامعتبر</param>
+    [Theory]
+    [InlineData("")]
+    [InlineData("1234567")]
+    [InlineData("123456789")]
+    [InlineData("EMP-0001")]
+    [InlineData("1234567a")]
+    public void Create_WithInvalidPersonnelCode_ShouldThrow(string code)
+    {
+        var act = () => Employee.Create(Guid.NewGuid(), Guid.NewGuid(), code,
+            "علی", "رضایی", "0012345678", null, null, OccurredOn);
+
+        act.Should().Throw<ArgumentException>();
     }
 
     /// <summary>
