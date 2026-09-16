@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -52,7 +53,9 @@ public sealed class TestWebApplicationFactory
     {
         builder.ConfigureTestServices(services =>
         {
-            services.AddScoped<ICurrentUser, TestCurrentUser>();
+            services.AddAuthentication(TestAuthHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                    TestAuthHandler.SchemeName, null);
 
             // محافظ PII تست‌-only با کلید ثابت (هرگز در Production استفاده نمی‌شود)
             services.AddSingleton<IPiiProtector>(_ => new AesPiiProtector(

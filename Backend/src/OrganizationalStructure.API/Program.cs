@@ -33,6 +33,8 @@ builder.Services
     .AddScheme<AuthenticationSchemeOptions, BffSessionAuthenticationHandler>(
         BffSessionAuthenticationHandler.SchemeName, null);
 
+builder.Services.AddOrgAuthorization();
+
 var app = builder.Build();
 
 app.UseExceptionHandling();
