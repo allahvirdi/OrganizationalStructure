@@ -24,6 +24,19 @@
 
 ---
 
+## [2026-09-15] - Session-20260915-Phase4 / Phase 4
+### Added
+- BFF کامل: IIamClient/IamClient، نشست سمت‌سرور، هندلر کوکی، AuthController (login/MFA/logout/me)
+- OrganizationScope (خالص + Claim) با حل در ورود و تازه‌سازی دوره‌ای
+- ۲۷ Policy + Fallback Deny + `[Authorize]` روی ۳۴ Endpoint
+- Scope در ۱۶ هندلر + قانون مشاهده پرسنل + تست‌های 403/BFF (۱۰۱ تست سبز)
+
+### Changed
+-
+
+### Decisions / ADRs
+- بدون تصمیم جدید؛ اتکا به DEC-001..025 و ADR-001..011
+
 ## [2026-09-15] - Q-006 Approval / Permission Catalog
 ### Added
 -

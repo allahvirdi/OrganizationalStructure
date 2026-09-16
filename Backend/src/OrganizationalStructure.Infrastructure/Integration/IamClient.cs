@@ -243,6 +243,10 @@ public sealed class IamClient : IIamClient
         {
             return Array.Empty<IamOrganizationNode>();
         }
+        catch (Exception)
+        {
+            return Array.Empty<IamOrganizationNode>();
+        }
     }
 
     /// <inheritdoc />
@@ -301,6 +305,10 @@ public sealed class IamClient : IIamClient
             return null;
         }
         catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (Exception)
         {
             return null;
         }

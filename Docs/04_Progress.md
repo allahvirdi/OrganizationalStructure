@@ -4,18 +4,18 @@
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
 **آخرین به‌روزرسانی:** `2026-09-15`
-**Session مربوطه:** `Session-20260915-Phase3`
+**Session مربوطه:** `Session-20260915-Phase4`
 
 ---
 
 ## فاز جاری
-`Phase 3 — Backend Core Vertical Slices` ✅ تکمیل شد
+`Phase 4 — Access & Visibility` ✅ تکمیل شد
 
 ## درصد پیشرفت فاز جاری
 `100%`
 
 ## درصد پیشرفت کلی پروژه
-`60%`
+`70%`
 
 ## فایل‌های ایجاد شده در این Session
 - ساختار ریشه: `Backend/`, `Frontend/`, `.gitignore`, `.editorconfig`, `README.md`
@@ -37,34 +37,34 @@
 - API: `Program.cs` (Serilog/DI/Swagger/Health), `ClaimNames`, `HttpContextCurrentUser`, `ExceptionHandlingMiddleware`, `appsettings`
 - Tests: `Backend/tests/OrganizationalStructure.ArchitectureTests` (۴ Fitness Function، همه سبز)
 
-## فایل‌های ایجاد شده در فاز ۳ (Backend Slices)
-- CQRS: MediatR/FluentValidation/Mapster + ValidationBehavior + `IAppDbContext`
-- EF: پیکربندی‌ها + ۳ Migration (InitialSchema، EncryptEmployeePiiColumns، ResponsibilityAuthorityModel)
-- Slice پست: Commands/Queries/Controller/قرارداد + `PostDto` تفصیلی/`PostSummaryDto`
-- Slice پرسنل: Commands/Queries/Controller/قرارداد + رمزنگاری PII (AES Deterministic/Randomized)
-- Slice مسئولیت/اختیار (ADR-011): Aggregates + Assignments + ۲ کنترلر + قراردادها
-- تست‌ها: ۸۹ سبز (۳۵ دامنه + ۲۹ کاربرد + ۷ زیرساخت + ۴ معماری + ۱۴ یکپارچگی)
+## فایل‌های ایجاد شده در فاز ۴ (Access & Visibility)
+- BFF: `IIamClient` + `IamClient` (قراردادهای واقعی IAM) + `IamOptions` + نشست سمت‌سرور + هندلر کوکی + `AuthController`
+- Scope: `OrganizationScope` (خالص) + Claim چندمقداری + حل در ورود (fail-closed)
+- ۲۷ Policy + Fallback Deny + `[Authorize]` روی ۳۴ Endpoint
+- Scope در ۱۶ هندلر (403 در تخلف) + قانون مشاهده پرسنل + فیلتر جستجو
+- تست‌ها: ۱۰۱ سبز (۳۵ دامنه + ۳۲ کاربرد + ۷ زیرساخت + ۴ معماری + ۲۳ یکپارچگی)
 
 ## فایل‌های باقیمانده (برای فاز جاری)
-- هیچ — فاز ۳ تکمیل شد.
+- هیچ — فاز ۴ تکمیل شد.
 
 ## قدم بعدی دقیق
-`Phase 4 — Access & Visibility: اعمال Policyها + Organization Scope؛ پیش‌نیاز: تأیید نام Permissionها (Q-006). سپس Phase 5 (Integration)، Phase 6 (Frontend)، Phase 7 (Import)، Phase 8 (Production)`
+`Phase 5 (Integration برای مصرف‌کننده‌ها — بخش عمده با API موجود پوشش داده شده)، Phase 6 (Frontend)، Phase 7 (Import — پیش‌نیاز Q-003)، Phase 8 (Production). ثبت واقعی Permissionها در IAM اقدام مالک IAM است.`
 
 ## مشکلات / Blockers
-- نام‌گذاری نهایی Permissionها (Q-006: ۲۰+۱۲ مورد Proposed) برای Phase 4 باز است.
+- ثبت ۲۷ Permission در IAM (اقدام مالک IAM) — تا آن زمان همه درخواست‌ها 403 (صحیح).
 - Schema جدول واسط (Q-003) برای Phase 7 باز است.
 - Seed کدهای Responsibility/Authority پس از تأیید Business Catalog.
+- نشست درون‌حافظه‌ای (تک‌نمونه)؛ Redis در Phase 8.
 - ⚠️ آسیب‌پذیری `Microsoft.OpenApi 2.3.0` (NU1903) — ثبت‌شده، حل در Phase 8.
 
 ## تصمیمات گرفته‌شده در این Session
-- DEC-001 تا DEC-024 (مرجع: `Docs/decision-log.md`)
+- DEC-001 تا DEC-025 (مرجع: `Docs/decision-log.md`)
 - ADR-001 تا ADR-011 (مرجع: `Docs/adr/`)
-- Q-001/Q-002/Q-004/Q-005 بسته شدند؛ Q-006 فقط در تأیید نام‌ها باز است.
+- Q-001/Q-002/Q-004/Q-005/Q-006 بسته شدند؛ ثبت IAM و Q-003/Q-007/Q-008 باز است.
 
 ## وضعیت کامیت‌ها
-- تعداد کامیت‌های Phase 3 (همه پس از تأیید انسان): ۱۶
-- آخرین پیام کامیت: `feat: Responsibility/Authority slices with controllers, contracts and docs`
+- تعداد کامیت‌های Phase 4 (همه پس از تأیید انسان): ۷
+- آخرین پیام کامیت: `feat(phase4): enforce policies and organization scope with tests`
 
 ## یادآوری قوانین اجباری
 - تایم‌باکس ۱۵ دقیقه‌ای رعایت شد؟ `بله`
