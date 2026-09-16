@@ -20,6 +20,16 @@ public sealed class IamOptions
     public string BaseAddress { get; set; } = string.Empty;
 
     /// <summary>
+    /// شناسه کلاینت سروربه‌سرور برای Endpointهای توکن (هدر X-Client-Id).
+    /// </summary>
+    public string ClientId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// رمز کلاینت سروربه‌سرور (هدر X-Client-Secret) — فقط از Secret Management.
+    /// </summary>
+    public string ClientSecret { get; set; } = string.Empty;
+
+    /// <summary>
     /// مسیر ورود تعاملی.
     /// </summary>
     public string LoginPath { get; set; } = "/api/auth/login";

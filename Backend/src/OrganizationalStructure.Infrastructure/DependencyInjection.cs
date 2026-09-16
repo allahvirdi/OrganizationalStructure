@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrganizationalStructure.Application.Integration.Iam;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Infrastructure.Common;
+using OrganizationalStructure.Infrastructure.Integration;
 using OrganizationalStructure.Infrastructure.Persistence;
 using OrganizationalStructure.Infrastructure.Security;
 
@@ -33,6 +35,10 @@ public static class DependencyInjection
         services.Configure<PiiEncryptionOptions>(
             configuration.GetSection(PiiEncryptionOptions.SectionName));
         services.AddSingleton<IPiiProtector, AesPiiProtector>();
+
+        services.Configure<IamOptions>(configuration.GetSection(IamOptions.SectionName));
+        services.AddHttpClient("iam");
+        services.AddScoped<IIamClient, IamClient>();
 
         // ICurrentUser به وسیله لایه API (پیاده‌سازی BFF) ثبت می‌شود.
         // DbContext و interceptor به صورت Scoped و مبتنی بر ICurrentUser/ITenantContext ثبت می‌شوند.
