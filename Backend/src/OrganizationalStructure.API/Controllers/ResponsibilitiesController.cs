@@ -9,6 +9,7 @@ using OrganizationalStructure.Application.Responsibilities.DisableResponsibility
 using OrganizationalStructure.Application.Responsibilities.DTOs;
 using OrganizationalStructure.Application.Responsibilities.EndResponsibilityAssignment;
 using OrganizationalStructure.Application.Responsibilities.GetPostResponsibilities;
+using OrganizationalStructure.Application.Responsibilities.GetResponsibilityAssignments;
 using OrganizationalStructure.Application.Responsibilities.GetResponsibilityByCode;
 using OrganizationalStructure.Application.Responsibilities.SearchResponsibilities;
 using OrganizationalStructure.Application.Responsibilities.UpdateResponsibility;
@@ -154,6 +155,22 @@ public sealed class ResponsibilitiesController : ApiControllerBase
         var result = await _sender.Send(
             new EndResponsibilityAssignmentCommand(assignmentId, request.EndDate),
             cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// دریافت انتساب‌های یک مسئولیت.
+    /// </summary>
+    [HttpGet("{code}/assignments")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.View)]
+    [ProducesResponseType(typeof(IReadOnlyList<ResponsibilityAssignmentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyList<ResponsibilityAssignmentDto>>> GetAssignments(
+        string code,
+        [FromQuery] bool onlyActive = true,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _sender.Send(new GetResponsibilityAssignmentsQuery(code, onlyActive), cancellationToken);
         return HandleResult(result);
     }
 

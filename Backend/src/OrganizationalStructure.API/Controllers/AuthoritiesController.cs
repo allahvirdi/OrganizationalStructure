@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application.Authorities.AssignAuthority;
 using OrganizationalStructure.Application.Authorities.DTOs;
-using OrganizationalStructure.Application.Authorities.ManageAuthorities;
 using OrganizationalStructure.Application.Authorities.Queries;
+using OrganizationalStructure.Application.Authorities.ManageAuthorities;
 using OrganizationalStructure.Application.Common;
 
 namespace OrganizationalStructure.API.Controllers;
@@ -149,6 +149,22 @@ public sealed class AuthoritiesController : ApiControllerBase
         var result = await _sender.Send(
             new EndAuthorityAssignmentCommand(assignmentId, request.EndDate),
             cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// دریافت انتساب‌های یک اختیار.
+    /// </summary>
+    [HttpGet("{code}/assignments")]
+    [Authorize(Policy = AuthorizationPolicies.Authority.View)]
+    [ProducesResponseType(typeof(IReadOnlyList<AuthorityAssignmentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyList<AuthorityAssignmentDto>>> GetAssignments(
+        string code,
+        [FromQuery] bool onlyActive = true,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _sender.Send(new GetAuthorityAssignmentsQuery(code, onlyActive), cancellationToken);
         return HandleResult(result);
     }
 

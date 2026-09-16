@@ -54,3 +54,11 @@
 - **Identity/User/Organization Master:** در `Enterprise-IAM-V2` نگهداری می‌شود.
 - این سامانه Organization و User را فقط Reference می‌کند و Master موازی نمی‌سازد.
 - جزئیات مرز در `Docs/adr/` ثبت شده است.
+
+## پیش‌نیازهای توسعه محلی
+
+- SQL Server محلی (یا LocalDB) برای اجرای API و تست‌های یکپارچگی.
+- کلید رمزنگاری PII در `Backend/src/OrganizationalStructure.API/appsettings.Development.json`
+  بخش `PiiEncryption:Key` (مقدار Base64 کلید ۲۵۶ بیتی) — این فایل با
+  `git update-index --skip-worktree` از کامیت مستثنا شده است تا کلید محلی
+  هر توسعه‌دهنده در مخزن ثبت نشود. برای تولید از Secret Management استفاده کنید.
