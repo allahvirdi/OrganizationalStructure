@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.Configure<IamOptions>(configuration.GetSection(IamOptions.SectionName));
         services.AddHttpClient("iam");
         services.AddScoped<IIamClient, IamClient>();
+        services.AddScoped<Application.Integration.Iam.IBffSessionStore, Integration.InMemoryBffSessionStore>();
 
         // ICurrentUser به وسیله لایه API (پیاده‌سازی BFF) ثبت می‌شود.
         // DbContext و interceptor به صورت Scoped و مبتنی بر ICurrentUser/ITenantContext ثبت می‌شوند.

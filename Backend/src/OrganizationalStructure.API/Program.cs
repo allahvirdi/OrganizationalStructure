@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using OrganizationalStructure.API.Middleware;
 using OrganizationalStructure.API.Security;
@@ -24,6 +25,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services
+    .AddAuthentication(BffSessionAuthenticationHandler.SchemeName)
+    .AddScheme<AuthenticationSchemeOptions, BffSessionAuthenticationHandler>(
+        BffSessionAuthenticationHandler.SchemeName, null);
+
 var app = builder.Build();
 
 app.UseExceptionHandling();
@@ -34,6 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
