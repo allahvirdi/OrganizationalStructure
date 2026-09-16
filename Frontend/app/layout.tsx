@@ -4,6 +4,7 @@ import "@fontsource/vazirmatn/500.css";
 import "@fontsource/vazirmatn/700.css";
 import "@fontsource/vazirmatn/800.css";
 import "./globals.css";
+import Providers from "../src/app/providers";
 import ThemeRegistry from "../src/theme/ThemeRegistry";
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fa" dir="rtl">
       <body>
-        <ThemeRegistry>{children}</ThemeRegistry>
+        <ThemeRegistry>
+          <Providers>{children}</Providers>
+        </ThemeRegistry>
       </body>
     </html>
   );
