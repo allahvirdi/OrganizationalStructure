@@ -28,10 +28,18 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
+builder.Services.AddScoped<OrganizationScopeResolver>();
+
 builder.Services
-    .AddAuthentication(BffSessionAuthenticationHandler.SchemeName)
+    .AddAuthentication(AuthenticationSchemes.Smart)
+    .AddPolicyScheme(
+        AuthenticationSchemes.Smart,
+        "انتخاب هوشمند کوکی/Bearer",
+        options => options.ForwardDefaultSelector = AuthenticationSchemes.SelectScheme)
     .AddScheme<AuthenticationSchemeOptions, BffSessionAuthenticationHandler>(
-        BffSessionAuthenticationHandler.SchemeName, null);
+        AuthenticationSchemes.Bff, null)
+    .AddScheme<AuthenticationSchemeOptions, IamBearerAuthenticationHandler>(
+        AuthenticationSchemes.IamBearer, null);
 
 builder.Services.AddOrgAuthorization();
 

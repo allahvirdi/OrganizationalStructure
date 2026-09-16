@@ -32,6 +32,7 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
     private readonly IIamClient _iam;
     private readonly IClock _clock;
     private readonly IamOptions _options;
+    private readonly OrganizationScopeResolver _scopeResolver;
 
     /// <summary>
     /// مقداردهی اولیه.
@@ -43,13 +44,15 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
         IBffSessionStore sessions,
         IIamClient iam,
         IClock clock,
-        IOptions<IamOptions> iamOptions)
+        IOptions<IamOptions> iamOptions,
+        OrganizationScopeResolver scopeResolver)
         : base(options, logger, encoder)
     {
         _sessions = sessions;
         _iam = iam;
         _clock = clock;
         _options = iamOptions.Value;
+        _scopeResolver = scopeResolver;
     }
 
     /// <inheritdoc />
@@ -142,17 +145,8 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
     /// <summary>
     /// بازیابی Scope از درخت IAM؛ در صورت شکست، مجموعه قبلی حفظ می‌شود.
     /// </summary>
-    private async Task<IReadOnlyList<Guid>> RefreshScopeAsync(
+    private Task<IReadOnlyList<Guid>> RefreshScopeAsync(
         string accessToken,
-        string? organizationId)
-    {
-        if (!Guid.TryParse(organizationId, out var orgId))
-        {
-            return Array.Empty<Guid>();
-        }
-
-        var tree = await _iam.GetOrganizationTreeAsync(accessToken);
-        var scope = Application.Authorization.OrganizationScope.ComputeScope(tree, orgId);
-        return scope.ToArray();
-    }
+        string? organizationId) =>
+        _scopeResolver.ResolveScopeAsync(accessToken, organizationId);
 }

@@ -91,7 +91,8 @@ public sealed class BffHandlerTests
             store,
             iam,
             clock,
-            iamOptions);
+            iamOptions,
+            new OrganizationScopeResolver(iam));
     }
 
     private static async Task<AuthenticateResult> AuthenticateWithCookieAsync(
