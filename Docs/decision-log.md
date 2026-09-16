@@ -37,6 +37,8 @@
 | DEC-023 | 2026-09-14 | Q-006: کاتالوگ پیشنهادی ۲۰ Permission دامنه‌ای ثبت شد (وضعیت Proposed/Pending Approval)؛ ثبت در IAM فقط پس از تأیید کارفرما + مالک IAM؛ بدون Role/Policy موازی در OrgStructure | Proposed / Pending Approval | ADR-008 | کارفرما |
 | DEC-024 | 2026-09-15 | Domain Decision تفکیک ۴ مفهوم (IAM Role ≠ Post ≠ Responsibility ≠ Authority)؛ Responsibility و Authority موجودیت مستقل با Assignment تاریخ‌دار و Scope سازمانی؛ حذف `Post.HasSigningAuthority` و Responsibility VO؛ Breaking داخلی API (بدون Consumer خارجی)؛ `FindResponsible` در MVP پیاده‌سازی نمی‌شود؛ بدون Seed تا تأیید Business Catalog | Accepted | ADR-011 | کارفرما |
 | DEC-025 | 2026-09-15 | Q-006: نام نهایی ۲۷ Permission (۷ پست + ۸ پرسنل + ۶ اختیار + ۶ مسئولیت، قالب سه‌بخشی `OrganizationStructure.{Resource}.{Action}`) مصوب کارفرما شد؛ ثبت در IAM اقدام مالک IAM است | Accepted | ADR-008 | کارفرما |
+| DEC-026 | 2026-09-15 | تمدید Deadline به دو ماه (MVP تا `2026-11-14`) + تأیید برنامه اجرایی (Phase 5 کوتاه، Phase 6 اولویت، Phase 7 پس از Q-003، Phase 8 پایانی) | Accepted | — | کارفرما |
+| DEC-027 | 2026-09-15 | احراز هویت سیستمی مصرف‌کننده‌ها با Bearer JWT معتبر IAM در کنار کوکی BFF (PolicyScheme هوشمند) | Accepted | ADR-012 | کارفرما |
 
 ---
 

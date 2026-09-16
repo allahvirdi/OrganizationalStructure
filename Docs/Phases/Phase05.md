@@ -1,35 +1,36 @@
-# Phase 5 — Integration REST API
+# Phase 5 — Integration REST API (کوتاه: احراز سیستمی + راهنما)
 
 **وضعیت:** Not Started
 **درصد پیشرفت:** 0%
-**وابستگی‌ها:** Phase 3
+**وابستگی‌ها:** Phase 3 (قراردادها و Endpointها از قبل موجودند)
 
 ---
 
-## ۱. اهداف فاز
-- طراحی و پیاده‌سازی REST API نسخه‌بندی‌شده برای سامانه‌های مصرف‌کننده (REST-only در MVP، ADR-007).
+## ۱. اهداف فاز (محدود و مشخص — DEC-026)
+APIهای مصرف‌کننده از Phase 3 آماده‌اند؛ این فاز فقط دو شکاف را می‌بندد:
+1. احراز هویت سیستمی مصرف‌کننده‌ها (Bearer JWT معتبر IAM در کنار کوکی BFF — ADR-012).
+2. سند راهنمای Integration برای BPMS/HR.
 
 ## ۲. Deliverables
-- [ ] OpenAPI 3.1 + نسخه‌بندی `/api/v1/...`
-- [ ] Organization/Post/Parent/Child/Descendants
-- [ ] Employee، Assignment، Responsibility، SigningAuthority
-- [ ] وضعیت فعال/غیرفعال
-- [ ] Pagination/Filtering/Sorting استاندارد
-- [ ] Error Contract یکپارچه
-- [ ] Contract Tests (Pact یا معادل)
-- [ ] مستندات `Docs/api-contracts/`
+- [ ] `IamBearerAuthenticationHandler` (introspection + ساخت Claims یکسان)
+- [ ] `PolicyScheme` هوشمند (Bearer در صورت هدر، وگرنه کوکی BFF)
+- [ ] تست‌های Bearer (معتبر/نامعتبر/بدون توکن)
+- [ ] `Docs/Architecture/external-integration.md` (راهنمای مصرف‌کننده‌ها)
 
 ## ۳. Definition of Done
-- [ ] Contract Test پاس شده
-- [ ] OpenAPI به‌روز
-- [ ] Security/Authorization روی Integration API
+- [ ] هر دو الگو (کوکی/Bearer) با Policyهای یکسان کار می‌کنند
+- [ ] تست‌های جدید سبز؛ همه ۱۰۱+ تست سبز
+- [ ] XML فارسی؛ بدون TODO؛ مستندات به‌روز
 
 ## ۴. پیش‌نیازها
-- Phase 3
+- Phase 3 + Phase 4 (Done)
 
 ## ۵. نکات خاص
-- این API مصرف‌کننده‌ی External است؛ RBAC + API Key/Client Auth قابل بررسی در تکمیل Q-004 است.
+- بدون API Key اختصاصی (حاکمیت IAM — ADR-012)؛ بدون تغییر Policyها.
 
 ---
 
-> پس از تأیید، جزئیات تسک‌های ≤ ۱۵ دقیقه‌ای پیش از شروع فاز ارائه می‌شود.
+## تسک‌های ≤ ۱۵ دقیقه
+1. `Bearer handler + PolicyScheme + تست‌ها`
+2. `سند external-integration.md`
+3. `Progress/ChangeLog/SessionReport + بستن فاز ۵`

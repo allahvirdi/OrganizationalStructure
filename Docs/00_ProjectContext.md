@@ -48,7 +48,7 @@
 - هر Organization درخت Post مستقل دارد؛ جابجایی بین Organizationها ممنوع است.
 - PII با الگوی Always Encrypted/ADR-004 پروژه خواهر حفاظت می‌شود.
 - Event-driven Integration در MVP نیست؛ فقط REST.
-- Deadline پروژه یک ماه؛ تیم شامل Backend/Frontend/Database/Security Lead.
+- Deadline پروژه دو ماه (تا `2026-11-14` — DEC-026)؛ تیم شامل Backend/Frontend/Database/Security Lead.
 
 ## ۸. لینک به اسناد اصلی
 - Architecture Baseline: `Docs/01-Architecture-Baseline-FA.md`

@@ -27,7 +27,7 @@
 - فاز فعلی: `Phase 0 — Project Baseline`
 - درصد پیشرفت تقریبی: `15٪`
 - تاریخ شروع برنامه‌ریزی‌شده: `2026-09-14`
-- تاریخ هدف اولین نسخه قابل استفاده (MVP): `2026-10-14` (Deadline یک ماه — نیازمند تأیید نهایی)
+- تاریخ هدف اولین نسخه قابل استفاده (MVP): `2026-11-14` (Deadline دو ماه — DEC-026)
 
 ### ۱.۵ لینکهای مهم
 | مورد                    | مسیر / لینک                          |
@@ -132,7 +132,7 @@
 
 ### ۳.۴ محدودیت‌های شناخته‌شده (Constraints)
 - تکنولوژی: Stack منجمد Baseline؛ انحراف فقط با ADR.
-- زمان: Deadline یک ماه (MVP Core اول، Import دوم).
+- زمان: Deadline دو ماه (MVP Core اول، سپس Frontend، بعد Import).
 - منابع انسانی: ۴ نقش تخصصی (Backend/Frontend/Database/Security) با نظارت و توسعه به کمک AI.
 - زیرساخت: SQL Server، Redis، MinIO، Elasticsearch، Hangfire.
 - امنیتی: PII / OWASP / Deny by Default / Tenant Isolation.
@@ -204,7 +204,7 @@
 | R-001  | نگاشت ۴ سطح سازمانی در نبود Region=3     | بالا   | بالا  | بالا   | مجوز افزودن Region=3 صادر شد (DEC-019)؛ پیاده‌سازی در مخزن IAM | Tech Lead | Accepted — پیاده‌سازی در انتظار |
 | R-002  | همپوشانی داده پرسنلی با IAM              | متوسط  | بالا  | بالا   | ADR مرز Employee + عدم نوشتن در IAM    | Tech Lead | Open    |
 | R-003  | نقض لایه‌ها توسط AI/توسعه‌دهنده          | متوسط  | بالا  | بالا   | Fitness Functions + Review اجباری      | Tech Lead | Open    |
-| R-004  | Deadline یک ماه برای MVP گسترده           | بالا   | بالا  | بالا   | تفکیک MVP Core/Secondary و Deferred    | PO/Tech   | Open    |
+| R-004  | Deadline فشرده برای MVP گسترده            | متوسط | بالا  | متوسط | تمدید به دو ماه (DEC-026) + تفکیک MVP Core/Secondary/Deferred | PO/Tech | Mitigated |
 | R-005  | پیچیدگی Visibility سلسله‌مراتبی          | متوسط  | بالا  | بالا   | مدل‌سازی زودهنگام + تست‌های دامنه       | Tech Lead | Open    |
 | R-006  | Schema جدول واسط نهایی نشده              | متوسط  | متوسط | متوسط  | طراحی پیشنهادی Phase 0 + تأیید Business| Backend   | Open    |
 

@@ -60,6 +60,7 @@ Backend/
 | ADR-009 | افزودن Region=3 به OrganizationType در IAM | Accepted |
 | ADR-010 | فیلدهای تکمیلی پرسنل (تاریخ تولد، سابقه حراست، موبایل پژواک) | Accepted |
 | ADR-011 | تفکیک Responsibility/Authority مستقل با Assignment | Accepted |
+| ADR-012 | احراز سیستمی با Bearer JWT + PolicyScheme هوشمند | Accepted |
 
 ---
 

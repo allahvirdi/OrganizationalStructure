@@ -28,4 +28,10 @@
 
 ---
 
-> پس از تأیید، جزئیات تسک‌های ≤ ۱۵ دقیقه‌ای پیش از شروع فاز ارائه می‌شود.
+## تسک‌های ≤ ۱۵ دقیقه
+1. `رفع NU1903 (ارتقای Microsoft.OpenApi/Swashbuckle)`
+2. `نشست Redis (جایگزینی InMemory برای چندنمونه‌ای)`
+3. `CI/CD + Fitness Functions در CI`
+4. `Rate Limiting + Hardening نهایی + SAST/Dependency Scan`
+5. `مستندات استقرار + Runbook + Push نهایی`
+6. `گزارش نهایی قابلیت ادامه + بستن پروژه`

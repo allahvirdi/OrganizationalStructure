@@ -34,4 +34,10 @@
 
 ---
 
-> پس از تأیید، جزئیات تسک‌های ≤ ۱۵ دقیقه‌ای پیش از شروع فاز ارائه می‌شود.
+## تسک‌های ≤ ۱۵ دقیقه (پس از Q-003)
+1. `طراحی پیشنهادی Schema واسط + تأیید Business`
+2. `Import CSV (فقط ستاد) + تست`
+3. `Import Excel (فقط ستاد) + تست`
+4. `Import جدول واسط + Batch/Error/Duplicate + تست`
+5. `صفحه Import در Frontend (پس از فاز ۶)`
+6. `Progress/ChangeLog/SessionReport + بستن فاز ۷`

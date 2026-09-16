@@ -3,7 +3,8 @@
 > نقشه راه کلی پروژه بر اساس فازها.
 > جزئیات هر فاز در `Docs/Phases/PhaseXX.md` آمده است.
 
-**آخرین به‌روزرسانی:** `2026-09-14`
+**آخرین به‌روزرسانی:** `2026-09-15`
+**ددلاین:** `2026-11-14` (دو ماه — DEC-026)
 
 ---
 
@@ -11,15 +12,22 @@
 
 | فاز | عنوان | وضعیت | درصد تقریبی | وابستگی |
 |-----|-------|-------|-------------|---------|
-| 0   | Project Baseline | در حال اجرا | ~۱۵٪ | - |
-| 1   | Architecture Foundation (Freeze) | Not Started | 0% | Phase 0 |
-| 2   | Domain Modeling | Not Started | 0% | Phase 1 |
-| 3   | Backend Core Vertical Slices | Not Started | 0% | Phase 2 |
-| 4   | Access & Visibility | Not Started | 0% | Phase 3 |
-| 5   | Integration REST API | Not Started | 0% | Phase 3 |
-| 6   | Frontend Development | Not Started | 0% | Phase 3 + Phase 4 |
-| 7   | Import (MVP Secondary) | Not Started | 0% | Phase 3 |
+| 0   | Project Baseline | Done | 100% | - |
+| 1   | Architecture Foundation (Freeze) | Done | 100% | Phase 0 |
+| 2   | Domain Modeling | Done | 100% | Phase 1 |
+| 3   | Backend Core Vertical Slices | Done | 100% | Phase 2 |
+| 4   | Access & Visibility | Done | 100% | Phase 3 |
+| 5   | Integration REST API (کوتاه: احراز سیستمی + راهنما) | Not Started | 0% | Phase 3 |
+| 6   | Frontend Development (اولویت اصلی) | Not Started | 0% | Phase 3 + Phase 4 |
+| 7   | Import — MVP Secondary (پس از Q-003) | Blocked (Q-003) | 0% | Phase 3 + Q-003 |
 | 8   | Production Readiness | Not Started | 0% | همه فازها |
+
+## ترتیب اجرای مصوب (DEC-026)
+
+1. **Phase 5 — کوتاه:** فقط احراز هویت سیستمی (Bearer + PolicyScheme هوشمند، ADR-012) + سند راهنمای Integration؛ ۲–۳ تسک.
+2. **Phase 6 — اولویت اصلی:** اسکلت Next.js+MUI RTL → Auth (کوکی/Guard) → چارت سازمانی → صفحات Post/Employee/Responsibility/Authority.
+3. **Phase 7 — پس از Q-003:** به ترتیب CSV → Excel → Staging.
+4. **Phase 8 — پایانی:** NU1903، Redis نشست، CI/CD + Fitness، مستندات استقرار، Push نهایی.
 
 ## تفکیک اولویت MVP
 
@@ -37,6 +45,7 @@ RabbitMQ · Outbox · Event-driven Integration · LDAP/AD · GeographicUnit مو
 - هر تسک داخل فاز حداکثر ۱۵ دقیقه (قانون تایم‌باکس).
 - کامیت فقط بعد از تأیید صریح انسان.
 - بعد از پایان هر فاز منتظر دستور کاربر بمان.
+- همه تست‌ها باید سبز باشند؛ هیچ تسکی جا نماند.
 
 ## لینک به Progress و Session Reports
 - `Docs/04_Progress.md`
