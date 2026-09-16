@@ -1,8 +1,10 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Domain.Constants;
 
 namespace OrganizationalStructure.Application.Posts.GetPostSubtree;
@@ -19,13 +21,15 @@ public sealed class GetPostSubtreeQueryHandler : IRequestHandler<GetPostSubtreeQ
     private const int DefaultMaxDepth = 20;
 
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public GetPostSubtreeQueryHandler(IAppDbContext db)
+    public GetPostSubtreeQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -40,6 +44,11 @@ public sealed class GetPostSubtreeQueryHandler : IRequestHandler<GetPostSubtreeQ
         if (root is null)
         {
             return Result<PostTreeDto>.Failure(PostErrors.NotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(root.OrganizationId))
+        {
+            return Result<PostTreeDto>.Failure(AccessErrors.Forbidden());
         }
 
         var maxDepth = request.MaxDepth ?? DefaultMaxDepth;

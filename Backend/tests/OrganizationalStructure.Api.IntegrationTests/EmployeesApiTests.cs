@@ -85,7 +85,7 @@ public sealed class EmployeesApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task Assign_ThenEnd_ShouldWork()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         var postResponse = await client.PostAsJsonAsync(
             "/api/v1/posts", NewPostPayload(organizationId, "EA-001"));
@@ -120,7 +120,7 @@ public sealed class EmployeesApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task Assign_SecondPrimary_ShouldReturn409()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         var post1 = await (await client.PostAsJsonAsync(
             "/api/v1/posts", NewPostPayload(organizationId, "EB-001")))
@@ -150,7 +150,7 @@ public sealed class EmployeesApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task GetPostEmployees_AfterAssign_ShouldContainEmployee()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         var postId = await (await client.PostAsJsonAsync(
             "/api/v1/posts", NewPostPayload(organizationId, "EC-001")))

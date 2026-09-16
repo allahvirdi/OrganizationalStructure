@@ -9,16 +9,16 @@ using OrganizationalStructure.Infrastructure.Persistence;
 namespace OrganizationalStructure.Application.UnitTests;
 
 /// <summary>
-/// تست‌های Handler دستورهای ویرایش، جابجایی و وضعیت پست.
+/// تست‌های Handler دستورهای ویرایش، جابجایی و وضعیت پست (با Scope صریح).
 /// </summary>
 public sealed class UpdateMoveStatusTests
 {
     private static (OrganizationalStructureDbContext Db, TestClock Clock, TestCurrentUser User)
-        CreateContext()
+        CreateContext(IEnumerable<Guid> scope)
     {
         var tenantId = Guid.NewGuid();
         var db = TestDbContextFactory.Create(tenantId);
-        return (db, new TestClock(), new TestCurrentUser(tenantId));
+        return (db, new TestClock(), new TestCurrentUser(tenantId, scope));
     }
 
     private static async Task<Guid> SeedPostAsync(
@@ -38,15 +38,15 @@ public sealed class UpdateMoveStatusTests
     }
 
     /// <summary>
-    /// ویرایش پست موجود باید موفق باشد.
+    /// ویرایش پست موجود در Scope باید موفق باشد.
     /// </summary>
     [Fact]
     public async Task Update_ExistingPost_ShouldSucceed()
     {
-        var (db, clock, user) = CreateContext();
         var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
         var postId = await SeedPostAsync(db, clock, user, organizationId, "MGR-001");
-        var handler = new UpdatePostCommandHandler(db, clock);
+        var handler = new UpdatePostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new UpdatePostCommand(postId, "MGR-001", "عنوان جدید", null),
@@ -56,13 +56,34 @@ public sealed class UpdateMoveStatusTests
     }
 
     /// <summary>
+    /// ویرایش پست خارج از Scope باید Forbidden دهد.
+    /// </summary>
+    [Fact]
+    public async Task Update_OutOfScope_ShouldReturnForbidden()
+    {
+        var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
+        var postId = await SeedPostAsync(db, clock, user, organizationId, "MGR-001");
+
+        var outsider = new TestCurrentUser(user.TenantId, Array.Empty<Guid>());
+        var handler = new UpdatePostCommandHandler(db, clock, outsider);
+
+        var result = await handler.Handle(
+            new UpdatePostCommand(postId, "MGR-001", "x", null),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error!.Type.Should().Be(ErrorType.Forbidden);
+    }
+
+    /// <summary>
     /// ویرایش پست ناموجود باید NotFound دهد.
     /// </summary>
     [Fact]
     public async Task Update_MissingPost_ShouldReturnNotFound()
     {
-        var (db, clock, _) = CreateContext();
-        var handler = new UpdatePostCommandHandler(db, clock);
+        var (db, clock, user) = CreateContext(Array.Empty<Guid>());
+        var handler = new UpdatePostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new UpdatePostCommand(Guid.NewGuid(), "X", "Y", null),
@@ -78,11 +99,11 @@ public sealed class UpdateMoveStatusTests
     [Fact]
     public async Task Move_ValidParent_ShouldSucceed()
     {
-        var (db, clock, user) = CreateContext();
         var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
         var parentId = await SeedPostAsync(db, clock, user, organizationId, "PAR-001");
         var childId = await SeedPostAsync(db, clock, user, organizationId, "CHD-001");
-        var handler = new MovePostCommandHandler(db, clock);
+        var handler = new MovePostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new MovePostCommand(childId, parentId),
@@ -97,11 +118,11 @@ public sealed class UpdateMoveStatusTests
     [Fact]
     public async Task Move_CreatingCycle_ShouldReturnConflict()
     {
-        var (db, clock, user) = CreateContext();
         var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
         var parentId = await SeedPostAsync(db, clock, user, organizationId, "PAR-001");
         var childId = await SeedPostAsync(db, clock, user, organizationId, "CHD-001", parentId);
-        var handler = new MovePostCommandHandler(db, clock);
+        var handler = new MovePostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new MovePostCommand(parentId, childId),
@@ -117,9 +138,10 @@ public sealed class UpdateMoveStatusTests
     [Fact]
     public async Task SetStatus_DeactivateThenActivate_ShouldSucceed()
     {
-        var (db, clock, user) = CreateContext();
-        var postId = await SeedPostAsync(db, clock, user, Guid.NewGuid(), "MGR-001");
-        var handler = new SetPostStatusCommandHandler(db, clock);
+        var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
+        var postId = await SeedPostAsync(db, clock, user, organizationId, "MGR-001");
+        var handler = new SetPostStatusCommandHandler(db, clock, user);
 
         var deactivate = await handler.Handle(
             new SetPostStatusCommand(postId, false),
@@ -138,8 +160,8 @@ public sealed class UpdateMoveStatusTests
     [Fact]
     public async Task SetStatus_MissingPost_ShouldReturnNotFound()
     {
-        var (db, clock, _) = CreateContext();
-        var handler = new SetPostStatusCommandHandler(db, clock);
+        var (db, clock, user) = CreateContext(Array.Empty<Guid>());
+        var handler = new SetPostStatusCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new SetPostStatusCommand(Guid.NewGuid(), false),

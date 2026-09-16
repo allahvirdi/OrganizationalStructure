@@ -50,7 +50,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () => Results.Ok(new { Name = "Organizational Structure API", Status = "OK" }));
-app.MapHealthChecks("/health");
+app.MapGet("/", () => Results.Ok(new { Name = "Organizational Structure API", Status = "OK" }))
+    .AllowAnonymous();
+app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();

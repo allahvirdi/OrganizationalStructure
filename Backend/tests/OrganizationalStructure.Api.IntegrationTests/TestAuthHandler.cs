@@ -23,6 +23,11 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
     public static readonly Guid TestTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     /// <summary>
+    /// شناسه سازمان ثابت تست (Scope همه تست‌ها).
+    /// </summary>
+    public static readonly Guid TestOrganizationId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
+    /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
     public TestAuthHandler(
@@ -40,7 +45,8 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
         {
             new(ClaimTypes.NameIdentifier, "22222222-2222-2222-2222-222222222222"),
             new(ClaimNames.UserId, "22222222-2222-2222-2222-222222222222"),
-            new(ClaimNames.TenantId, TestTenantId.ToString())
+            new(ClaimNames.TenantId, TestTenantId.ToString()),
+            new(ClaimNames.OrganizationScope, TestOrganizationId.ToString())
         };
 
         foreach (var permission in AuthorizationPolicies.All)

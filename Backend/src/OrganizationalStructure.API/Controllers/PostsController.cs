@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrganizationalStructure.Application.Posts.CreatePost;
 using OrganizationalStructure.Application.Posts.DTOs;
@@ -8,6 +9,7 @@ using OrganizationalStructure.Application.Posts.GetPostSubtree;
 using OrganizationalStructure.Application.Posts.MovePost;
 using OrganizationalStructure.Application.Posts.SearchPosts;
 using OrganizationalStructure.Application.Posts.SetPostStatus;
+using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application.Posts.UpdatePost;
 
 namespace OrganizationalStructure.API.Controllers;
@@ -16,7 +18,7 @@ namespace OrganizationalStructure.API.Controllers;
 /// مدیریت پست‌های سازمانی.
 /// </summary>
 /// <remarks>
-/// تصریح‌دهی (Policy) در Phase 4 اعمال می‌شود؛ تا آن زمان Endpointها بدون احراز هویت‌اند.
+/// هر Endpoint با Policy متناظر از کاتالوگ (DEC-025) محافظت می‌شود.
 /// </remarks>
 [Route("api/v1/posts")]
 public sealed class PostsController : ApiControllerBase
@@ -35,6 +37,8 @@ public sealed class PostsController : ApiControllerBase
     /// ایجاد پست سازمانی جدید.
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.Post.Create)]
+    [Authorize(Policy = AuthorizationPolicies.Post.Create)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -51,6 +55,7 @@ public sealed class PostsController : ApiControllerBase
     /// ویرایش پست سازمانی.
     /// </summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.Post.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -67,9 +72,10 @@ public sealed class PostsController : ApiControllerBase
     }
 
     /// <summary>
-    /// جابجایی پست در درخت سازمان.
+    /// جابجایی پست در درخت سازمان (نگاشت به Post.Update).
     /// </summary>
     [HttpPost("{id:guid}/move")]
+    [Authorize(Policy = AuthorizationPolicies.Post.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -89,6 +95,7 @@ public sealed class PostsController : ApiControllerBase
     /// تعیین وضعیت فعال/غیرفعال پست.
     /// </summary>
     [HttpPatch("{id:guid}/status")]
+    [Authorize(Policy = AuthorizationPolicies.Post.Disable)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -107,6 +114,7 @@ public sealed class PostsController : ApiControllerBase
     /// دریافت پست با شناسه.
     /// </summary>
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.Post.View)]
     [ProducesResponseType(typeof(PostDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PostDto>> GetById(
@@ -121,6 +129,7 @@ public sealed class PostsController : ApiControllerBase
     /// دریافت فرزندان مستقیم پست.
     /// </summary>
     [HttpGet("{id:guid}/children")]
+    [Authorize(Policy = AuthorizationPolicies.Post.ViewHierarchy)]
     [ProducesResponseType(typeof(IReadOnlyList<PostSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<PostSummaryDto>>> GetChildren(
@@ -135,6 +144,7 @@ public sealed class PostsController : ApiControllerBase
     /// دریافت زیرشاخه چندسطحی پست.
     /// </summary>
     [HttpGet("{id:guid}/subtree")]
+    [Authorize(Policy = AuthorizationPolicies.Post.ViewHierarchy)]
     [ProducesResponseType(typeof(PostTreeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PostTreeDto>> GetSubtree(
@@ -150,6 +160,7 @@ public sealed class PostsController : ApiControllerBase
     /// جستجوی صفحه‌بندی‌شده پست‌ها.
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.Post.View)]
     [ProducesResponseType(typeof(Application.Common.PagedResult<PostSummaryDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Application.Common.PagedResult<PostSummaryDto>>> Search(
         [FromQuery] Guid? organizationId,

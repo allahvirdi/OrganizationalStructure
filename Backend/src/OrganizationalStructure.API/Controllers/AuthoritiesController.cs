@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application.Authorities.AssignAuthority;
 using OrganizationalStructure.Application.Authorities.DTOs;
 using OrganizationalStructure.Application.Authorities.ManageAuthorities;
@@ -12,7 +14,7 @@ namespace OrganizationalStructure.API.Controllers;
 /// مدیریت اختیارهای سازمانی و انتساب به پست‌ها.
 /// </summary>
 /// <remarks>
-/// تصریح‌دهی (Policy) در Phase 4 اعمال می‌شود؛ تا آن زمان Endpointها بدون احراز هویت‌اند.
+/// هر Endpoint با Policy متناظر از کاتالوگ (DEC-025) محافظت می‌شود.
 /// </remarks>
 [Route("api/v1/authorities")]
 public sealed class AuthoritiesController : ApiControllerBase
@@ -31,6 +33,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// تعریف اختیار جدید.
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.Authority.Create)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
@@ -46,6 +49,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// ویرایش اختیار.
     /// </summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.Authority.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -64,6 +68,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// غیرفعال‌سازی اختیار.
     /// </summary>
     [HttpPatch("{id:guid}/disable")]
+    [Authorize(Policy = AuthorizationPolicies.Authority.Disable)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -80,6 +85,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// دریافت اختیار با کد.
     /// </summary>
     [HttpGet("{code}")]
+    [Authorize(Policy = AuthorizationPolicies.Authority.View)]
     [ProducesResponseType(typeof(AuthorityDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AuthorityDto>> GetByCode(
@@ -94,6 +100,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// جستجوی صفحه‌بندی‌شده اختیارها.
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.Authority.View)]
     [ProducesResponseType(typeof(PagedResult<AuthorityDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<AuthorityDto>>> Search(
         [FromQuery] string? searchTerm,
@@ -112,6 +119,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// انتساب اختیار به پست (Code-based).
     /// </summary>
     [HttpPost("assignments")]
+    [Authorize(Policy = AuthorizationPolicies.Authority.Assign)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -128,6 +136,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// پایان دادن به انتساب اختیار (بدون حذف فیزیکی).
     /// </summary>
     [HttpPost("assignments/{assignmentId:guid}/end")]
+    [Authorize(Policy = AuthorizationPolicies.Authority.EndAssignment)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -147,6 +156,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     /// دریافت اختیارهای منتسب به پست.
     /// </summary>
     [HttpGet("/api/v1/posts/{postId:guid}/authorities")]
+    [Authorize(Policy = AuthorizationPolicies.Authority.View)]
     [ProducesResponseType(typeof(IReadOnlyList<AuthorityAssignmentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<AuthorityAssignmentDto>>> GetPostAuthorities(

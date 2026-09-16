@@ -16,11 +16,11 @@ namespace OrganizationalStructure.Application.UnitTests;
 public sealed class RemainingHandlerTests
 {
     private static (OrganizationalStructureDbContext Db, TestClock Clock, TestCurrentUser User)
-        CreateContext()
+        CreateContext(IEnumerable<Guid>? scope = null)
     {
         var tenantId = Guid.NewGuid();
         var db = TestDbContextFactory.Create(tenantId);
-        return (db, new TestClock(), new TestCurrentUser(tenantId));
+        return (db, new TestClock(), new TestCurrentUser(tenantId, scope));
     }
 
     private static async Task<Guid> SeedEmployeeAsync(
@@ -38,11 +38,14 @@ public sealed class RemainingHandlerTests
     private static async Task<Guid> SeedPostAsync(
         OrganizationalStructureDbContext db,
         TestClock clock,
-        TestCurrentUser user)
+        TestCurrentUser user,
+        Guid? organizationId = null,
+        string code = "T-001")
     {
         var handler = new Posts.CreatePost.CreatePostCommandHandler(db, clock, user);
         var result = await handler.Handle(
-            new Posts.CreatePost.CreatePostCommand(Guid.NewGuid(), "T-001", "t", null, null),
+            new Posts.CreatePost.CreatePostCommand(
+                organizationId ?? Guid.NewGuid(), code, "t", null, null),
             CancellationToken.None);
         result.IsSuccess.Should().BeTrue();
         return result.Value;
@@ -88,11 +91,12 @@ public sealed class RemainingHandlerTests
     [Fact]
     public async Task AssignThenEnd_ShouldSucceed()
     {
-        var (db, clock, user) = CreateContext();
+        var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
         var employeeId = await SeedEmployeeAsync(db, clock, user);
-        var postId = await SeedPostAsync(db, clock, user);
-        var assignHandler = new Employees.AssignPost.AssignPostCommandHandler(db, clock);
-        var endHandler = new Employees.EndAssignment.EndAssignmentCommandHandler(db, clock);
+        var postId = await SeedPostAsync(db, clock, user, organizationId);
+        var assignHandler = new Employees.AssignPost.AssignPostCommandHandler(db, clock, user);
+        var endHandler = new Employees.EndAssignment.EndAssignmentCommandHandler(db, clock, user);
 
         var assign = await assignHandler.Handle(
             new Employees.AssignPost.AssignPostCommand(employeeId, postId, null, null, false),
@@ -111,11 +115,12 @@ public sealed class RemainingHandlerTests
     [Fact]
     public async Task CreateAndAssignResponsibility_ShouldWork_Missing_ShouldFail()
     {
-        var (db, clock, user) = CreateContext();
-        var postId = await SeedPostAsync(db, clock, user);
+        var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
+        var postId = await SeedPostAsync(db, clock, user, organizationId);
         var createHandler = new CreateResponsibilityCommandHandler(db, clock, user);
-        var assignHandler = new AssignResponsibilityCommandHandler(db, clock);
-        var endHandler = new EndResponsibilityAssignmentCommandHandler(db, clock);
+        var assignHandler = new AssignResponsibilityCommandHandler(db, clock, user);
+        var endHandler = new EndResponsibilityAssignmentCommandHandler(db, clock, user);
 
         var created = await createHandler.Handle(
             new CreateResponsibilityCommand("SEC", "مسئول دبیرخانه", null),

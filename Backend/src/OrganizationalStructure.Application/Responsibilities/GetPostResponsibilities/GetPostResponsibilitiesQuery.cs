@@ -1,10 +1,12 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts;
 using OrganizationalStructure.Application.Responsibilities.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Responsibilities.GetPostResponsibilities;
 
@@ -40,13 +42,15 @@ public sealed class GetPostResponsibilitiesQueryHandler
     : IRequestHandler<GetPostResponsibilitiesQuery, Result<IReadOnlyList<ResponsibilityAssignmentDto>>>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public GetPostResponsibilitiesQueryHandler(IAppDbContext db)
+    public GetPostResponsibilitiesQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -54,11 +58,20 @@ public sealed class GetPostResponsibilitiesQueryHandler
         GetPostResponsibilitiesQuery request,
         CancellationToken cancellationToken)
     {
-        var postExists = await _db.Posts.AnyAsync(p => p.Id == request.PostId, cancellationToken);
-        if (!postExists)
+        var post = await _db.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == request.PostId, cancellationToken);
+
+        if (post is null)
         {
             return Result<IReadOnlyList<ResponsibilityAssignmentDto>>.Failure(
                 PostErrors.NotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(post.OrganizationId))
+        {
+            return Result<IReadOnlyList<ResponsibilityAssignmentDto>>.Failure(
+                AccessErrors.Forbidden());
         }
 
         var query = from a in _db.ResponsibilityAssignments.AsNoTracking()

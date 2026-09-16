@@ -1,9 +1,11 @@
 using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Posts.SearchPosts;
 
@@ -14,14 +16,16 @@ public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, 
 {
     private readonly IAppDbContext _db;
     private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public SearchPostsQueryHandler(IAppDbContext db, IMapper mapper)
+    public SearchPostsQueryHandler(IAppDbContext db, IMapper mapper, ICurrentUser currentUser)
     {
         _db = db;
         _mapper = mapper;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -29,12 +33,21 @@ public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, 
         SearchPostsQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _db.Posts.AsNoTracking().AsQueryable();
+        var scope = _currentUser.VisibleOrganizationIds.ToHashSet();
 
         if (request.OrganizationId.HasValue)
         {
-            query = query.Where(p => p.OrganizationId == request.OrganizationId.Value);
+            if (!scope.Contains(request.OrganizationId.Value))
+            {
+                return Result<PagedResult<PostSummaryDto>>.Failure(AccessErrors.Forbidden());
+            }
+
+            scope = new HashSet<Guid> { request.OrganizationId.Value };
         }
+
+        var query = _db.Posts
+            .AsNoTracking()
+            .Where(p => scope.Contains(p.OrganizationId));
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {

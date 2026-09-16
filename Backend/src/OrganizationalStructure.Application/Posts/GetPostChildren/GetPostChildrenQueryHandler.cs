@@ -1,9 +1,11 @@
 using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Posts.GetPostChildren;
 
@@ -15,14 +17,16 @@ public sealed class GetPostChildrenQueryHandler
 {
     private readonly IAppDbContext _db;
     private readonly IMapper _mapper;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public GetPostChildrenQueryHandler(IAppDbContext db, IMapper mapper)
+    public GetPostChildrenQueryHandler(IAppDbContext db, IMapper mapper, ICurrentUser currentUser)
     {
         _db = db;
         _mapper = mapper;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -30,10 +34,18 @@ public sealed class GetPostChildrenQueryHandler
         GetPostChildrenQuery request,
         CancellationToken cancellationToken)
     {
-        var exists = await _db.Posts.AnyAsync(p => p.Id == request.PostId, cancellationToken);
-        if (!exists)
+        var parent = await _db.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == request.PostId, cancellationToken);
+
+        if (parent is null)
         {
             return Result<IReadOnlyList<PostSummaryDto>>.Failure(PostErrors.NotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(parent.OrganizationId))
+        {
+            return Result<IReadOnlyList<PostSummaryDto>>.Failure(AccessErrors.Forbidden());
         }
 
         var children = await _db.Posts

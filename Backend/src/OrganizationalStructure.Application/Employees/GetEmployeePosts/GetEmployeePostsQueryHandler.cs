@@ -1,8 +1,10 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Employees.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Employees.GetEmployeePosts;
 
@@ -13,13 +15,15 @@ public sealed class GetEmployeePostsQueryHandler
     : IRequestHandler<GetEmployeePostsQuery, Result<IReadOnlyList<EmployeePostDto>>>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public GetEmployeePostsQueryHandler(IAppDbContext db)
+    public GetEmployeePostsQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -32,6 +36,17 @@ public sealed class GetEmployeePostsQueryHandler
         {
             return Result<IReadOnlyList<EmployeePostDto>>.Failure(
                 EmployeeErrors.NotFound(request.EmployeeId));
+        }
+
+        var visible = await EmployeeScope.IsEmployeeVisibleAsync(
+            _db,
+            request.EmployeeId,
+            _currentUser.VisibleOrganizationIds.ToHashSet(),
+            cancellationToken);
+
+        if (!visible)
+        {
+            return Result<IReadOnlyList<EmployeePostDto>>.Failure(AccessErrors.Forbidden());
         }
 
         var query = from a in _db.Assignments.AsNoTracking()

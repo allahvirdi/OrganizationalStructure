@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -53,14 +54,19 @@ public sealed class AssignAuthorityCommandHandler
 {
     private readonly IAppDbContext _db;
     private readonly IClock _clock;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public AssignAuthorityCommandHandler(IAppDbContext db, IClock clock)
+    public AssignAuthorityCommandHandler(
+        IAppDbContext db,
+        IClock clock,
+        ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -91,6 +97,11 @@ public sealed class AssignAuthorityCommandHandler
         if (post is null)
         {
             return Result<Guid>.Failure(AuthorityErrors.PostNotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(post.OrganizationId))
+        {
+            return Result<Guid>.Failure(AccessErrors.Forbidden());
         }
 
         Guid assignmentId;
@@ -150,14 +161,19 @@ public sealed class EndAuthorityAssignmentCommandHandler
 {
     private readonly IAppDbContext _db;
     private readonly IClock _clock;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public EndAuthorityAssignmentCommandHandler(IAppDbContext db, IClock clock)
+    public EndAuthorityAssignmentCommandHandler(
+        IAppDbContext db,
+        IClock clock,
+        ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -172,6 +188,16 @@ public sealed class EndAuthorityAssignmentCommandHandler
         if (assignment is null)
         {
             return Result.Failure(AuthorityErrors.AssignmentNotFound(request.AssignmentId));
+        }
+
+        var assignmentPost = await _db.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == assignment.PostId, cancellationToken);
+
+        if (assignmentPost is not null
+            && !_currentUser.VisibleOrganizationIds.Contains(assignmentPost.OrganizationId))
+        {
+            return Result.Failure(AccessErrors.Forbidden());
         }
 
         var authority = await _db.Authorities

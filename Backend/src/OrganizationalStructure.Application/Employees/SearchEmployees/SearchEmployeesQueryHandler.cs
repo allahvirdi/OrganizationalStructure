@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Employees.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Employees.SearchEmployees;
 
@@ -13,13 +14,15 @@ public sealed class SearchEmployeesQueryHandler
     : IRequestHandler<SearchEmployeesQuery, Result<PagedResult<EmployeeDto>>>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public SearchEmployeesQueryHandler(IAppDbContext db)
+    public SearchEmployeesQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -27,7 +30,19 @@ public sealed class SearchEmployeesQueryHandler
         SearchEmployeesQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _db.Employees.AsNoTracking().AsQueryable();
+        var scope = _currentUser.VisibleOrganizationIds.ToHashSet();
+
+        var query = _db.Employees
+            .AsNoTracking()
+            .Where(e =>
+                !_db.Assignments.Any(a => a.EmployeeId == e.Id) ||
+                _db.Assignments.Any(a =>
+                    a.EmployeeId == e.Id &&
+                    a.ToDate == null &&
+                    _db.Posts.Any(p =>
+                        p.Id == a.PostId &&
+                        scope.Contains(p.OrganizationId))))
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {

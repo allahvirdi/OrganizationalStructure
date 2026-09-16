@@ -61,7 +61,7 @@ public sealed class TestWebApplicationFactory
             services.AddSingleton<IPiiProtector>(_ => new AesPiiProtector(
                 Microsoft.Extensions.Options.Options.Create(new PiiEncryptionOptions
                 {
-                    Key = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+                    Key = TestKeys.Pii
                 })));
 
             // بازنویسی مستقیم اتصال DbContext به دیتابیس ایزوله تست.

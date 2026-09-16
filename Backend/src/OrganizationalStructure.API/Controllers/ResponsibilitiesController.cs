@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Responsibilities.AssignResponsibility;
 using OrganizationalStructure.Application.Responsibilities.CreateResponsibility;
@@ -17,7 +19,7 @@ namespace OrganizationalStructure.API.Controllers;
 /// مدیریت مسئولیت‌های سازمانی و انتساب به پست‌ها.
 /// </summary>
 /// <remarks>
-/// تصریح‌دهی (Policy) در Phase 4 اعمال می‌شود؛ تا آن زمان Endpointها بدون احراز هویت‌اند.
+/// هر Endpoint با Policy متناظر از کاتالوگ (DEC-025) محافظت می‌شود.
 /// </remarks>
 [Route("api/v1/responsibilities")]
 public sealed class ResponsibilitiesController : ApiControllerBase
@@ -36,6 +38,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// تعریف مسئولیت جدید.
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.Create)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
@@ -51,6 +54,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// ویرایش مسئولیت.
     /// </summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -69,6 +73,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// غیرفعال‌سازی مسئولیت.
     /// </summary>
     [HttpPatch("{id:guid}/disable")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.Disable)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -85,6 +90,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// دریافت مسئولیت با کد.
     /// </summary>
     [HttpGet("{code}")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.View)]
     [ProducesResponseType(typeof(ResponsibilityDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ResponsibilityDto>> GetByCode(
@@ -99,6 +105,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// جستجوی صفحه‌بندی‌شده مسئولیت‌ها.
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.View)]
     [ProducesResponseType(typeof(PagedResult<ResponsibilityDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<ResponsibilityDto>>> Search(
         [FromQuery] string? searchTerm,
@@ -117,6 +124,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// انتساب مسئولیت به پست (Code-based).
     /// </summary>
     [HttpPost("assignments")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.Assign)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -133,6 +141,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// پایان دادن به انتساب مسئولیت (بدون حذف فیزیکی).
     /// </summary>
     [HttpPost("assignments/{assignmentId:guid}/end")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.EndAssignment)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -152,6 +161,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
     /// دریافت مسئولیت‌های منتسب به پست.
     /// </summary>
     [HttpGet("/api/v1/posts/{postId:guid}/responsibilities")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.View)]
     [ProducesResponseType(typeof(IReadOnlyList<ResponsibilityAssignmentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<ResponsibilityAssignmentDto>>> GetPostResponsibilities(

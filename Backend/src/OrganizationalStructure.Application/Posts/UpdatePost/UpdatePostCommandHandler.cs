@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -13,14 +14,16 @@ public sealed class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand
 {
     private readonly IAppDbContext _db;
     private readonly IClock _clock;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public UpdatePostCommandHandler(IAppDbContext db, IClock clock)
+    public UpdatePostCommandHandler(IAppDbContext db, IClock clock, ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -33,6 +36,11 @@ public sealed class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand
         if (post is null)
         {
             return Result.Failure(PostErrors.NotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(post.OrganizationId))
+        {
+            return Result.Failure(AccessErrors.Forbidden());
         }
 
         var code = request.Code.Trim();

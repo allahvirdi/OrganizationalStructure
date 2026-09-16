@@ -1,10 +1,12 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Authorities.DTOs;
 using OrganizationalStructure.Application.Posts;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Authorities.Queries;
 
@@ -197,13 +199,15 @@ public sealed class GetPostAuthoritiesQueryHandler
     : IRequestHandler<GetPostAuthoritiesQuery, Result<IReadOnlyList<AuthorityAssignmentDto>>>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public GetPostAuthoritiesQueryHandler(IAppDbContext db)
+    public GetPostAuthoritiesQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -211,11 +215,20 @@ public sealed class GetPostAuthoritiesQueryHandler
         GetPostAuthoritiesQuery request,
         CancellationToken cancellationToken)
     {
-        var postExists = await _db.Posts.AnyAsync(p => p.Id == request.PostId, cancellationToken);
-        if (!postExists)
+        var post = await _db.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == request.PostId, cancellationToken);
+
+        if (post is null)
         {
             return Result<IReadOnlyList<AuthorityAssignmentDto>>.Failure(
                 PostErrors.NotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(post.OrganizationId))
+        {
+            return Result<IReadOnlyList<AuthorityAssignmentDto>>.Failure(
+                AccessErrors.Forbidden());
         }
 
         var query = from a in _db.AuthorityAssignments.AsNoTracking()

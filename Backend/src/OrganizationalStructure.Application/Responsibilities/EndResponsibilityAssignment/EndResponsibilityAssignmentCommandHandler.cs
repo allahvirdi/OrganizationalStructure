@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -14,14 +15,19 @@ public sealed class EndResponsibilityAssignmentCommandHandler
 {
     private readonly IAppDbContext _db;
     private readonly IClock _clock;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public EndResponsibilityAssignmentCommandHandler(IAppDbContext db, IClock clock)
+    public EndResponsibilityAssignmentCommandHandler(
+        IAppDbContext db,
+        IClock clock,
+        ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -36,6 +42,16 @@ public sealed class EndResponsibilityAssignmentCommandHandler
         if (assignment is null)
         {
             return Result.Failure(ResponsibilityErrors.AssignmentNotFound(request.AssignmentId));
+        }
+
+        var assignmentPost = await _db.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == assignment.PostId, cancellationToken);
+
+        if (assignmentPost is not null
+            && !_currentUser.VisibleOrganizationIds.Contains(assignmentPost.OrganizationId))
+        {
+            return Result.Failure(AccessErrors.Forbidden());
         }
 
         var responsibility = await _db.Responsibilities

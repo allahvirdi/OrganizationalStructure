@@ -6,27 +6,27 @@ using OrganizationalStructure.Infrastructure.Persistence;
 namespace OrganizationalStructure.Application.UnitTests;
 
 /// <summary>
-/// تست‌های Handler و Validator دستور ایجاد پست.
+/// تست‌های Handler و Validator دستور ایجاد پست (با Scope صریح).
 /// </summary>
 public sealed class CreatePostTests
 {
     private static (OrganizationalStructureDbContext Db, TestClock Clock, TestCurrentUser User)
-        CreateContext()
+        CreateContext(IEnumerable<Guid> scope)
     {
         var tenantId = Guid.NewGuid();
         var db = TestDbContextFactory.Create(tenantId);
-        return (db, new TestClock(), new TestCurrentUser(tenantId));
+        return (db, new TestClock(), new TestCurrentUser(tenantId, scope));
     }
 
     /// <summary>
-    /// ایجاد پست معتبر باید موفق باشد و شناسه برگرداند.
+    /// ایجاد پست معتبر در Scope باید موفق باشد و شناسه برگرداند.
     /// </summary>
     [Fact]
     public async Task Handle_ValidCommand_ShouldSucceed()
     {
-        var (db, clock, user) = CreateContext();
-        var handler = new CreatePostCommandHandler(db, clock, user);
         var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
+        var handler = new CreatePostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new CreatePostCommand(organizationId, "MGR-001", "مدیر", null, null),
@@ -37,14 +37,31 @@ public sealed class CreatePostTests
     }
 
     /// <summary>
+    /// ایجاد پست خارج از Scope باید Forbidden دهد.
+    /// </summary>
+    [Fact]
+    public async Task Handle_OutOfScope_ShouldReturnForbidden()
+    {
+        var (db, clock, user) = CreateContext(Array.Empty<Guid>());
+        var handler = new CreatePostCommandHandler(db, clock, user);
+
+        var result = await handler.Handle(
+            new CreatePostCommand(Guid.NewGuid(), "MGR-001", "مدیر", null, null),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error!.Type.Should().Be(ErrorType.Forbidden);
+    }
+
+    /// <summary>
     /// کد تکراری در سازمان باید خطای Conflict دهد.
     /// </summary>
     [Fact]
     public async Task Handle_DuplicateCode_ShouldReturnConflict()
     {
-        var (db, clock, user) = CreateContext();
-        var handler = new CreatePostCommandHandler(db, clock, user);
         var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
+        var handler = new CreatePostCommandHandler(db, clock, user);
 
         await handler.Handle(
             new CreatePostCommand(organizationId, "MGR-001", "مدیر", null, null),
@@ -64,11 +81,12 @@ public sealed class CreatePostTests
     [Fact]
     public async Task Handle_MissingParent_ShouldReturnNotFound()
     {
-        var (db, clock, user) = CreateContext();
+        var organizationId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { organizationId });
         var handler = new CreatePostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
-            new CreatePostCommand(Guid.NewGuid(), "MGR-001", "مدیر", null, Guid.NewGuid()),
+            new CreatePostCommand(organizationId, "MGR-001", "مدیر", null, Guid.NewGuid()),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -81,16 +99,18 @@ public sealed class CreatePostTests
     [Fact]
     public async Task Handle_ParentFromOtherOrganization_ShouldReturnConflict()
     {
-        var (db, clock, user) = CreateContext();
+        var orgA = Guid.NewGuid();
+        var orgB = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { orgA, orgB });
         var handler = new CreatePostCommandHandler(db, clock, user);
 
         var parentResult = await handler.Handle(
-            new CreatePostCommand(Guid.NewGuid(), "PAR-001", "والد", null, null),
+            new CreatePostCommand(orgA, "PAR-001", "والد", null, null),
             CancellationToken.None);
         parentResult.IsSuccess.Should().BeTrue();
 
         var result = await handler.Handle(
-            new CreatePostCommand(Guid.NewGuid(), "CHD-001", "فرزند", null, parentResult.Value),
+            new CreatePostCommand(orgB, "CHD-001", "فرزند", null, parentResult.Value),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();

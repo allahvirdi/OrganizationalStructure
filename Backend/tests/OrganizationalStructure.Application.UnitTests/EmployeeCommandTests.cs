@@ -104,7 +104,7 @@ public sealed class EmployeeCommandTests
         var (db, clock, user) = CreateContext();
         var createHandler = new CreateEmployeeCommandHandler(db, clock, user);
         var created = await createHandler.Handle(ValidCreateCommand(), CancellationToken.None);
-        var handler = new AssignPostCommandHandler(db, clock);
+        var handler = new AssignPostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new AssignPostCommand(created.Value, Guid.NewGuid(), null, null, false),
@@ -123,7 +123,7 @@ public sealed class EmployeeCommandTests
         var (db, clock, user) = CreateContext();
         var createHandler = new CreateEmployeeCommandHandler(db, clock, user);
         var created = await createHandler.Handle(ValidCreateCommand(), CancellationToken.None);
-        var handler = new EndAssignmentCommandHandler(db, clock);
+        var handler = new EndAssignmentCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
             new EndAssignmentCommand(created.Value, Guid.NewGuid(), new DateOnly(2026, 9, 30)),

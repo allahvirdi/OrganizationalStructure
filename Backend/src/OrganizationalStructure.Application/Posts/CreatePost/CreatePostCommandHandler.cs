@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -34,6 +35,11 @@ public sealed class CreatePostCommandHandler : IRequestHandler<CreatePostCommand
     {
         var tenantId = _currentUser.TenantId;
         var code = request.Code.Trim();
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(request.OrganizationId))
+        {
+            return Result<Guid>.Failure(AccessErrors.Forbidden());
+        }
 
         var duplicate = await _db.Posts.AnyAsync(
             p => p.OrganizationId == request.OrganizationId && p.Code == code,

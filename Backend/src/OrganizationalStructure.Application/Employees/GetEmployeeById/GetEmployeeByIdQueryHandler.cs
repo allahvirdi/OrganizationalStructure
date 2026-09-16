@@ -1,8 +1,10 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Employees.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Employees.GetEmployeeById;
 
@@ -12,13 +14,15 @@ namespace OrganizationalStructure.Application.Employees.GetEmployeeById;
 public sealed class GetEmployeeByIdQueryHandler : IRequestHandler<GetEmployeeByIdQuery, Result<EmployeeDto>>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public GetEmployeeByIdQueryHandler(IAppDbContext db)
+    public GetEmployeeByIdQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -49,6 +53,21 @@ public sealed class GetEmployeeByIdQueryHandler : IRequestHandler<GetEmployeeByI
             return Result<EmployeeDto>.Failure(EmployeeErrors.NotFound(request.EmployeeId));
         }
 
+        if (!await IsVisibleAsync(request.EmployeeId, cancellationToken))
+        {
+            return Result<EmployeeDto>.Failure(AccessErrors.Forbidden());
+        }
+
         return Result<EmployeeDto>.Success(dto);
     }
+
+    /// <summary>
+    /// بررسی مشاهده‌پذیری پرسنل بر اساس Scope سازمانی.
+    /// </summary>
+    private Task<bool> IsVisibleAsync(Guid employeeId, CancellationToken cancellationToken) =>
+        EmployeeScope.IsEmployeeVisibleAsync(
+            _db,
+            employeeId,
+            _currentUser.VisibleOrganizationIds.ToHashSet(),
+            cancellationToken);
 }

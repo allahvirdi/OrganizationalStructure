@@ -23,7 +23,7 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
     {
         var response = await client.PostAsJsonAsync("/api/v1/posts", new
         {
-            organizationId = Guid.NewGuid(),
+            organizationId = TestAuthHandler.TestOrganizationId,
             code,
             title = $"عنوان {code}",
             description = (string?)null,

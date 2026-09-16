@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -13,14 +14,16 @@ public sealed class EndAssignmentCommandHandler : IRequestHandler<EndAssignmentC
 {
     private readonly IAppDbContext _db;
     private readonly IClock _clock;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public EndAssignmentCommandHandler(IAppDbContext db, IClock clock)
+    public EndAssignmentCommandHandler(IAppDbContext db, IClock clock, ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -33,6 +36,16 @@ public sealed class EndAssignmentCommandHandler : IRequestHandler<EndAssignmentC
         if (employee is null)
         {
             return Result.Failure(EmployeeErrors.NotFound(request.EmployeeId));
+        }
+
+        var assignmentPost = await _db.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == request.PostId, cancellationToken);
+
+        if (assignmentPost is not null
+            && !_currentUser.VisibleOrganizationIds.Contains(assignmentPost.OrganizationId))
+        {
+            return Result.Failure(AccessErrors.Forbidden());
         }
 
         try

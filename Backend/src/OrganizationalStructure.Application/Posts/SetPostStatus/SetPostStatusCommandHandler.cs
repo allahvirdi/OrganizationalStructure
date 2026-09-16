@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -13,14 +14,16 @@ public sealed class SetPostStatusCommandHandler : IRequestHandler<SetPostStatusC
 {
     private readonly IAppDbContext _db;
     private readonly IClock _clock;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public SetPostStatusCommandHandler(IAppDbContext db, IClock clock)
+    public SetPostStatusCommandHandler(IAppDbContext db, IClock clock, ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -33,6 +36,11 @@ public sealed class SetPostStatusCommandHandler : IRequestHandler<SetPostStatusC
         if (post is null)
         {
             return Result.Failure(PostErrors.NotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(post.OrganizationId))
+        {
+            return Result.Failure(AccessErrors.Forbidden());
         }
 
         if (request.IsActive)

@@ -1,10 +1,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OrganizationalStructure.Application.Authorities.DTOs;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Application.Responsibilities.DTOs;
+using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Domain.Constants;
 
 namespace OrganizationalStructure.Application.Posts.GetPostById;
@@ -15,13 +17,15 @@ namespace OrganizationalStructure.Application.Posts.GetPostById;
 public sealed class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<PostDto>>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public GetPostByIdQueryHandler(IAppDbContext db)
+    public GetPostByIdQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -34,6 +38,11 @@ public sealed class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, 
         if (post is null)
         {
             return Result<PostDto>.Failure(PostErrors.NotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(post.OrganizationId))
+        {
+            return Result<PostDto>.Failure(AccessErrors.Forbidden());
         }
 
         var responsibilities = await (

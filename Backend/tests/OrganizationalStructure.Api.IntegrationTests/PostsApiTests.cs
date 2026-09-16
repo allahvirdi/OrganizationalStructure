@@ -35,7 +35,7 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task Create_ValidPost_ShouldReturn201AndBeRetrievable()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         var createResponse = await client.PostAsJsonAsync(
             "/api/v1/posts",
@@ -56,7 +56,7 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task Create_DuplicateCode_ShouldReturn409()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         var first = await client.PostAsJsonAsync("/api/v1/posts", NewPostPayload(organizationId, "DUP-001"));
         first.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -85,7 +85,7 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task Subtree_ParentWithChild_ShouldReturnTree()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         var parentResponse = await client.PostAsJsonAsync(
             "/api/v1/posts", NewPostPayload(organizationId, "PAR-001"));
@@ -109,7 +109,7 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task Move_CreatingCycle_ShouldReturn409()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         var parentResponse = await client.PostAsJsonAsync(
             "/api/v1/posts", NewPostPayload(organizationId, "P1-001"));
@@ -133,7 +133,7 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
     public async Task Search_WithFilter_ShouldReturnPagedResult()
     {
         var client = _factory.CreateClient();
-        var organizationId = Guid.NewGuid();
+        var organizationId = TestAuthHandler.TestOrganizationId;
 
         await client.PostAsJsonAsync("/api/v1/posts", NewPostPayload(organizationId, "S-001"));
 

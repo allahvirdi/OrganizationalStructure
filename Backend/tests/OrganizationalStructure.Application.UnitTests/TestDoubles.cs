@@ -18,19 +18,22 @@ public sealed class TestClock : IClock
 }
 
 /// <summary>
-/// کاربر جاری ثابت برای تست.
+/// کاربر جاری ثابت برای تست (Scope باید صریح داده شود؛ خالی یعنی بدون دسترسی).
 /// </summary>
 public sealed class TestCurrentUser : ICurrentUser
 {
     private readonly Guid _tenantId;
+    private readonly IReadOnlyCollection<Guid> _scope;
 
     /// <summary>
     /// ساخت کاربر جاری تست.
     /// </summary>
     /// <param name="tenantId">شناسه مستأجر ثابت</param>
-    public TestCurrentUser(Guid tenantId)
+    /// <param name="scope">محدوده سازمانی صریح (خالی یعنی بدون دسترسی)</param>
+    public TestCurrentUser(Guid tenantId, IEnumerable<Guid>? scope = null)
     {
         _tenantId = tenantId;
+        _scope = scope?.ToArray() ?? Array.Empty<Guid>();
     }
 
     /// <inheritdoc />
@@ -49,7 +52,7 @@ public sealed class TestCurrentUser : ICurrentUser
     public IReadOnlyCollection<string> Roles => Array.Empty<string>();
 
     /// <inheritdoc />
-    public IReadOnlyCollection<Guid> VisibleOrganizationIds => Array.Empty<Guid>();
+    public IReadOnlyCollection<Guid> VisibleOrganizationIds => _scope;
 }
 
 /// <summary>

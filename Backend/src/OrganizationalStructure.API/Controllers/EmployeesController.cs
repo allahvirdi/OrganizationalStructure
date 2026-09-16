@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application.Employees.AssignPost;
 using OrganizationalStructure.Application.Employees.CreateEmployee;
 using OrganizationalStructure.Application.Employees.DTOs;
@@ -19,7 +21,7 @@ namespace OrganizationalStructure.API.Controllers;
 /// مدیریت پرسنل و انتساب به پست‌ها.
 /// </summary>
 /// <remarks>
-/// تصریح‌دهی (Policy) در Phase 4 اعمال می‌شود؛ تا آن زمان Endpointها بدون احراز هویت‌اند.
+/// هر Endpoint با Policy متناظر از کاتالوگ (DEC-025) محافظت می‌شود.
 /// </remarks>
 [Route("api/v1/employees")]
 public sealed class EmployeesController : ApiControllerBase
@@ -38,6 +40,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// ثبت پرسنل جدید.
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.Employee.Create)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
@@ -53,6 +56,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// ویرایش اطلاعات پرسنلی.
     /// </summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -71,6 +75,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// ویرایش اطلاعات تکمیلی پرسنل.
     /// </summary>
     [HttpPatch("{id:guid}/supplementary")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -89,6 +94,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// انتساب پرسنل به پست.
     /// </summary>
     [HttpPost("{id:guid}/posts")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.AssignPost)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -108,6 +114,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// پایان دادن به انتساب پرسنل به پست.
     /// </summary>
     [HttpDelete("{id:guid}/posts/{postId:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.RemovePost)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -128,6 +135,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// تعیین وضعیت فعال/غیرفعال پرسنل.
     /// </summary>
     [HttpPatch("{id:guid}/status")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.Disable)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -146,6 +154,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// اتصال پرسنل به حساب کاربری IAM.
     /// </summary>
     [HttpPost("{id:guid}/link-user")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.Update)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -164,6 +173,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// دریافت پرسنل با شناسه.
     /// </summary>
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.View)]
     [ProducesResponseType(typeof(EmployeeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<EmployeeDto>> GetById(
@@ -178,6 +188,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// دریافت پست‌های منتسب به پرسنل.
     /// </summary>
     [HttpGet("{id:guid}/posts")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.View)]
     [ProducesResponseType(typeof(IReadOnlyList<EmployeePostDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<EmployeePostDto>>> GetPosts(
@@ -193,6 +204,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// دریافت پرسنل منتسب به پست.
     /// </summary>
     [HttpGet("/api/v1/posts/{postId:guid}/employees")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.View)]
     [ProducesResponseType(typeof(IReadOnlyList<PostEmployeeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<PostEmployeeDto>>> GetPostEmployees(
@@ -208,6 +220,7 @@ public sealed class EmployeesController : ApiControllerBase
     /// جستجوی صفحه‌بندی‌شده پرسنل.
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = AuthorizationPolicies.Employee.View)]
     [ProducesResponseType(typeof(Application.Common.PagedResult<EmployeeDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Application.Common.PagedResult<EmployeeDto>>> Search(
         [FromQuery] string? searchTerm,

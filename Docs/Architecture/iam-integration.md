@@ -1,7 +1,7 @@
 # طراحی یکپارچگی IAM (پروتکل مصرف احراز هویت/تصریح‌دهی)
 
 > مسیر: `Docs/Architecture/iam-integration.md`
-> وضعیت: **Pre-Draft** — نهایی و Freeze در Phase 1 پس از حل Q-002
+> وضعیت: **مصوب و پیاده‌سازی‌شده در Phase 4** (الگوی BFF — DEC-018)
 > سامانه خارجی: `C:\Users\hp_zbook\Documents\GitHub\Herasat\Enterprise-IAM-V2` (فقط‌خواندنی از دید OrgStructure)
 
 **آخرین به‌روزرسانی:** `2026-09-14`
@@ -19,12 +19,24 @@
 ## ۲. وابستگی محصول
 - پروژه خواهر `NewPersonalManagmentPhysical` همین سناریو را با الگوی **BFF** حل کرده و برای اتصال امن، تغییراتی در IAM انجام داده است (ثبت RefreshToken، اعتبارسنجی ابطال‌آگاه، کلاینت سروربه‌سرور، کلید پایدار). این یک الگوی مرجع است.
 
-## ۳. تصمیم باز (Q-002)
-دو گزینه:
-- **A) الگوی BFF** (همسو با پروژه خواهر و امن‌ترین): مرورگر کوکی نشست HttpOnly دارد؛ Backend توکن IAM را اعتبارسنجی (validate با کش کوتاه، fail-closed) می‌کند.
-- **B) اعتبارسنجی مستقیم JWT** در OrgStructure با کلید/کیفیت IAM.
+## ۳. تصمیم نهایی (Q-002 — بسته شد)
+**الگوی BFF** انتخاب و پیاده‌سازی شد:
+- مرورگر فقط کوکی نشست HttpOnly (`orgstructure_session`) دارد؛ توکن‌های IAM فقط سمت سرور (`IBffSessionStore`).
+- اعتبارسنجی با کش کوتاه (`IamOptions.ValidationCacheSeconds`) و fail-closed؛ در دسترس‌نبودن IAM یعنی رد درخواست.
+- در ورود: حل Scope از درخت IAM (`GET /api/organizations/tree` با Bearer کاربر)؛ Scope خالی یعنی شکست ورود.
+- Claimهای نشست: `user_id`، `tenant_id`، `organization_id`، `role`، `permission`، `organization_scope` (چندمقداری).
 
-> تصمیم نهایی در **Phase 1** با ارجاع به Risk Register و هماهنگی مالک IAM گرفته می‌شود. تا آن زمان هیچ پیاده‌سازی نمی‌شود.
+## ۴. پیاده‌سازی (Phase 4)
+| جزء | مسیر |
+|---|---|
+| قرارداد و نشست | `Application/Integration/Iam/{IIamClient,IBffSessionStore}` |
+| کلاینت HTTP | `Infrastructure/Integration/{IamClient,InMemoryBffSessionStore}` + `Security/IamOptions` |
+| هندلر احراز هویت | `API/Security/BffSessionAuthenticationHandler` (Scheme «Bff») |
+| ورود/خروج/کاربر جاری | `API/Controllers/AuthController` |
+| Scope | `Application/Authorization/OrganizationScope` (خالص) |
+| Policyها (۲۷) + Fallback | `API/Security/AuthorizationPolicies` |
+
+محدودیت ثبت‌شده: نشست درون‌حافظه‌ای (تک‌نمونه)؛ Redis برای چندنمونه‌ای در Phase 8.
 
 ## ۴. قواعد امنیتی مقدماتی (پیش‌نویس)
 - fail-closed: در نبود IAM، درخواست رد می‌شود.

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -13,14 +14,16 @@ public sealed class AssignPostCommandHandler : IRequestHandler<AssignPostCommand
 {
     private readonly IAppDbContext _db;
     private readonly IClock _clock;
+    private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public AssignPostCommandHandler(IAppDbContext db, IClock clock)
+    public AssignPostCommandHandler(IAppDbContext db, IClock clock, ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
+        _currentUser = currentUser;
     }
 
     /// <inheritdoc />
@@ -35,10 +38,18 @@ public sealed class AssignPostCommandHandler : IRequestHandler<AssignPostCommand
             return Result.Failure(EmployeeErrors.NotFound(request.EmployeeId));
         }
 
-        var postExists = await _db.Posts.AnyAsync(p => p.Id == request.PostId, cancellationToken);
-        if (!postExists)
+        var post = await _db.Posts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == request.PostId, cancellationToken);
+
+        if (post is null)
         {
             return Result.Failure(EmployeeErrors.PostNotFound(request.PostId));
+        }
+
+        if (!_currentUser.VisibleOrganizationIds.Contains(post.OrganizationId))
+        {
+            return Result.Failure(AccessErrors.Forbidden());
         }
 
         try
