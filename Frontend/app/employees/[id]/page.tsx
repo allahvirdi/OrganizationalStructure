@@ -5,6 +5,10 @@ import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  employeeSchema,
+  type EmployeeForm,
+} from "../../../src/features/employees/schemas";
+import {
   Alert,
   Box,
   Button,
@@ -122,6 +126,13 @@ function EmployeeDetailContent() {
             value={maskSensitive(employee.pezhvakMobile, canViewSensitive)}
           />
         </Paper>
+        <BasicInfoEditor
+          employeeId={employee.id}
+          firstName={employee.firstName}
+          lastName={employee.lastName}
+          nationalCode={employee.nationalCode}
+          mobile={employee.mobile ?? ""}
+        />
         <SupplementaryEditor
           employeeId={employee.id}
           birthDate={employee.birthDate ?? ""}
@@ -143,6 +154,92 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       </Typography>
       <Typography variant="body2">{value}</Typography>
     </Box>
+  );
+}
+
+function BasicInfoEditor({
+  employeeId,
+  firstName,
+  lastName,
+  nationalCode,
+  mobile,
+}: {
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  nationalCode: string;
+  mobile: string;
+}) {
+  const updateEmployee = useUpdateEmployee(employeeId);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<EmployeeForm>({
+    resolver: zodResolver(employeeSchema),
+    defaultValues: { firstName, lastName, nationalCode, mobile },
+  });
+
+  const onSubmit = (values: EmployeeForm) => {
+    updateEmployee.mutate({
+      firstName: values.firstName,
+      lastName: values.lastName,
+      nationalCode: values.nationalCode,
+      mobile: values.mobile || null,
+    });
+  };
+
+  return (
+    <Paper sx={{ p: 3 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700 }} gutterBottom>
+        ویرایش اطلاعات پایه
+      </Typography>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        sx={{ display: "grid", gap: 2 }}
+      >
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
+            label="نام"
+            fullWidth
+            error={Boolean(errors.firstName)}
+            helperText={errors.firstName?.message}
+            {...register("firstName")}
+          />
+          <TextField
+            label="نام خانوادگی"
+            fullWidth
+            error={Boolean(errors.lastName)}
+            helperText={errors.lastName?.message}
+            {...register("lastName")}
+          />
+        </Box>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
+            label="کد ملی"
+            fullWidth
+            error={Boolean(errors.nationalCode)}
+            helperText={errors.nationalCode?.message}
+            {...register("nationalCode")}
+          />
+          <TextField
+            label="موبایل"
+            fullWidth
+            error={Boolean(errors.mobile)}
+            helperText={errors.mobile?.message}
+            {...register("mobile")}
+          />
+        </Box>
+        <Button
+          type="submit"
+          variant="outlined"
+          disabled={updateEmployee.isPending}
+        >
+          ذخیره اطلاعات پایه
+        </Button>
+      </Box>
+    </Paper>
   );
 }
 

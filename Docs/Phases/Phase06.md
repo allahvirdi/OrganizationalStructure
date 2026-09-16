@@ -1,7 +1,7 @@
 # Phase 6 — Frontend Development
 
-**وضعیت:** Not Started
-**درصد پیشرفت:** 0%
+**وضعیت:** Done
+**درصد پیشرفت:** 100%
 **وابستگی‌ها:** Phase 3 + Phase 4
 
 ---

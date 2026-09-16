@@ -3,19 +3,19 @@
 > این فایل باید در **پایان هر Session** به‌روز شود.
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
-**آخرین به‌روزرسانی:** `2026-09-15`
-**Session مربوطه:** `Session-20260915-Phase5`
+**آخرین به‌روزرسانی:** `2026-09-16`
+**Session مربوطه:** `Session-20260916-Phase6`
 
 ---
 
 ## فاز جاری
-`Phase 5 — Integration REST API` ✅ تکمیل شد
+`Phase 6 — Frontend Development` ✅ تکمیل شد
 
 ## درصد پیشرفت فاز جاری
 `100%`
 
 ## درصد پیشرفت کلی پروژه
-`73%`
+`85%`
 
 ## فایل‌های ایجاد شده در این Session
 - ساختار ریشه: `Backend/`, `Frontend/`, `.gitignore`, `.editorconfig`, `README.md`
@@ -49,11 +49,18 @@
 - `Docs/Architecture/external-integration.md` (راهنمای مصرف‌کننده‌ها)
 - تست‌ها: ۱۰۵ سبز (۴ تست Bearer/Selector جدید)
 
+## فایل‌های ایجاد شده در فاز ۶ (Frontend)
+- اسکلت Next.js 16 + MUI RTL + Vazirmatn + TanStack/RHF/Zod (پورت 6300)
+- API Client + Auth (login/logout/me) + RequireAuth + rewrite به بک‌اند
+- چارت سازمانی (Tree + نشان امضا) + صفحات Post/Employee/Responsibility/Authority
+- ماسک PII با `ViewSensitiveData`
+- tsc/lint/build سبز
+
 ## فایل‌های باقیمانده (برای فاز جاری)
-- هیچ — فاز ۵ تکمیل شد.
+- هیچ — فاز ۶ تکمیل شد.
 
 ## قدم بعدی دقیق
-`Phase 6 — Frontend (اولویت اصلی): اسکلت Next.js+MUI RTL، Auth، چارت، صفحات. سپس Phase 7 (پس از Q-003) و Phase 8.`
+`Phase 7 — Import (مسدود: Q-003). سپس Phase 8 — Production (NU1903، Redis، CI/CD، Push).`
 
 ## مشکلات / Blockers
 - ثبت ۲۷ Permission در IAM (اقدام مالک IAM) — تا آن زمان همه درخواست‌ها 403 (صحیح).
@@ -68,8 +75,8 @@
 - Q-001/Q-002/Q-004/Q-005/Q-006 بسته شدند؛ ثبت IAM و Q-003/Q-007/Q-008 باز است.
 
 ## وضعیت کامیت‌ها
-- تعداد کامیت‌های Phase 4 (همه پس از تأیید انسان): ۷
-- آخرین پیام کامیت: `feat(phase4): enforce policies and organization scope with tests`
+- تعداد کامیت‌های Phase 6 (همه پس از تأیید انسان): ۷
+- آخرین پیام کامیت: `feat(phase6): add Responsibility and Authority pages with assignment queries`
 
 ## یادآوری قوانین اجباری
 - تایم‌باکس ۱۵ دقیقه‌ای رعایت شد؟ `بله`

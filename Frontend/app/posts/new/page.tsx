@@ -16,10 +16,7 @@ import {
 import RequireAuth from "../../../src/components/RequireAuth";
 import { useMe } from "../../../src/features/auth/useAuth";
 import { useCreatePost } from "../../../src/features/posts/usePosts";
-import {
-  postSchema,
-  type PostForm,
-} from "../../../src/features/posts/schemas";
+import { postSchema } from "../../../src/features/posts/schemas";
 import { ApiError } from "../../../src/lib/api/client";
 
 const createSchema = postSchema.extend({

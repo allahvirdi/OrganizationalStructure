@@ -24,6 +24,16 @@
 
 ---
 
+## [2026-09-16] - Session-20260916-Phase6 / Phase 6
+### Added
+- فرانت‌اند Next.js 16 + MUI RTL + Vazirmatn (پورت 6300) + TanStack/RHF/Zod
+- API Client (rewrite + کوکی) + Auth (login/logout/me) + RequireAuth
+- چارت سازمانی + صفحات Post/Employee/Responsibility/Authority + ماسک PII
+- `CurrentUserDto.Permissions` در بک‌اند برای تصمیم ماسک UI
+
+### Decisions / ADRs
+- بدون تصمیم جدید؛ اتکا به DEC-003 (Next.js+MUI) و ADR-001
+
 ## [2026-09-15] - Session-20260915-Phase5 / Phase 5
 ### Added
 - احراز Bearer مصرف‌کننده‌ها + PolicyScheme هوشمند + Resolver مشترک Scope
