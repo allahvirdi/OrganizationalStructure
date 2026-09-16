@@ -4,10 +4,12 @@ import * as React from "react";
 import createCache, { type EmotionCache } from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { useServerInsertedHTML } from "next/navigation";
-import { ThemeProvider } from "@mui/material/styles";
+import { ThemeProvider, type PaletteMode } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import rtlPlugin from "stylis-plugin-rtl";
-import theme from "./theme";
+import { createAppTheme } from "./theme";
+
+const COLOR_MODE_KEY = "orgstructure-color-mode";
 
 /**
  * ساخت کش Emotion راست‌به‌چپ.
@@ -18,13 +20,49 @@ function createRtlCache(): EmotionCache {
   return cache;
 }
 
+interface ColorModeContextValue {
+  mode: PaletteMode;
+  toggleMode: () => void;
+}
+
+const ColorModeContext = React.createContext<ColorModeContextValue>({
+  mode: "light",
+  toggleMode: () => {},
+});
+
+/**
+ * هوک تغییر حالت روشن/تیره.
+ */
+export function useColorMode(): ColorModeContextValue {
+  return React.useContext(ColorModeContext);
+}
+
 /**
  * فراهم‌کننده تم MUI برای App Router با کش راست‌به‌چپ و تزریق SSR.
- * (بدون تزریق سمت سرور، HTML سرور/کلاینت ناهماهنگ و Hydration خطا می‌دهد)
  */
-export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
-  const [cache] = React.useState(createRtlCache);
-  const seenRef = React.useRef<Set<string>>(new Set());
+// حالت اولیه از localStorage خوانده می‌شود (برای SSR یکسان است)
+  const initialMode = (): PaletteMode => {
+    if (typeof window !== "undefined") {
+      return window.localStorage.getItem(COLOR_MODE_KEY) === "dark" ? "dark" : "light";
+    }
+    return "light";
+  };
+
+  export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
+    const [cache] = React.useState(createRtlCache);
+    const seenRef = React.useRef<Set<string>>(new Set());
+    // حالت اولیه از localStorage خوانده می‌شود (برای SSR یکسان است)
+    const [mode, setMode] = React.useState<PaletteMode>(initialMode);
+
+  const theme = React.useMemo(() => createAppTheme(mode), [mode]);
+
+  const toggleMode = React.useCallback(() => {
+    setMode((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      window.localStorage.setItem(COLOR_MODE_KEY, next);
+      return next;
+    });
+  }, []);
 
   useServerInsertedHTML(() => {
     const inserted = cache.inserted;
@@ -56,10 +94,12 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
 
   return (
     <CacheProvider value={cache}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
+      <ColorModeContext.Provider value={{ mode, toggleMode }}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          {children}
+        </ThemeProvider>
+      </ColorModeContext.Provider>
     </CacheProvider>
   );
 }
