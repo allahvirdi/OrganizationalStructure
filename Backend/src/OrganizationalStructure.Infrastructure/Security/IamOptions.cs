@@ -55,6 +55,11 @@ public sealed class IamOptions
     public string RevokePath { get; set; } = "/api/token/revoke";
 
     /// <summary>
+    /// مسیر درخت سازمان‌ها.
+    /// </summary>
+    public string OrganizationTreePath { get; set; } = "/api/organizations/tree";
+
+    /// <summary>
     /// مهلت فراخوانی‌ها به ثانیه.
     /// </summary>
     public int TimeoutSeconds { get; set; } = 10;

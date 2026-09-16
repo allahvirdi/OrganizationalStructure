@@ -34,4 +34,9 @@ public static class ClaimNames
     /// نقش (از IAM).
     /// </summary>
     public const string Role = "role";
+
+    /// <summary>
+    /// محدوده سازمانی محاسبه‌شده BFF (چند مقداری).
+    /// </summary>
+    public const string OrganizationScope = "organization_scope";
 }

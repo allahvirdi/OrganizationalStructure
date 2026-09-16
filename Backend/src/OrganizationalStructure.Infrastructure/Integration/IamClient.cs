@@ -198,6 +198,54 @@ public sealed class IamClient : IIamClient
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<IamOrganizationNode>> GetOrganizationTreeAsync(
+        string accessToken,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            return Array.Empty<IamOrganizationNode>();
+        }
+
+        try
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                _options.OrganizationTreePath);
+            request.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+            using var response = await _http.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return Array.Empty<IamOrganizationNode>();
+            }
+
+            var envelope = await response.Content.ReadFromJsonAsync<IamEnvelope<List<IamOrganizationNode>>>(
+                JsonOptions, cancellationToken);
+
+            if (envelope is null || !envelope.IsSuccess || envelope.Value is null)
+            {
+                return Array.Empty<IamOrganizationNode>();
+            }
+
+            return envelope.Value;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return Array.Empty<IamOrganizationNode>();
+        }
+        catch (HttpRequestException)
+        {
+            return Array.Empty<IamOrganizationNode>();
+        }
+        catch (TaskCanceledException)
+        {
+            return Array.Empty<IamOrganizationNode>();
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<bool> RevokeAsync(
         string refreshToken,
         CancellationToken cancellationToken = default)

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Integration.Iam;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Infrastructure.Security;
@@ -78,6 +79,13 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
                 return AuthenticateResult.Fail("توکن نامعتبر است.");
             }
 
+            var scope = session.VisibleOrganizationIds;
+            var refreshed = await RefreshScopeAsync(session.AccessToken, validation.OrganizationId);
+            if (refreshed.Count > 0)
+            {
+                scope = refreshed;
+            }
+
             session = session with
             {
                 ValidatedAt = _clock.UtcNow,
@@ -85,7 +93,8 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
                 TenantId = validation.TenantId ?? session.TenantId,
                 OrganizationId = validation.OrganizationId ?? session.OrganizationId,
                 Roles = validation.Roles.Count > 0 ? validation.Roles : session.Roles,
-                Permissions = validation.Permissions.Count > 0 ? validation.Permissions : session.Permissions
+                Permissions = validation.Permissions.Count > 0 ? validation.Permissions : session.Permissions,
+                VisibleOrganizationIds = scope
             };
             await _sessions.SaveAsync(session);
         }
@@ -118,10 +127,32 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
             claims.Add(new Claim("permission", permission));
         }
 
+        foreach (var organizationId in session.VisibleOrganizationIds.Distinct())
+        {
+            claims.Add(new Claim(ClaimNames.OrganizationScope, organizationId.ToString()));
+        }
+
         var identity = new ClaimsIdentity(claims, SchemeName);
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, SchemeName);
 
         return AuthenticateResult.Success(ticket);
+    }
+
+    /// <summary>
+    /// بازیابی Scope از درخت IAM؛ در صورت شکست، مجموعه قبلی حفظ می‌شود.
+    /// </summary>
+    private async Task<IReadOnlyList<Guid>> RefreshScopeAsync(
+        string accessToken,
+        string? organizationId)
+    {
+        if (!Guid.TryParse(organizationId, out var orgId))
+        {
+            return Array.Empty<Guid>();
+        }
+
+        var tree = await _iam.GetOrganizationTreeAsync(accessToken);
+        var scope = Application.Authorization.OrganizationScope.ComputeScope(tree, orgId);
+        return scope.ToArray();
     }
 }

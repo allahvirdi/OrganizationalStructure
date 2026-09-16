@@ -47,6 +47,9 @@ public sealed class TestCurrentUser : ICurrentUser
 
     /// <inheritdoc />
     public IReadOnlyCollection<string> Roles => Array.Empty<string>();
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<Guid> VisibleOrganizationIds => Array.Empty<Guid>();
 }
 
 /// <summary>

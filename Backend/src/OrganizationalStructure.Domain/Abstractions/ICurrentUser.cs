@@ -33,4 +33,9 @@ public interface ICurrentUser
     /// نقش‌های کاربر جاری.
     /// </summary>
     IReadOnlyCollection<string> Roles { get; }
+
+    /// <summary>
+    /// شناسه‌های سازمان‌های داخل Scope مشاهده کاربر جاری.
+    /// </summary>
+    IReadOnlyCollection<Guid> VisibleOrganizationIds { get; }
 }

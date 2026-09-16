@@ -54,6 +54,11 @@ public sealed record BffSession
     /// دسترسی‌ها.
     /// </summary>
     public IReadOnlyList<string> Permissions { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// شناسه‌های سازمان‌های داخل Scope مشاهده (خود سازمان + زیرمجموعه‌ها).
+    /// </summary>
+    public IReadOnlyList<Guid> VisibleOrganizationIds { get; init; } = Array.Empty<Guid>();
 }
 
 /// <summary>

@@ -189,4 +189,30 @@ public interface IIamClient
     /// <param name="cancellationToken">توکن لغو</param>
     /// <returns>درست در صورت ابطال موفق</returns>
     Task<bool> RevokeAsync(string refreshToken, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// دریافت درخت سازمان‌ها از IAM (با توکن کاربر).
+    /// </summary>
+    /// <param name="accessToken">توکن دسترسی کاربر</param>
+    /// <param name="cancellationToken">توکن لغو</param>
+    /// <returns>ریشه‌های درخت یا خالی در صورت شکست (fail-closed در مصرف‌کننده)</returns>
+    Task<IReadOnlyList<IamOrganizationNode>> GetOrganizationTreeAsync(
+        string accessToken,
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// گره درخت سازمان IAM (زیرمجموعه موردنیاز Scope).
+/// </summary>
+public sealed record IamOrganizationNode
+{
+    /// <summary>
+    /// شناسه واحد سازمانی.
+    /// </summary>
+    public Guid Id { get; init; }
+
+    /// <summary>
+    /// واحدهای زیرمجموعه.
+    /// </summary>
+    public List<IamOrganizationNode> Children { get; init; } = new();
 }

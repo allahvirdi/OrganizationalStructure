@@ -199,6 +199,17 @@ public sealed class AuthController : ApiControllerBase
             });
         }
 
+        var scope = await ResolveScopeAsync(accessToken, validation.OrganizationId, cancellationToken);
+        if (scope.Count == 0)
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Title = "Auth.NoScope",
+                Detail = "محدوده سازمانی کاربر قابل تشخیص نیست.",
+                Status = StatusCodes.Status401Unauthorized
+            });
+        }
+
         var now = _clock.UtcNow;
         var minutes = _options.SessionMinutes <= 0 ? 30 : _options.SessionMinutes;
         var sessionId = Guid.NewGuid().ToString("N");
@@ -214,7 +225,8 @@ public sealed class AuthController : ApiControllerBase
             TenantId = validation.TenantId,
             OrganizationId = validation.OrganizationId,
             Roles = validation.Roles,
-            Permissions = validation.Permissions
+            Permissions = validation.Permissions,
+            VisibleOrganizationIds = scope
         }, cancellationToken);
 
         Response.Cookies.Append(
@@ -234,6 +246,25 @@ public sealed class AuthController : ApiControllerBase
             MfaChallengeToken: null,
             UserId: validation.UserId,
             ExpiresAt: now.AddMinutes(minutes)));
+    }
+
+    /// <summary>
+    /// حل محدوده سازمانی از درخت IAM؛ خالی یعنی عدم امکان ورود (fail-closed).
+    /// </summary>
+    private async Task<IReadOnlyList<Guid>> ResolveScopeAsync(
+        string accessToken,
+        string? organizationId,
+        CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(organizationId, out var orgId))
+        {
+            return Array.Empty<Guid>();
+        }
+
+        var tree = await _iam.GetOrganizationTreeAsync(accessToken, cancellationToken);
+        return Application.Authorization.OrganizationScope
+            .ComputeScope(tree, orgId)
+            .ToArray();
     }
 }
 
