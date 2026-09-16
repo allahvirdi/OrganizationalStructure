@@ -4,18 +4,18 @@
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
 **آخرین به‌روزرسانی:** `2026-09-15`
-**Session مربوطه:** `Session-20260915-Phase4`
+**Session مربوطه:** `Session-20260915-Phase5`
 
 ---
 
 ## فاز جاری
-`Phase 4 — Access & Visibility` ✅ تکمیل شد
+`Phase 5 — Integration REST API` ✅ تکمیل شد
 
 ## درصد پیشرفت فاز جاری
 `100%`
 
 ## درصد پیشرفت کلی پروژه
-`70%`
+`73%`
 
 ## فایل‌های ایجاد شده در این Session
 - ساختار ریشه: `Backend/`, `Frontend/`, `.gitignore`, `.editorconfig`, `README.md`
@@ -44,11 +44,16 @@
 - Scope در ۱۶ هندلر (403 در تخلف) + قانون مشاهده پرسنل + فیلتر جستجو
 - تست‌ها: ۱۰۱ سبز (۳۵ دامنه + ۳۲ کاربرد + ۷ زیرساخت + ۴ معماری + ۲۳ یکپارچگی)
 
+## فایل‌های ایجاد شده در فاز ۵ (Integration کوتاه)
+- `IamBearerAuthenticationHandler` + `AuthenticationSchemes` (Smart) + `OrganizationScopeResolver` مشترک
+- `Docs/Architecture/external-integration.md` (راهنمای مصرف‌کننده‌ها)
+- تست‌ها: ۱۰۵ سبز (۴ تست Bearer/Selector جدید)
+
 ## فایل‌های باقیمانده (برای فاز جاری)
-- هیچ — فاز ۴ تکمیل شد.
+- هیچ — فاز ۵ تکمیل شد.
 
 ## قدم بعدی دقیق
-`Phase 5 (Integration برای مصرف‌کننده‌ها — بخش عمده با API موجود پوشش داده شده)، Phase 6 (Frontend)، Phase 7 (Import — پیش‌نیاز Q-003)، Phase 8 (Production). ثبت واقعی Permissionها در IAM اقدام مالک IAM است.`
+`Phase 6 — Frontend (اولویت اصلی): اسکلت Next.js+MUI RTL، Auth، چارت، صفحات. سپس Phase 7 (پس از Q-003) و Phase 8.`
 
 ## مشکلات / Blockers
 - ثبت ۲۷ Permission در IAM (اقدام مالک IAM) — تا آن زمان همه درخواست‌ها 403 (صحیح).

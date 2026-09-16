@@ -24,6 +24,14 @@
 
 ---
 
+## [2026-09-15] - Session-20260915-Phase5 / Phase 5
+### Added
+- احراز Bearer مصرف‌کننده‌ها + PolicyScheme هوشمند + Resolver مشترک Scope
+- سند راهنمای Integration + ۴ تست جدید (۱۰۵ سبز)
+
+### Decisions / ADRs
+- بدون تصمیم جدید؛ اتکا به DEC-027 و ADR-012
+
 ## [2026-09-15] - Session-20260915-Phase4 / Phase 4
 ### Added
 - BFF کامل: IIamClient/IamClient، نشست سمت‌سرور، هندلر کوکی، AuthController (login/MFA/logout/me)
