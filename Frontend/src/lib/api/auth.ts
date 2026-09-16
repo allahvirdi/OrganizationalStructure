@@ -14,6 +14,7 @@ export interface CurrentUser {
   tenantId?: string | null;
   organizationId?: string | null;
   roles: string[];
+  permissions?: string[] | null;
 }
 
 /**

@@ -180,7 +180,8 @@ public sealed class AuthController : ApiControllerBase
             user.FindFirst(ClaimNames.UserId)?.Value,
             user.FindFirst(ClaimNames.TenantId)?.Value,
             user.FindFirst(ClaimNames.OrganizationId)?.Value,
-            user.FindAll(ClaimNames.Role).Select(c => c.Value).ToArray()));
+            user.FindAll(ClaimNames.Role).Select(c => c.Value).ToArray(),
+            user.FindAll("permission").Select(c => c.Value).ToArray()));
     }
 
     private async Task<ActionResult<LoginResultDto>> CompleteLoginAsync(
@@ -304,11 +305,13 @@ public sealed record LoginResultDto(
 /// <param name="TenantId">شناسه مستأجر</param>
 /// <param name="OrganizationId">شناسه سازمان</param>
 /// <param name="Roles">نقش‌ها</param>
+/// <param name="Permissions">دسترسی‌ها (برای تصمیم‌های نمایشی UI مانند ماسک PII؛ enforce اصلی سمت سرور است)</param>
 public sealed record CurrentUserDto(
     string? UserId,
     string? TenantId,
     string? OrganizationId,
-    string[] Roles);
+    string[] Roles,
+    string[] Permissions);
 
 /// <summary>
 /// اعتبارسنج درخواست ورود.
