@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
+/*
+ * توکن‌های پایه قالب مرجع SampleAdminPanel.
+ * رنگ‌بندی، سطوح، دکمه‌ها و ورودی‌ها از طریق تم MUI اعمال می‌شود
+ * (src/theme/theme.ts)؛ این فایل فقط پایه بدنه را نگه می‌دارد.
+ */
 :root {
   --background: #f7f9fb;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+  --foreground: #17242c; /* ink-900 */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  /* Body colors are supplied by MUI CssBaseline for both color modes. */
   font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
