@@ -19,31 +19,32 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../src/components/RequireAuth";
-import {
-  useAuthorities,
-  useDisableAuthority,
-} from "../../src/features/authorities/useAuthorities";
-
-/**
- * فهرست اختیارها.
- */
-export default function AuthoritiesPage() {
-  return (
-    <RequireAuth>
-      <AuthoritiesContent />
-    </RequireAuth>
-  );
-}
+import RequirePermission from "../../../src/components/RequirePermission";
+import { useMe } from "../../../src/features/auth/useAuth";
+import { usePosts, useSetPostStatus } from "../../../src/features/posts/usePosts";
+import { ApiError } from "../../../src/lib/api/client";
 
 const pageSize = 10;
 
-function AuthoritiesContent() {
+/**
+ * فهرست پست‌های سازمان کاربر جاری.
+ */
+export default function PostsPage() {
+  return (
+    <RequirePermission permission="OrganizationStructure.Post.View">
+      <PostsContent />
+    </RequirePermission>
+  );
+}
+
+function PostsContent() {
+  const { data: user } = useMe();
   const [page, setPage] = React.useState(0);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [draft, setDraft] = React.useState("");
 
-  const listQuery = useAuthorities({
+  const postsQuery = usePosts({
+    organizationId: user?.organizationId ?? undefined,
     searchTerm: searchTerm || undefined,
     page: page + 1,
     pageSize,
@@ -61,10 +62,10 @@ function AuthoritiesContent() {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            اختیارها
+            پست‌های سازمانی
           </Typography>
-          <Button component={Link} href="/authorities/new" variant="contained">
-            اختیار جدید
+          <Button component={Link} href="/posts/new" variant="contained">
+            پست جدید
           </Button>
         </Box>
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
@@ -90,8 +91,8 @@ function AuthoritiesContent() {
             جستجو
           </Button>
         </Box>
-        {listQuery.isError && (
-          <Alert severity="error">خطا در دریافت فهرست.</Alert>
+        {postsQuery.isError && (
+          <Alert severity="error">خطا در دریافت فهرست پست‌ها.</Alert>
         )}
         <TableContainer component={Paper}>
           <Table>
@@ -104,14 +105,14 @@ function AuthoritiesContent() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {(listQuery.data?.items ?? []).map((item) => (
-                <AuthorityRow key={item.id} item={item} />
+              {(postsQuery.data?.items ?? []).map((post) => (
+                <PostRow key={post.id} post={post} />
               ))}
             </TableBody>
           </Table>
           <TablePagination
             component="div"
-            count={listQuery.data?.totalCount ?? 0}
+            count={postsQuery.data?.totalCount ?? 0}
             page={page}
             rowsPerPage={pageSize}
             rowsPerPageOptions={[pageSize]}
@@ -126,53 +127,50 @@ function AuthoritiesContent() {
   );
 }
 
-function AuthorityRow({
-  item,
+function PostRow({
+  post,
 }: {
-  item: { id: string; code: string; title: string; isActive: boolean };
+  post: { id: string; code: string; title: string; isActive: boolean };
 }) {
-  const disable = useDisableAuthority(item.id);
+  const setStatus = useSetPostStatus(post.id);
   const [error, setError] = React.useState<string | null>(null);
 
   return (
     <TableRow>
-      <TableCell dir="ltr">{item.code}</TableCell>
-      <TableCell>{item.title}</TableCell>
+      <TableCell>{post.code}</TableCell>
+      <TableCell>{post.title}</TableCell>
       <TableCell>
         <Chip
-          label={item.isActive ? "فعال" : "غیرفعال"}
+          label={post.isActive ? "فعال" : "غیرفعال"}
           size="small"
-          color={item.isActive ? "success" : "default"}
+          color={post.isActive ? "success" : "default"}
         />
       </TableCell>
       <TableCell>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Button
-            component={Link}
-            href={`/authorities/${encodeURIComponent(item.code)}`}
-            size="small"
-          >
+          <Button component={Link} href={`/posts/${post.id}`} size="small">
             جزئیات
           </Button>
-          {item.isActive && (
-            <Button
-              size="small"
-              color="warning"
-              disabled={disable.isPending}
-              onClick={() => {
-                setError(null);
-                disable.mutate(undefined, {
-                  onError: () =>
-                    setError("غیرفعال‌سازی ممکن نیست (انتساب جاری دارد؟)."),
-                });
-              }}
-            >
-              غیرفعال
-            </Button>
-          )}
+          <Button
+            size="small"
+            color={post.isActive ? "warning" : "success"}
+            disabled={setStatus.isPending}
+            onClick={() => {
+              setError(null);
+              setStatus.mutate(!post.isActive, {
+                onError: (e) => {
+                  setError(
+                    e instanceof ApiError ? e.message : "خطا در تغییر وضعیت.",
+                  );
+                },
+              });
+            }}
+          >
+            {post.isActive ? "غیرفعال" : "فعال"}
+          </Button>
         </Box>
         {error && (
-          <Typography variant="caption" color="error" sx={{ display: "block" }}>
+          <Typography variant="caption" color="error">
             {error}
           </Typography>
         )}

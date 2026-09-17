@@ -1,11 +1,13 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OrganizationalStructure.API.Middleware;
 using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application;
 using OrganizationalStructure.Domain.Abstractions;
 using OrganizationalStructure.Infrastructure;
+using OrganizationalStructure.Infrastructure.Security;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +46,15 @@ builder.Services
 builder.Services.AddOrgAuthorization();
 
 var app = builder.Build();
+
+// هشدار صریح در صورت ناقص بودن پیکربندی IAM تا شکست خاموش ورود رخ ندهد.
+var iamOptions = app.Services.GetRequiredService<IOptions<IamOptions>>().Value;
+foreach (var missingIamKey in IamConfigurationValidator.GetMissingSettings(iamOptions))
+{
+    app.Logger.LogWarning(
+        "تنظیم «{Key}» در پیکربندی IAM مقدار ندارد؛ تمام ورودها به‌صورت fail-closed رد می‌شوند.",
+        missingIamKey);
+}
 
 app.UseExceptionHandling();
 

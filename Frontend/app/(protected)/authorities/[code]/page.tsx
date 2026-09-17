@@ -21,31 +21,28 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../../src/components/RequireAuth";
 import {
-  useAssignResponsibility,
-  useEndResponsibilityAssignment,
-  useResponsibility,
-} from "../../../src/features/responsibilities/useResponsibilities";
-import type { ResponsibilityAssignment } from "../../../src/features/responsibilities/api";
-import { fetchResponsibilityAssignments } from "../../../src/features/responsibilities/api";
-import { ApiError } from "../../../src/lib/api/client";
+  useAssignAuthority,
+  useAuthority,
+  useEndAuthorityAssignment,
+} from "../../../../src/features/authorities/useAuthorities";
+import { fetchAuthorityAssignments } from "../../../../src/features/authorities/api";
+import type { AuthorityAssignment } from "../../../../src/features/authorities/api";
+import { ApiError } from "../../../../src/lib/api/client";
 
 /**
- * صفحه جزئیات مسئولیت + انتساب به پست.
+ * صفحه جزئیات اختیار + انتساب به پست.
  */
-export default function ResponsibilityDetailPage() {
+export default function AuthorityDetailPage() {
   return (
-    <RequireAuth>
-      <ResponsibilityDetailContent />
-    </RequireAuth>
+    <AuthorityDetailContent />
   );
 }
 
-function ResponsibilityDetailContent() {
+function AuthorityDetailContent() {
   const params = useParams<{ code: string }>();
   const code = decodeURIComponent(params.code);
-  const { data: item, isLoading, isError } = useResponsibility(code);
+  const { data: item, isLoading, isError } = useAuthority(code);
 
   if (isLoading) {
     return (
@@ -61,7 +58,7 @@ function ResponsibilityDetailContent() {
     return (
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
-          <Alert severity="error">مسئولیت یافت نشد یا دسترسی ندارید.</Alert>
+          <Alert severity="error">اختیار یافت نشد یا دسترسی ندارید.</Alert>
         </Box>
       </Container>
     );
@@ -85,10 +82,10 @@ function ResponsibilityDetailContent() {
 function AssignmentSection({ code }: { code: string }) {
   const queryClient = useQueryClient();
   const assignmentsQuery = useQuery({
-    queryKey: ["responsibilities", "assignments", code],
-    queryFn: () => fetchResponsibilityAssignments(code),
+    queryKey: ["authorities", "assignments", code],
+    queryFn: () => fetchAuthorityAssignments(code),
   });
-  const assign = useAssignResponsibility();
+  const assign = useAssignAuthority();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [postId, setPostId] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
@@ -96,13 +93,13 @@ function AssignmentSection({ code }: { code: string }) {
   const onAssign = () => {
     setError(null);
     assign.mutate(
-      { responsibilityCode: code, postId: postId.trim() },
+      { authorityCode: code, postId: postId.trim() },
       {
         onSuccess: () => {
           setDialogOpen(false);
           setPostId("");
           queryClient.invalidateQueries({
-            queryKey: ["responsibilities", "assignments", code],
+            queryKey: ["authorities", "assignments", code],
           });
         },
         onError: (e) => {
@@ -147,7 +144,7 @@ function AssignmentSection({ code }: { code: string }) {
         </TableBody>
       </Table>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>انتساب مسئولیت به پست</DialogTitle>
+        <DialogTitle>انتساب اختیار به پست</DialogTitle>
         <DialogContent sx={{ minWidth: 320 }}>
           <TextField
             label="شناسه پست"
@@ -177,11 +174,11 @@ function AssignmentRow({
   assignment,
   code,
 }: {
-  assignment: ResponsibilityAssignment;
+  assignment: AuthorityAssignment;
   code: string;
 }) {
   const queryClient = useQueryClient();
-  const endMutation = useEndResponsibilityAssignment(assignment.id);
+  const endMutation = useEndAuthorityAssignment(assignment.id);
   const [error, setError] = React.useState<string | null>(null);
 
   return (
@@ -199,7 +196,7 @@ function AssignmentRow({
             endMutation.mutate(today, {
               onSuccess: () => {
                 queryClient.invalidateQueries({
-                  queryKey: ["responsibilities", "assignments", code],
+                  queryKey: ["authorities", "assignments", code],
                 });
               },
               onError: (e) => {

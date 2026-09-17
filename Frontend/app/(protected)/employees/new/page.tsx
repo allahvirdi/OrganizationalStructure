@@ -12,22 +12,19 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../../src/components/RequireAuth";
-import { useCreateEmployee } from "../../../src/features/employees/useEmployees";
+import { useCreateEmployee } from "../../../../src/features/employees/useEmployees";
 import {
   employeeSchema,
   type EmployeeForm,
-} from "../../../src/features/employees/schemas";
-import { ApiError } from "../../../src/lib/api/client";
+} from "../../../../src/features/employees/schemas";
+import { ApiError } from "../../../../src/lib/api/client";
 
 /**
  * صفحه ثبت پرسنل جدید.
  */
 export default function NewEmployeePage() {
   return (
-    <RequireAuth>
-      <NewEmployeeContent />
-    </RequireAuth>
+    <NewEmployeeContent />
   );
 }
 

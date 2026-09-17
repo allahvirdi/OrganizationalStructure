@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueries, useQuery } from "@tanstack/react-query";
+import RequirePermission from "../../../src/components/RequirePermission";
 import {
   Alert,
   Box,
@@ -8,19 +9,18 @@ import {
   Container,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../src/components/RequireAuth";
-import { useMe } from "../../src/features/auth/useAuth";
-import { fetchOrgPosts, fetchSubtree } from "../../src/features/org-chart/api";
-import OrgChartTree from "../../src/features/org-chart/OrgChartTree";
+import { useMe } from "../../../src/features/auth/useAuth";
+import { fetchOrgPosts, fetchSubtree } from "../../../src/features/org-chart/api";
+import OrgChartTree from "../../../src/features/org-chart/OrgChartTree";
 
 /**
  * صفحه چارت سازمانی (سازمان کاربر جاری).
  */
 export default function OrgChartPage() {
   return (
-    <RequireAuth>
+    <RequirePermission permission="OrganizationStructure.Post.ViewHierarchy">
       <OrgChartContent />
-    </RequireAuth>
+    </RequirePermission>
   );
 }
 

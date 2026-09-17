@@ -288,11 +288,11 @@ public sealed class IamClient : IIamClient
             }
 
             using var response = await _http.SendAsync(request, cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                return null;
-            }
 
+            // IAM خطاهای دامنه (مانند اعتبارنامه نامعتبر) را با کد وضعیت غیرموفق و همان پوشش
+            // «{ IsSuccess, Value, Error }» برمی‌گرداند؛ بدنه در همه حالت‌ها خوانده می‌شود تا پیام
+            // دقیق IAM از دست نرود. بدنه‌های غیرقابل تجزیه در catchهای زیر به null تبدیل می‌شوند
+            // و مصرف‌کننده به‌صورت fail-closed رد می‌کند.
             return await response.Content.ReadFromJsonAsync<IamEnvelope<T>>(
                 JsonOptions, cancellationToken);
         }

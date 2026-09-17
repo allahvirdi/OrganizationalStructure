@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
@@ -12,58 +13,62 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../../src/components/RequireAuth";
-import { useCreateResponsibility } from "../../../src/features/responsibilities/useResponsibilities";
-import {
-  responsibilitySchema,
-  type ResponsibilityForm,
-} from "../../../src/features/responsibilities/schemas";
-import { ApiError } from "../../../src/lib/api/client";
+import { useMe } from "../../../../src/features/auth/useAuth";
+import { useCreatePost } from "../../../../src/features/posts/usePosts";
+import { postSchema } from "../../../../src/features/posts/schemas";
+import { ApiError } from "../../../../src/lib/api/client";
+
+const createSchema = postSchema.extend({
+  parentId: z.string().optional().or(z.literal("")),
+});
+
+type CreateForm = z.infer<typeof createSchema>;
 
 /**
- * صفحه تعریف مسئولیت جدید.
+ * صفحه ایجاد پست جدید.
  */
-export default function NewResponsibilityPage() {
+export default function NewPostPage() {
   return (
-    <RequireAuth>
-      <NewResponsibilityContent />
-    </RequireAuth>
+    <NewPostContent />
   );
 }
 
-function NewResponsibilityContent() {
+function NewPostContent() {
   const router = useRouter();
-  const createItem = useCreateResponsibility();
+  const { data: user } = useMe();
+  const createPost = useCreatePost();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ResponsibilityForm>({ resolver: zodResolver(responsibilitySchema) });
+  } = useForm<CreateForm>({ resolver: zodResolver(createSchema) });
 
-  const onSubmit = (values: ResponsibilityForm) => {
-    createItem.mutate(
+  const onSubmit = (values: CreateForm) => {
+    if (!user?.organizationId) {
+      return;
+    }
+    createPost.mutate(
       {
+        organizationId: user.organizationId,
         code: values.code,
         title: values.title,
         description: values.description || null,
+        parentId: values.parentId || null,
       },
       {
-        onSuccess: () =>
-          router.replace(
-            `/responsibilities/${encodeURIComponent(values.code)}`,
-          ),
+        onSuccess: (id) => router.replace(`/posts/${id}`),
       },
     );
   };
 
   const serverError =
-    createItem.error instanceof ApiError ? createItem.error.message : null;
+    createPost.error instanceof ApiError ? createPost.error.message : null;
 
   return (
     <Container maxWidth="sm">
       <Box sx={{ py: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
-          مسئولیت جدید
+          پست جدید
         </Typography>
         <Paper sx={{ p: 3 }}>
           <Box
@@ -72,15 +77,14 @@ function NewResponsibilityContent() {
             sx={{ display: "grid", gap: 2 }}
           >
             <TextField
-              label="کد (Routing Key)"
+              label="کد پست"
               fullWidth
-              dir="ltr"
               error={Boolean(errors.code)}
               helperText={errors.code?.message}
               {...register("code")}
             />
             <TextField
-              label="عنوان"
+              label="عنوان پست"
               fullWidth
               error={Boolean(errors.title)}
               helperText={errors.title?.message}
@@ -91,15 +95,17 @@ function NewResponsibilityContent() {
               fullWidth
               multiline
               rows={2}
+              error={Boolean(errors.description)}
+              helperText={errors.description?.message}
               {...register("description")}
             />
             {serverError && <Alert severity="error">{serverError}</Alert>}
             <Button
               type="submit"
               variant="contained"
-              disabled={createItem.isPending}
+              disabled={createPost.isPending}
             >
-              ثبت مسئولیت
+              ثبت پست
             </Button>
           </Box>
         </Paper>

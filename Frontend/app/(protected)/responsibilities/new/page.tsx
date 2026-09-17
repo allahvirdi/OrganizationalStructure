@@ -12,35 +12,32 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../../src/components/RequireAuth";
-import { useCreateAuthority } from "../../../src/features/authorities/useAuthorities";
+import { useCreateResponsibility } from "../../../../src/features/responsibilities/useResponsibilities";
 import {
-  authoritySchema,
-  type AuthorityForm,
-} from "../../../src/features/authorities/schemas";
-import { ApiError } from "../../../src/lib/api/client";
+  responsibilitySchema,
+  type ResponsibilityForm,
+} from "../../../../src/features/responsibilities/schemas";
+import { ApiError } from "../../../../src/lib/api/client";
 
 /**
- * صفحه تعریف اختیار جدید.
+ * صفحه تعریف مسئولیت جدید.
  */
-export default function NewAuthorityPage() {
+export default function NewResponsibilityPage() {
   return (
-    <RequireAuth>
-      <NewAuthorityContent />
-    </RequireAuth>
+    <NewResponsibilityContent />
   );
 }
 
-function NewAuthorityContent() {
+function NewResponsibilityContent() {
   const router = useRouter();
-  const createItem = useCreateAuthority();
+  const createItem = useCreateResponsibility();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<AuthorityForm>({ resolver: zodResolver(authoritySchema) });
+  } = useForm<ResponsibilityForm>({ resolver: zodResolver(responsibilitySchema) });
 
-  const onSubmit = (values: AuthorityForm) => {
+  const onSubmit = (values: ResponsibilityForm) => {
     createItem.mutate(
       {
         code: values.code,
@@ -49,7 +46,9 @@ function NewAuthorityContent() {
       },
       {
         onSuccess: () =>
-          router.replace(`/authorities/${encodeURIComponent(values.code)}`),
+          router.replace(
+            `/responsibilities/${encodeURIComponent(values.code)}`,
+          ),
       },
     );
   };
@@ -61,7 +60,7 @@ function NewAuthorityContent() {
     <Container maxWidth="sm">
       <Box sx={{ py: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
-          اختیار جدید
+          مسئولیت جدید
         </Typography>
         <Paper sx={{ p: 3 }}>
           <Box
@@ -70,7 +69,7 @@ function NewAuthorityContent() {
             sx={{ display: "grid", gap: 2 }}
           >
             <TextField
-              label="کد"
+              label="کد (Routing Key)"
               fullWidth
               dir="ltr"
               error={Boolean(errors.code)}
@@ -97,7 +96,7 @@ function NewAuthorityContent() {
               variant="contained"
               disabled={createItem.isPending}
             >
-              ثبت اختیار
+              ثبت مسئولیت
             </Button>
           </Box>
         </Paper>

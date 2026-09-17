@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   employeeSchema,
   type EmployeeForm,
-} from "../../../src/features/employees/schemas";
+} from "../../../../src/features/employees/schemas";
 import {
   Alert,
   Box,
@@ -29,7 +29,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../../src/components/RequireAuth";
 import {
   useAssignPost,
   useEmployee,
@@ -37,25 +36,23 @@ import {
   useEndAssignment,
   useUpdateEmployee,
   useUpdateSupplementary,
-} from "../../../src/features/employees/useEmployees";
+} from "../../../../src/features/employees/useEmployees";
 import {
   maskSensitive,
   useCanViewSensitiveData,
-} from "../../../src/features/employees/usePermissions";
+} from "../../../../src/features/employees/usePermissions";
 import {
   supplementarySchema,
   type SupplementaryForm,
-} from "../../../src/features/employees/schemas";
-import { ApiError } from "../../../src/lib/api/client";
+} from "../../../../src/features/employees/schemas";
+import { ApiError } from "../../../../src/lib/api/client";
 
 /**
  * صفحه جزئیات پرسنل (ویرایش + تکمیلی + انتساب).
  */
 export default function EmployeeDetailPage() {
   return (
-    <RequireAuth>
-      <EmployeeDetailContent />
-    </RequireAuth>
+    <EmployeeDetailContent />
   );
 }
 

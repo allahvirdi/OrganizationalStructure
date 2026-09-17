@@ -1,17 +1,14 @@
 "use client";
 
 import { Box, Button, Container, Typography } from "@mui/material";
-import RequireAuth from "../../src/components/RequireAuth";
-import { useLogout, useMe } from "../../src/features/auth/useAuth";
+import { useLogout, useMe } from "../../../src/features/auth/useAuth";
 
 /**
  * داشبورد (محافظت‌شده).
  */
 export default function DashboardPage() {
   return (
-    <RequireAuth>
-      <DashboardContent />
-    </RequireAuth>
+    <DashboardContent />
   );
 }
 

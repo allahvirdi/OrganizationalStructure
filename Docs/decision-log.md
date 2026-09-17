@@ -39,6 +39,7 @@
 | DEC-025 | 2026-09-15 | Q-006: نام نهایی ۲۷ Permission (۷ پست + ۸ پرسنل + ۶ اختیار + ۶ مسئولیت، قالب سه‌بخشی `OrganizationStructure.{Resource}.{Action}`) مصوب کارفرما شد؛ ثبت در IAM اقدام مالک IAM است | Accepted | ADR-008 | کارفرما |
 | DEC-026 | 2026-09-15 | تمدید Deadline به دو ماه (MVP تا `2026-11-14`) + تأیید برنامه اجرایی (Phase 5 کوتاه، Phase 6 اولویت، Phase 7 پس از Q-003، Phase 8 پایانی) | Accepted | — | کارفرما |
 | DEC-027 | 2026-09-15 | احراز هویت سیستمی مصرف‌کننده‌ها با Bearer JWT معتبر IAM در کنار کوکی BFF (PolicyScheme هوشمند) | Accepted | ADR-012 | کارفرما |
+| DEC-028 | 2026-09-17 | Q-009: تأمین Master Data سازمان محیط توسعه با تأیید کارفرما فقط از طریق API خود IAM (بدون تغییر کد/الگوی داده IAM): ثبت سازمان ریشه توسعه (`herasat-dev`) و تخصیص `OrganizationId` به کاربران Seed؛ IAM مرجع Master باقی می‌ماند (سازگار با DEC-011/DEC-013/DEC-017) | Accepted | — | کارفرما |
 
 ---
 

@@ -4,7 +4,7 @@
 > وضعیت: **مصوب و پیاده‌سازی‌شده در Phase 4** (الگوی BFF — DEC-018)
 > سامانه خارجی: `C:\Users\hp_zbook\Documents\GitHub\Herasat\Enterprise-IAM-V2` (فقط‌خواندنی از دید OrgStructure)
 
-**آخرین به‌روزرسانی:** `2026-09-14`
+**آخرین به‌روزرسانی:** `2026-09-17`
 
 ---
 
@@ -38,13 +38,41 @@
 
 محدودیت ثبت‌شده: نشست درون‌حافظه‌ای (تک‌نمونه)؛ Redis برای چندنمونه‌ای در Phase 8.
 
-## ۴. قواعد امنیتی مقدماتی (پیش‌نویس)
+## ۵. قواعد امنیتی مقدماتی
 - fail-closed: در نبود IAM، درخواست رد می‌شود.
 - هیچ اعتبارنامه/توکنی در مرورگر/لاگ/کد ذخیره نشود.
-- فراخوانی به IAM فقط سرور→سرور با HTTPS.
+- فراخوانی به IAM فقط سرور→سرور (HTTPS در Production).
 - نگاشت `role` با املای دقیق (Q-006) به Policy داخلی.
 
-## ۵. پیگیری
-- Q-002 (پروتکل)، Q-004 و Q-006 (نقش/Permission) از `Docs/open-questions.md`.
+## ۶. پیش‌نیازهای عملیاتی اتصال به IAM
+> یافته‌های اشکال‌زدایی ۴۰۱ ورود در `Session-20260917-Phase6-IamFix`.
 
-> **این سند پیش‌نویس است و تا انجماد در Phase 1 مبنای پیاده‌سازی نیست.**
+اتصال BFF به IAM در محیط توسعه به سه شرط وابسته است؛ نقض هر شرط، ورود را fail-closed و با کد ۴۰۱ رد می‌کند:
+
+| # | پیش‌نیاز | محل تنظیم | نشانه نقض |
+|---|----------|-----------|-----------|
+| ۱ | مقداردهی `Iam:BaseAddress` | `appsettings.Development.json` (skip-worktree) یا متغیر `Iam__BaseAddress` | هشدار راه‌اندازی برای «Iam:BaseAddress» و خطای «خطا در ارتباط با سامانه هویت.» |
+| ۲ | هم‌ترازی `Iam:ClientSecret` با کلاینت `personnel-bff` در IAM | همان‌جا؛ مرجع سمت IAM: `Authentication:BffClient:Secret` | پاسخ ۴۰۱ `invalid_client` روی `POST /api/token/validate` |
+| ۳ | وجود Claim `organization_id` در JWT و درخت سازمانی غیرخالی | سمت IAM (Master Data — Q-009، بسته‌شده با DEC-028) | ۴۰۱ با `title = Auth.NoScope` |
+| ۴ | ثبت `IBffSessionStore` به‌صورت **Singleton** | `Infrastructure/DependencyInjection.cs` | `/api/v1/auth/me` با پیام «نشست معتبر نیست» (۴۰۱) علی‌رغم لاگین موفق — استور Scoped یعنی هر درخواست استور خالی |
+
+مسیر کامل یک ورود موفق:
+
+```text
+POST /api/v1/auth/login
+  ├─ IAM  POST /api/auth/login                 (نام کاربری/رمز)
+  ├─ IAM  POST /api/token/validate             (هدرهای X-Client-Id / X-Client-Secret)
+  ├─ IAM  GET  /api/organizations/tree          (Bearer توکن کاربر)
+  └─ ساخت نشست سمت‌سرور + کوکی HttpOnly «orgstructure_session»
+```
+
+نکات قطعی:
+- کلاینت `personnel-bff` در IAM باید **Confidential** و فعال باشد تا `ClientAuthenticationFilter` آن را بپذیرد.
+- تنظیمات ناقص IAM در راه‌اندازی با هشدار صریح (`IamConfigurationValidator`) گزارش می‌شود تا شکست خاموش رخ ندهد.
+- `IamClient` بدنه خطای IAM را حتی در پاسخ‌های ناموفق می‌خواند تا پیام دقیق (مثلاً «نام کاربری یا رمز عبور نامعتبر است.») از دست نرود.
+- Master Data سازمان محیط توسعه (Q-009 — DEC-028): سازمان `شرکت هرسات (محیط توسعه)` با کد `herasat-dev` (شناسه `fd0e79eb-27b9-4e19-b348-070fa091d5dc`) از طریق API خودِ IAM (`POST /api/organizations` + `POST /api/users/{id}/assign-organization`) ثبت و به کاربران Seed تخصیص یافت؛ بدون تغییر کد/الگوی داده IAM.
+- مسیر صحیح API تخصیص سازمان در IAM: `POST api/users/{userId}/assign-organization` (کنترلر `AssignmentsController` با Route `api/users`) — نه `api/assignments/...`.
+
+## ۷. پیگیری
+- Q-002 (پروتکل)، Q-004 و Q-006 (نقش/Permission) از `Docs/open-questions.md`.
+- Q-009 بسته شد (DEC-028)؛ Q-010 (قرارداد خطای Auth) باز است.

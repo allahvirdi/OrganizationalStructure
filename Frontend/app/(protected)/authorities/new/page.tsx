@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
@@ -13,65 +12,53 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../../src/components/RequireAuth";
-import { useMe } from "../../../src/features/auth/useAuth";
-import { useCreatePost } from "../../../src/features/posts/usePosts";
-import { postSchema } from "../../../src/features/posts/schemas";
-import { ApiError } from "../../../src/lib/api/client";
-
-const createSchema = postSchema.extend({
-  parentId: z.string().optional().or(z.literal("")),
-});
-
-type CreateForm = z.infer<typeof createSchema>;
+import { useCreateAuthority } from "../../../../src/features/authorities/useAuthorities";
+import {
+  authoritySchema,
+  type AuthorityForm,
+} from "../../../../src/features/authorities/schemas";
+import { ApiError } from "../../../../src/lib/api/client";
 
 /**
- * صفحه ایجاد پست جدید.
+ * صفحه تعریف اختیار جدید.
  */
-export default function NewPostPage() {
+export default function NewAuthorityPage() {
   return (
-    <RequireAuth>
-      <NewPostContent />
-    </RequireAuth>
+    <NewAuthorityContent />
   );
 }
 
-function NewPostContent() {
+function NewAuthorityContent() {
   const router = useRouter();
-  const { data: user } = useMe();
-  const createPost = useCreatePost();
+  const createItem = useCreateAuthority();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CreateForm>({ resolver: zodResolver(createSchema) });
+  } = useForm<AuthorityForm>({ resolver: zodResolver(authoritySchema) });
 
-  const onSubmit = (values: CreateForm) => {
-    if (!user?.organizationId) {
-      return;
-    }
-    createPost.mutate(
+  const onSubmit = (values: AuthorityForm) => {
+    createItem.mutate(
       {
-        organizationId: user.organizationId,
         code: values.code,
         title: values.title,
         description: values.description || null,
-        parentId: values.parentId || null,
       },
       {
-        onSuccess: (id) => router.replace(`/posts/${id}`),
+        onSuccess: () =>
+          router.replace(`/authorities/${encodeURIComponent(values.code)}`),
       },
     );
   };
 
   const serverError =
-    createPost.error instanceof ApiError ? createPost.error.message : null;
+    createItem.error instanceof ApiError ? createItem.error.message : null;
 
   return (
     <Container maxWidth="sm">
       <Box sx={{ py: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
-          پست جدید
+          اختیار جدید
         </Typography>
         <Paper sx={{ p: 3 }}>
           <Box
@@ -80,14 +67,15 @@ function NewPostContent() {
             sx={{ display: "grid", gap: 2 }}
           >
             <TextField
-              label="کد پست"
+              label="کد"
               fullWidth
+              dir="ltr"
               error={Boolean(errors.code)}
               helperText={errors.code?.message}
               {...register("code")}
             />
             <TextField
-              label="عنوان پست"
+              label="عنوان"
               fullWidth
               error={Boolean(errors.title)}
               helperText={errors.title?.message}
@@ -98,17 +86,15 @@ function NewPostContent() {
               fullWidth
               multiline
               rows={2}
-              error={Boolean(errors.description)}
-              helperText={errors.description?.message}
               {...register("description")}
             />
             {serverError && <Alert severity="error">{serverError}</Alert>}
             <Button
               type="submit"
               variant="contained"
-              disabled={createPost.isPending}
+              disabled={createItem.isPending}
             >
-              ثبت پست
+              ثبت اختیار
             </Button>
           </Box>
         </Paper>

@@ -39,7 +39,9 @@ public static class DependencyInjection
         services.Configure<IamOptions>(configuration.GetSection(IamOptions.SectionName));
         services.AddHttpClient("iam");
         services.AddScoped<IIamClient, IamClient>();
-        services.AddScoped<Application.Integration.Iam.IBffSessionStore, Integration.InMemoryBffSessionStore>();
+        // نشست BFF باید Singleton باشد؛ InMemoryBffSessionStore حافظه داخلی دارد
+        // و با AddScoped هر درخواست استور خالی می‌گرفت (علت 401 نشست).
+        services.AddSingleton<Application.Integration.Iam.IBffSessionStore, Integration.InMemoryBffSessionStore>();
 
         // ICurrentUser به وسیله لایه API (پیاده‌سازی BFF) ثبت می‌شود.
         // DbContext و interceptor به صورت Scoped و مبتنی بر ICurrentUser/ITenantContext ثبت می‌شوند.

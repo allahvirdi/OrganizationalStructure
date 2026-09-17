@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import RequirePermission from "../../../src/components/RequirePermission";
 import {
   Alert,
   Box,
@@ -19,30 +20,30 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../src/components/RequireAuth";
-import { useEmployees, useSetEmployeeStatus } from "../../src/features/employees/useEmployees";
-import { maskSensitive, useCanViewSensitiveData } from "../../src/features/employees/usePermissions";
-
-const pageSize = 10;
+import {
+  useDisableResponsibility,
+  useResponsibilities,
+} from "../../../src/features/responsibilities/useResponsibilities";
 
 /**
- * فهرست پرسنل.
+ * فهرست مسئولیت‌ها.
  */
-export default function EmployeesPage() {
+export default function ResponsibilitiesPage() {
   return (
-    <RequireAuth>
-      <EmployeesContent />
-    </RequireAuth>
+    <RequirePermission permission="OrganizationStructure.Responsibility.View">
+      <ResponsibilitiesContent />
+    </RequirePermission>
   );
 }
 
-function EmployeesContent() {
+const pageSize = 10;
+
+function ResponsibilitiesContent() {
   const [page, setPage] = React.useState(0);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [draft, setDraft] = React.useState("");
-  const canViewSensitive = useCanViewSensitiveData();
 
-  const employeesQuery = useEmployees({
+  const listQuery = useResponsibilities({
     searchTerm: searchTerm || undefined,
     page: page + 1,
     pageSize,
@@ -60,15 +61,19 @@ function EmployeesContent() {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            پرسنل
+            مسئولیت‌ها
           </Typography>
-          <Button component={Link} href="/employees/new" variant="contained">
-            پرسنل جدید
+          <Button
+            component={Link}
+            href="/responsibilities/new"
+            variant="contained"
+          >
+            مسئولیت جدید
           </Button>
         </Box>
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
           <TextField
-            label="جستجو (کد پرسنلی/کد ملی)"
+            label="جستجو (کد/عنوان)"
             size="small"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -89,33 +94,28 @@ function EmployeesContent() {
             جستجو
           </Button>
         </Box>
-        {employeesQuery.isError && (
-          <Alert severity="error">خطا در دریافت فهرست پرسنل.</Alert>
+        {listQuery.isError && (
+          <Alert severity="error">خطا در دریافت فهرست.</Alert>
         )}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>کد پرسنلی</TableCell>
-                <TableCell>نام و نام خانوادگی</TableCell>
-                <TableCell>کد ملی</TableCell>
+                <TableCell>کد</TableCell>
+                <TableCell>عنوان</TableCell>
                 <TableCell>وضعیت</TableCell>
                 <TableCell>عملیات</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {(employeesQuery.data?.items ?? []).map((employee) => (
-                <EmployeeRow
-                  key={employee.id}
-                  employee={employee}
-                  canViewSensitive={canViewSensitive}
-                />
+              {(listQuery.data?.items ?? []).map((item) => (
+                <ResponsibilityRow key={item.id} item={item} />
               ))}
             </TableBody>
           </Table>
           <TablePagination
             component="div"
-            count={employeesQuery.data?.totalCount ?? 0}
+            count={listQuery.data?.totalCount ?? 0}
             page={page}
             rowsPerPage={pageSize}
             rowsPerPageOptions={[pageSize]}
@@ -130,63 +130,53 @@ function EmployeesContent() {
   );
 }
 
-function EmployeeRow({
-  employee,
-  canViewSensitive,
+function ResponsibilityRow({
+  item,
 }: {
-  employee: {
-    id: string;
-    personnelCode: string;
-    firstName: string;
-    lastName: string;
-    nationalCode: string;
-    isActive: boolean;
-  };
-  canViewSensitive: boolean;
+  item: { id: string; code: string; title: string; isActive: boolean };
 }) {
-  const setStatus = useSetEmployeeStatus(employee.id);
+  const disable = useDisableResponsibility(item.id);
   const [error, setError] = React.useState<string | null>(null);
 
   return (
     <TableRow>
-      <TableCell>{employee.personnelCode}</TableCell>
-      <TableCell>
-        {employee.firstName} {employee.lastName}
-      </TableCell>
-      <TableCell>{maskSensitive(employee.nationalCode, canViewSensitive)}</TableCell>
+      <TableCell dir="ltr">{item.code}</TableCell>
+      <TableCell>{item.title}</TableCell>
       <TableCell>
         <Chip
-          label={employee.isActive ? "فعال" : "غیرفعال"}
+          label={item.isActive ? "فعال" : "غیرفعال"}
           size="small"
-          color={employee.isActive ? "success" : "default"}
+          color={item.isActive ? "success" : "default"}
         />
       </TableCell>
       <TableCell>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <Button
             component={Link}
-            href={`/employees/${employee.id}`}
+            href={`/responsibilities/${encodeURIComponent(item.code)}`}
             size="small"
           >
             جزئیات
           </Button>
-          <Button
-            size="small"
-            color={employee.isActive ? "warning" : "success"}
-            disabled={setStatus.isPending}
-            onClick={() => {
-              setError(null);
-              setStatus.mutate(!employee.isActive, {
-                onError: () =>
-                  setError("خطا در تغییر وضعیت."),
-              });
-            }}
-          >
-            {employee.isActive ? "غیرفعال" : "فعال"}
-          </Button>
+          {item.isActive && (
+            <Button
+              size="small"
+              color="warning"
+              disabled={disable.isPending}
+              onClick={() => {
+                setError(null);
+                disable.mutate(undefined, {
+                  onError: () =>
+                    setError("غیرفعال‌سازی ممکن نیست (انتساب جاری دارد؟)."),
+                });
+              }}
+            >
+              غیرفعال
+            </Button>
+          )}
         </Box>
         {error && (
-          <Typography variant="caption" color="error">
+          <Typography variant="caption" color="error" sx={{ display: "block" }}>
             {error}
           </Typography>
         )}

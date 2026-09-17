@@ -24,6 +24,43 @@
 
 ---
 
+## [2026-09-17] - Session-20260917-Phase6-IamFix / Phase 6 (اشکال‌زدایی ورود)
+### Added
+- `IamConfigurationValidator` — بررسی خالص و قابل‌تست کامل بودن پیکربندی IAM (`BaseAddress`، `ClientId`، `ClientSecret`)
+- هشدار صریح در راه‌اندازی `Program.cs` برای هر تنظیم بدون مقدار IAM (جلوگیری از شکست خاموش ورود)
+- ۱۵ تست جدید: `IamConfigurationValidatorTests` (۷ تست) + `IamClientTests` (۸ تست) — مجموع ۱۲۰ تست سبز
+- بخش ۶ «پیش‌نیازهای عملیاتی اتصال به IAM» در `Docs/Architecture/iam-integration.md`
+
+### Changed
+- `Iam:ClientSecret` در `appsettings.Development.json` (skip-worktree — محلی و بدون کامیت) با کلاینت `personnel-bff` سمت IAM هم‌تراز شد
+- `IamClient.PostEnvelopeAsync` بدنه پاسخ IAM را در پاسخ‌های غیرموفق نیز می‌خواند تا پیام دقیق IAM حفظ شود
+- `IBffSessionStore` از `AddScoped` به `AddSingleton` تغییر کرد — استور درون‌حافظه‌ای نشست BFF باید تک‌نمونه باشد
+- Q-009 بسته شد (DEC-028): Master Data سازمان محیط توسعه با تأیید کارفرما از طریق API خود IAM ثبت و به کاربران Seed تخصیص یافت
+
+### Fixed
+- شکست ۴۰۱ ورود با اعتبارنامه صحیح در گام `POST /api/token/validate` با خطای `invalid_client` (علت: `ClientSecret` نادرست)
+- ۴۰۱ نشست روی `/api/v1/auth/me` («نشست معتبر نیست») — علت: ثبت Scoped استور نشست؛ هر درخواست استور خالی میگرفت
+- پیام رمز اشتباه از «خطا در ارتباط با سامانه هویت.» به «نام کاربری یا رمز عبور نامعتبر است.» اصلاح شد
+- ۴۰۱ `Auth.NoScope` — با ثبت Organization و تخصیص `OrganizationId` در IAM (DEC-028) برطرف شد
+- اعتبارسنجی سرتاسری سبز: login و `/me` روی `:5297` و پروکسی `:6300` هر دو ۲۰۰
+
+### Removed
+-
+
+### Decisions / ADRs
+- DEC-028 (Q-009: تأمین Master Data سازمان محیط توسعه از طریق API خود IAM) — Accepted؛ Q-009 بسته شد
+- بدون ADR جدید؛ اتکا به DEC-018/ADR-002 و DEC-027/ADR-012
+- Q-010 (قرارداد خطای Auth) باز ماند — نیازمند تصمیم کارفرما/Tech Lead
+
+## [2026-09-16] - Frontend Shell Remediation / Phase 6
+### Added
+- `AppShell` همسو با قالب مرجع (سایدبار 272px، هدر، حالت تیره/روشن، دراور موبایل) + سیم‌کشی در `(protected)/layout`
+- منوی فیلترشده با Permission + ریدایرکت خانه به داشبورد + `RequirePermission` (اعمال در ۵ صفحه ورودی)
+- تم MUI همسو با توکن‌های قالب (ink/brand/secondary)
+
+### Changed
+- حذف RequireAuth تکراری صفحات (متمرکز در layout)
+
 ## [2026-09-16] - Session-20260916-Phase6 / Phase 6
 ### Added
 - فرانت‌اند Next.js 16 + MUI RTL + Vazirmatn (پورت 6300) + TanStack/RHF/Zod

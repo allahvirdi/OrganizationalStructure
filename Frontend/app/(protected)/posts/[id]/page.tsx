@@ -19,26 +19,23 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import RequireAuth from "../../../src/components/RequireAuth";
 import {
   useMovePost,
   usePost,
   useUpdatePost,
-} from "../../../src/features/posts/usePosts";
+} from "../../../../src/features/posts/usePosts";
 import {
   postSchema,
   type PostForm,
-} from "../../../src/features/posts/schemas";
-import { ApiError } from "../../../src/lib/api/client";
+} from "../../../../src/features/posts/schemas";
+import { ApiError } from "../../../../src/lib/api/client";
 
 /**
  * صفحه جزئیات و ویرایش پست.
  */
 export default function PostDetailPage() {
   return (
-    <RequireAuth>
-      <PostDetailContent />
-    </RequireAuth>
+    <PostDetailContent />
   );
 }
 

@@ -20,7 +20,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
     if (!isLoading && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, isError, user, router]);
 
   if (isLoading) {
     return (
