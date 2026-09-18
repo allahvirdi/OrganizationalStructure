@@ -4,10 +4,14 @@ import { apiFetch } from "../../lib/api/client";
 export interface PostSummary {
   id: string;
   organizationId: string;
+  organizationName?: string | null;
   code: string;
   title: string;
   parentId: string | null;
   isActive: boolean;
+  hasSigningAuthority?: boolean;
+  responsibilityTitles?: string[];
+  authorityTitles?: string[];
 }
 
 /** پاسخ صفحه‌بندی‌شده. */

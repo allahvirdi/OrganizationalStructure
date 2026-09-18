@@ -64,9 +64,11 @@ function PostsContent() {
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
             پست‌های سازمانی
           </Typography>
-          <Button component={Link} href="/posts/new" variant="contained">
-            پست جدید
-          </Button>
+          <RequirePermission permission="OrganizationStructure.Post.Create" fallback={null}>
+            <Button component={Link} href="/posts/new" variant="contained">
+              پست جدید
+            </Button>
+          </RequirePermission>
         </Box>
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
           <TextField
@@ -100,6 +102,8 @@ function PostsContent() {
               <TableRow>
                 <TableCell>کد</TableCell>
                 <TableCell>عنوان</TableCell>
+                <TableCell>سازمان</TableCell>
+                <TableCell>حق امضا / مسئولیت</TableCell>
                 <TableCell>وضعیت</TableCell>
                 <TableCell>عملیات</TableCell>
               </TableRow>
@@ -130,15 +134,45 @@ function PostsContent() {
 function PostRow({
   post,
 }: {
-  post: { id: string; code: string; title: string; isActive: boolean };
+  post: {
+    id: string;
+    code: string;
+    title: string;
+    isActive: boolean;
+    organizationName?: string | null;
+    hasSigningAuthority?: boolean;
+    responsibilityTitles?: string[];
+    authorityTitles?: string[];
+  };
 }) {
   const setStatus = useSetPostStatus(post.id);
   const [error, setError] = React.useState<string | null>(null);
+
+  const authorityLabels = [
+    ...(post.responsibilityTitles ?? []),
+    ...(post.authorityTitles ?? []),
+  ];
 
   return (
     <TableRow>
       <TableCell>{post.code}</TableCell>
       <TableCell>{post.title}</TableCell>
+      <TableCell>{post.organizationName ?? "—"}</TableCell>
+      <TableCell>
+        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+          {post.hasSigningAuthority && (
+            <Chip label="صاحب امضا" size="small" color="primary" variant="outlined" />
+          )}
+          {authorityLabels.map((label) => (
+            <Chip key={label} label={label} size="small" variant="outlined" />
+          ))}
+          {authorityLabels.length === 0 && !post.hasSigningAuthority && (
+            <Typography variant="caption" color="text.secondary">
+              —
+            </Typography>
+          )}
+        </Box>
+      </TableCell>
       <TableCell>
         <Chip
           label={post.isActive ? "فعال" : "غیرفعال"}

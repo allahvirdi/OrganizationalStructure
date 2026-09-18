@@ -1,4 +1,3 @@
-using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OrganizationalStructure.Application.Authorization;
@@ -6,6 +5,7 @@ using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Domain.Abstractions;
+using OrganizationalStructure.Domain.Constants;
 
 namespace OrganizationalStructure.Application.Posts.SearchPosts;
 
@@ -15,16 +15,14 @@ namespace OrganizationalStructure.Application.Posts.SearchPosts;
 public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, Result<PagedResult<PostSummaryDto>>>
 {
     private readonly IAppDbContext _db;
-    private readonly IMapper _mapper;
     private readonly ICurrentUser _currentUser;
 
     /// <summary>
     /// مقداردهی اولیه.
     /// </summary>
-    public SearchPostsQueryHandler(IAppDbContext db, IMapper mapper, ICurrentUser currentUser)
+    public SearchPostsQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
         _db = db;
-        _mapper = mapper;
         _currentUser = currentUser;
     }
 
@@ -68,8 +66,55 @@ public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, 
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
+        var organizationNames = _currentUser.VisibleOrganizations
+            .ToDictionary(organization => organization.Id, organization => organization.Name);
+
+        var postIds = items.Select(p => p.Id).ToList();
+
+        var responsibilityTitles = await (
+            from assignment in _db.ResponsibilityAssignments.AsNoTracking()
+            join responsibility in _db.Responsibilities.AsNoTracking()
+                on assignment.ResponsibilityId equals responsibility.Id
+            where postIds.Contains(assignment.PostId) && assignment.IsActive && assignment.EndDate == null
+            orderby responsibility.Code
+            select new { assignment.PostId, Title = responsibility.Title })
+            .GroupBy(x => x.PostId)
+            .ToDictionaryAsync(group => group.Key, group => group.Select(x => x.Title).ToList(), cancellationToken);
+
+        var authorityAssignments = await (
+            from assignment in _db.AuthorityAssignments.AsNoTracking()
+            join authority in _db.Authorities.AsNoTracking()
+                on assignment.AuthorityId equals authority.Id
+            where postIds.Contains(assignment.PostId) && assignment.IsActive && assignment.EndDate == null
+            orderby authority.Code
+            select new { assignment.PostId, authority.Code, authority.Title })
+            .ToListAsync(cancellationToken);
+
+        var authorityTitles = authorityAssignments
+            .GroupBy(x => x.PostId)
+            .ToDictionary(group => group.Key, group => group.Select(x => x.Title).ToList());
+
+        var hasSigningAuthority = authorityAssignments
+            .Where(x => string.Equals(x.Code, AuthorityCodes.SigningAuthority, StringComparison.Ordinal))
+            .Select(x => x.PostId)
+            .ToHashSet();
+
+        var summaries = items.Select(post => new PostSummaryDto
+        {
+            Id = post.Id,
+            OrganizationId = post.OrganizationId,
+            OrganizationName = organizationNames.GetValueOrDefault(post.OrganizationId),
+            Code = post.Code,
+            Title = post.Title,
+            ParentId = post.ParentId,
+            IsActive = post.IsActive,
+            HasSigningAuthority = hasSigningAuthority.Contains(post.Id),
+            ResponsibilityTitles = responsibilityTitles.GetValueOrDefault(post.Id) ?? new List<string>(),
+            AuthorityTitles = authorityTitles.GetValueOrDefault(post.Id) ?? new List<string>()
+        }).ToList();
+
         var result = new PagedResult<PostSummaryDto>(
-            _mapper.Map<IReadOnlyList<PostSummaryDto>>(items),
+            summaries,
             totalCount,
             request.Page,
             request.PageSize);

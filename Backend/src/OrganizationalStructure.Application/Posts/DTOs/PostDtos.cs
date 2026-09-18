@@ -78,6 +78,11 @@ public sealed record PostSummaryDto
     public Guid OrganizationId { get; init; }
 
     /// <summary>
+    /// نام سازمان در محدوده مشاهده کاربر جاری (خالی اگر سازمان در محدوده نباشد).
+    /// </summary>
+    public string? OrganizationName { get; init; }
+
+    /// <summary>
     /// کد پست.
     /// </summary>
     public string Code { get; init; } = string.Empty;
@@ -96,6 +101,23 @@ public sealed record PostSummaryDto
     /// آیا فعال است؟
     /// </summary>
     public bool IsActive { get; init; }
+
+    /// <summary>
+    /// آیا پست در حال حاضر صاحب‌امضا است؟
+    /// </summary>
+    public bool HasSigningAuthority { get; init; }
+
+    /// <summary>
+    /// عنوان مسئولیت‌های جاری پست.
+    /// </summary>
+    public IReadOnlyList<string> ResponsibilityTitles { get; init; } =
+        Array.Empty<string>();
+
+    /// <summary>
+    /// عنوان اختیارهای جاری پست.
+    /// </summary>
+    public IReadOnlyList<string> AuthorityTitles { get; init; } =
+        Array.Empty<string>();
 }
 
 /// <summary>
