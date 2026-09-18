@@ -23,6 +23,7 @@ export const responsibilitiesQueryKey = ["responsibilities"] as const;
  */
 export function useResponsibilities(input: {
   searchTerm?: string;
+  isActive?: boolean;
   page: number;
   pageSize: number;
 }) {

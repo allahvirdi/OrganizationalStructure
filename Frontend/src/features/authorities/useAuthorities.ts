@@ -23,6 +23,7 @@ export const authoritiesQueryKey = ["authorities"] as const;
  */
 export function useAuthorities(input: {
   searchTerm?: string;
+  isActive?: boolean;
   page: number;
   pageSize: number;
 }) {
