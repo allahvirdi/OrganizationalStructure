@@ -41,7 +41,9 @@ import {
 } from "../../../../src/features/responsibilities/useResponsibilities";
 import type { Responsibility } from "../../../../src/features/responsibilities/api";
 import { endResponsibilityAssignment } from "../../../../src/features/responsibilities/api";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchPosts } from "../../../../src/features/posts/api";
+import type { PostSummary } from "../../../../src/features/org-chart/api";
 import { postsQueryKey } from "../../../../src/features/posts/usePosts";
 import { Autocomplete, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -89,6 +91,7 @@ function PostEditor({
 }: {
   post: {
     id: string;
+    organizationId: string;
     code: string;
     title: string;
     description?: string | null;
@@ -118,8 +121,23 @@ function PostEditor({
   const updatePost = useUpdatePost(post.id);
   const movePost = useMovePost(post.id);
   const [moveOpen, setMoveOpen] = React.useState(false);
-  const [newParentId, setNewParentId] = React.useState("");
+  const [newParent, setNewParent] = React.useState<PostSummary | null>(null);
+  const [parentSearchTerm, setParentSearchTerm] = React.useState("");
+  const [parentPage, setParentPage] = React.useState(1);
   const [assignMessage, setAssignMessage] = React.useState<string | null>(null);
+
+  // --- Parent search for move dialog (same pattern as new/page.tsx) ---
+  const parents = useQuery({
+    queryKey: ["posts", "parent-options", post.organizationId, parentSearchTerm, parentPage],
+    enabled: moveOpen && Boolean(post.organizationId),
+    queryFn: () =>
+      fetchPosts({
+        organizationId: post.organizationId,
+        searchTerm: parentSearchTerm || undefined,
+        page: parentPage,
+        pageSize: 10,
+      }),
+  });
   const [assignError, setAssignError] = React.useState<string | null>(null);
   const [endingAssignment, setEndingAssignment] = React.useState(false);
 
@@ -235,9 +253,12 @@ function PostEditor({
   };
 
   const onMove = () => {
-    movePost.mutate(newParentId.trim() === "" ? null : newParentId.trim(), {
+    movePost.mutate(newParent?.id ?? null, {
       onSuccess: () => {
         setMoveOpen(false);
+        setNewParent(null);
+        setParentSearchTerm("");
+        setParentPage(1);
         router.refresh();
       },
     });
@@ -424,19 +445,65 @@ function PostEditor({
             <Alert severity="error" sx={{ mt: 2 }}>{assignError}</Alert>
           )}
         </Paper>
-        <Dialog open={moveOpen} onClose={() => setMoveOpen(false)}>
+        <Dialog open={moveOpen} onClose={() => setMoveOpen(false)} maxWidth="sm" fullWidth>
           <DialogTitle>جابجایی پست در درخت</DialogTitle>
           <DialogContent>
-            <TextField
-              label="شناسه والد جدید (خالی یعنی ریشه)"
-              fullWidth
+            <Autocomplete
               sx={{ mt: 1 }}
-              value={newParentId}
-              onChange={(e) => setNewParentId(e.target.value)}
+              options={parents.data?.items ?? []}
+              value={newParent}
+              onChange={(_, value) => setNewParent(value)}
+              getOptionLabel={(option) => `${option.code} — ${option.title}`}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              onInputChange={(_, value) => {
+                setParentSearchTerm(value);
+                setParentPage(1);
+              }}
+              loading={parents.isFetching}
+              loadingText="در حال دریافت پستها..."
+              noOptionsText={
+                parents.isError ? "خطا در دریافت پستها" : "پستی یافت نشد"
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="والد جدید (خالی یعنی ریشه)"
+                  helperText="پست موردنظر را جستجو و انتخاب کنید."
+                />
+              )}
             />
+            {parents.isError && (
+              <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography variant="caption" color="error">
+                  خطا در دریافت پستها
+                </Typography>
+                <Button size="small" onClick={() => parents.refetch()}>تلاش مجدد</Button>
+              </Box>
+            )}
+            <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}>
+              <Button
+                size="small"
+                disabled={parentPage === 1 || parents.isFetching}
+                onClick={() => setParentPage((page) => page - 1)}
+              >
+                قبلی
+              </Button>
+              <Typography variant="caption">صفحه {parentPage}</Typography>
+              <Button
+                size="small"
+                disabled={
+                  parents.isFetching ||
+                  !parents.data ||
+                  parentPage >= parents.data.totalPages
+                }
+                onClick={() => setParentPage((page) => page + 1)}
+              >
+                بعدی
+              </Button>
+            </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setMoveOpen(false)}>انصراف</Button>
+            <Button onClick={() => { setMoveOpen(false); setNewParent(null); setParentSearchTerm(""); setParentPage(1); }}>انصراف</Button>
             <Button
               variant="contained"
               disabled={movePost.isPending}
