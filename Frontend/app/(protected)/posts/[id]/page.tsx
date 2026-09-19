@@ -29,6 +29,23 @@ import {
   type PostForm,
 } from "../../../../src/features/posts/schemas";
 import { ApiError } from "../../../../src/lib/api/client";
+import {
+  useAssignAuthority,
+  useAuthorities,
+} from "../../../../src/features/authorities/useAuthorities";
+import type { Authority } from "../../../../src/features/authorities/api";
+import { endAuthorityAssignment } from "../../../../src/features/authorities/api";
+import {
+  useAssignResponsibility,
+  useResponsibilities,
+} from "../../../../src/features/responsibilities/useResponsibilities";
+import type { Responsibility } from "../../../../src/features/responsibilities/api";
+import { endResponsibilityAssignment } from "../../../../src/features/responsibilities/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { postsQueryKey } from "../../../../src/features/posts/usePosts";
+import { Autocomplete, Tooltip } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
 
 /**
  * صفحه جزئیات و ویرایش پست.
@@ -79,22 +96,120 @@ function PostEditor({
     isActive: boolean;
     hasSigningAuthority: boolean;
     responsibilities: Array<{
+      id: string;
       responsibilityCode: string;
       responsibilityTitle: string;
+      startDate?: string | null;
+      endDate?: string | null;
       isActive: boolean;
     }>;
     authorities: Array<{
+      id: string;
       authorityCode: string;
       authorityTitle: string;
+      startDate?: string | null;
+      endDate?: string | null;
       isActive: boolean;
     }>;
   };
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const updatePost = useUpdatePost(post.id);
   const movePost = useMovePost(post.id);
   const [moveOpen, setMoveOpen] = React.useState(false);
   const [newParentId, setNewParentId] = React.useState("");
+  const [assignMessage, setAssignMessage] = React.useState<string | null>(null);
+  const [assignError, setAssignError] = React.useState<string | null>(null);
+  const [endingAssignment, setEndingAssignment] = React.useState(false);
+
+  // --- Responsibility assignment ---
+  const assignResponsibility = useAssignResponsibility();
+  const responsibilitiesList = useResponsibilities({ isActive: true, page: 1, pageSize: 50 });
+  const [selectedResponsibility, setSelectedResponsibility] = React.useState<
+    Pick<Responsibility, "code" | "title"> | null
+  >(null);
+
+  // --- Authority assignment ---
+  const assignAuthority = useAssignAuthority();
+  const authoritiesList = useAuthorities({ isActive: true, page: 1, pageSize: 50 });
+  const [selectedAuthority, setSelectedAuthority] = React.useState<
+    Pick<Authority, "code" | "title"> | null
+  >(null);
+
+  const invalidatePost = () => {
+    queryClient.invalidateQueries({ queryKey: [...postsQueryKey, "detail", post.id] });
+  };
+
+  const handleAssignResponsibility = () => {
+    if (!selectedResponsibility) return;
+    setAssignMessage(null);
+    setAssignError(null);
+    assignResponsibility.mutate(
+      { responsibilityCode: selectedResponsibility.code, postId: post.id },
+      {
+        onSuccess: () => {
+          setSelectedResponsibility(null);
+          setAssignMessage("مسئولیت با موفقیت اضافه شد.");
+          invalidatePost();
+        },
+        onError: (e) => {
+          setAssignError(e instanceof ApiError ? e.message : "خطا در انتساب مسئولیت.");
+        },
+      },
+    );
+  };
+
+  const handleAssignAuthority = () => {
+    if (!selectedAuthority) return;
+    setAssignMessage(null);
+    setAssignError(null);
+    assignAuthority.mutate(
+      { authorityCode: selectedAuthority.code, postId: post.id },
+      {
+        onSuccess: () => {
+          setSelectedAuthority(null);
+          setAssignMessage("اختیار با موفقیت اضافه شد.");
+          invalidatePost();
+        },
+        onError: (e) => {
+          setAssignError(e instanceof ApiError ? e.message : "خطا در انتساب اختیار.");
+        },
+      },
+    );
+  };
+
+  const handleEndResponsibility = async (assignmentId: string) => {
+    setAssignMessage(null);
+    setAssignError(null);
+    setEndingAssignment(true);
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      await endResponsibilityAssignment(assignmentId, today);
+      setAssignMessage("مسئولیت با موفقیت حذف شد.");
+      invalidatePost();
+    } catch (e) {
+      setAssignError(e instanceof ApiError ? e.message : "خطا در حذف مسئولیت.");
+    } finally {
+      setEndingAssignment(false);
+    }
+  };
+
+  const handleEndAuthority = async (assignmentId: string) => {
+    setAssignMessage(null);
+    setAssignError(null);
+    setEndingAssignment(true);
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      await endAuthorityAssignment(assignmentId, today);
+      setAssignMessage("اختیار با موفقیت حذف شد.");
+      invalidatePost();
+    } catch (e) {
+      setAssignError(e instanceof ApiError ? e.message : "خطا در حذف اختیار.");
+    } finally {
+      setEndingAssignment(false);
+    }
+  };
   const {
     register,
     handleSubmit,
@@ -200,15 +315,51 @@ function PostEditor({
               مسئولیتی ثبت نشده است.
             </Typography>
           )}
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
             {post.responsibilities.map((r) => (
               <Chip
-                key={r.responsibilityCode}
+                key={r.id}
                 label={r.responsibilityTitle}
                 size="small"
                 variant="outlined"
+                disabled={endingAssignment}
+                onDelete={() => handleEndResponsibility(r.id)}
+                deleteIcon={
+                  <Tooltip title="حذف مسئولیت">
+                    <CloseIcon fontSize="small" />
+                  </Tooltip>
+                }
               />
             ))}
+          </Box>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Autocomplete
+              size="small"
+              sx={{ minWidth: 250 }}
+              options={(responsibilitiesList.data?.items ?? []).map((item) => ({
+                code: item.code,
+                title: item.title,
+              }))}
+              value={selectedResponsibility}
+              onChange={(_, value) => setSelectedResponsibility(value)}
+              getOptionLabel={(option) => `${option.code} — ${option.title}`}
+              isOptionEqualToValue={(option, value) => option.code === value.code}
+              loading={responsibilitiesList.isFetching}
+              loadingText="در حال دریافت..."
+              noOptionsText="مسئولیتی یافت نشد"
+              renderInput={(params) => (
+                <TextField {...params} label="افزودن مسئولیت" size="small" />
+              )}
+            />
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<AddIcon />}
+              disabled={!selectedResponsibility || assignResponsibility.isPending}
+              onClick={handleAssignResponsibility}
+            >
+              افزودن
+            </Button>
           </Box>
           <Divider sx={{ my: 2 }} />
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }} gutterBottom>
@@ -219,17 +370,59 @@ function PostEditor({
               اختیاری ثبت نشده است.
             </Typography>
           )}
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
             {post.authorities.map((a) => (
               <Chip
-                key={a.authorityCode}
+                key={a.id}
                 label={a.authorityTitle}
                 size="small"
                 color="primary"
                 variant="outlined"
+                disabled={endingAssignment}
+                onDelete={() => handleEndAuthority(a.id)}
+                deleteIcon={
+                  <Tooltip title="حذف اختیار">
+                    <CloseIcon fontSize="small" />
+                  </Tooltip>
+                }
               />
             ))}
           </Box>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Autocomplete
+              size="small"
+              sx={{ minWidth: 250 }}
+              options={(authoritiesList.data?.items ?? []).map((item) => ({
+                code: item.code,
+                title: item.title,
+              }))}
+              value={selectedAuthority}
+              onChange={(_, value) => setSelectedAuthority(value)}
+              getOptionLabel={(option) => `${option.code} — ${option.title}`}
+              isOptionEqualToValue={(option, value) => option.code === value.code}
+              loading={authoritiesList.isFetching}
+              loadingText="در حال دریافت..."
+              noOptionsText="اختیاری یافت نشد"
+              renderInput={(params) => (
+                <TextField {...params} label="افزودن اختیار" size="small" />
+              )}
+            />
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<AddIcon />}
+              disabled={!selectedAuthority || assignAuthority.isPending}
+              onClick={handleAssignAuthority}
+            >
+              افزودن
+            </Button>
+          </Box>
+          {assignMessage && (
+            <Alert severity="success" sx={{ mt: 2 }}>{assignMessage}</Alert>
+          )}
+          {assignError && (
+            <Alert severity="error" sx={{ mt: 2 }}>{assignError}</Alert>
+          )}
         </Paper>
         <Dialog open={moveOpen} onClose={() => setMoveOpen(false)}>
           <DialogTitle>جابجایی پست در درخت</DialogTitle>
