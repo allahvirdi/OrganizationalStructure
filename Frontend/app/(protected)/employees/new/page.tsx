@@ -44,7 +44,7 @@ function NewEmployeeContent() {
         firstName: values.firstName,
         lastName: values.lastName,
         nationalCode: values.nationalCode,
-        mobile: values.mobile || null,
+        mobile: values.mobile,
       },
       {
         onSuccess: (id) => router.replace(`/employees/${id}`),
@@ -98,7 +98,7 @@ function NewEmployeeContent() {
               {...register("nationalCode")}
             />
             <TextField
-              label="موبایل (اختیاری)"
+              label="شماره همراه"
               fullWidth
               error={Boolean(errors.mobile)}
               helperText={errors.mobile?.message}

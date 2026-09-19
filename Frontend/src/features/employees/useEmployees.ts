@@ -81,7 +81,7 @@ export function useUpdateEmployee(id: string) {
       firstName: string;
       lastName: string;
       nationalCode: string;
-      mobile?: string | null;
+      mobile: string;
     }) => updateEmployee(id, input),
     onSuccess: () => invalidate(),
   });

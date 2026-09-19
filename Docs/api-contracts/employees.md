@@ -16,7 +16,7 @@
   "personnelCode": "00000001",
   "firstName": "علی",
   "lastName": "رضایی",
-  "nationalCode": "0012345678",
+  "nationalCode": "0013542419",
   "mobile": "09120000000",
   "birthDate": "1981-08-03",
   "serviceYears": 12,
@@ -50,7 +50,7 @@ Request:
 {
   "personnelCode": "00000001",
   "firstName": "علی", "lastName": "رضایی",
-  "nationalCode": "0012345678", "mobile": "09120000000",
+  "nationalCode": "0013542419", "mobile": "09120000000",
   "birthDate": "1981-08-03",
   "serviceYears": 12, "serviceMonths": 3,
   "pezhvakMobile": "09190000000",
@@ -58,11 +58,21 @@ Request:
 }
 ```
 - موفق: `201 Created` + شناسه
-- ناموفق: `400` (کد غیر ۸ رقمی، همراهی سال/ماه سابقه) / `409` (کد تکراری)
+- ناموفق: `400` / `409` (کد تکراری)
+
+**قواعد اعتبارسنجی:**
+| فیلد | قاعده |
+|---|---|
+| `personnelCode` | اجباری، عدد ۸ رقمی (`^[0-9]{8}$`)، یکتا در مستأجر |
+| `nationalCode` | اجباری، ۱۰ رقم، الگوریتم چک‌سام کد ملی ایران (ضریب ۱۰..۲، مد ۱۱) |
+| `mobile` | اجباری، شماره موبایل ایرانی (`^09[0-9]{9}$`) |
+| `serviceYears`/`serviceMonths` | اختیاری ولی فقط با هم (هر دو یا هیچ‌کدام) |
 
 ### ویرایش پرسنل — `PUT /api/v1/employees/{id}`
 Request: `{ "firstName": "...", "lastName": "...", "nationalCode": "...", "mobile": "..." }`
 - موفق: `204` — ناموفق: `400` / `404`
+
+> قواعد اعتبارسنجی مشابه ثبت پرسنل (چک‌سام کد ملی + فرمت موبایل ایرانی اجباری).
 
 ### ویرایش تکمیلی — `PATCH /api/v1/employees/{id}/supplementary`
 Request: `{ "birthDate": "...", "serviceYears": 12, "serviceMonths": 3, "pezhvakMobile": "..." }`

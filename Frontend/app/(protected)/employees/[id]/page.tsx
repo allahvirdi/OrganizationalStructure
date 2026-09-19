@@ -102,7 +102,7 @@ function EmployeeDetailContent() {
             value={maskSensitive(employee.nationalCode, canViewSensitive)}
           />
           <InfoRow
-            label="موبایل"
+            label="شماره همراه"
             value={maskSensitive(employee.mobile, canViewSensitive)}
           />
           <InfoRow
@@ -182,7 +182,7 @@ function BasicInfoEditor({
       firstName: values.firstName,
       lastName: values.lastName,
       nationalCode: values.nationalCode,
-      mobile: values.mobile || null,
+      mobile: values.mobile,
     });
   };
 
@@ -221,7 +221,7 @@ function BasicInfoEditor({
             {...register("nationalCode")}
           />
           <TextField
-            label="موبایل"
+            label="شماره همراه"
             fullWidth
             error={Boolean(errors.mobile)}
             helperText={errors.mobile?.message}

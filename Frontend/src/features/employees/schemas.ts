@@ -1,7 +1,26 @@
 import { z } from "zod";
 
 /**
- * اعتبارسنجی فرم پرسنل (همسو با Backend: کد ۸ رقمی).
+ * بررسی اعتبار کد ملی ایران (الگوریتم چک‌سام رسمی).
+ * ۱۰ رقم: ارقام ۱ تا ۹ در ضرایب ۱۰ تا ۲ ضرب، مد ۱۱، مقایسه با رقم دهم.
+ */
+function isValidIranianNationalCode(value: string): boolean {
+  const digits = value.trim();
+  if (digits.length !== 10 || !/^\d{10}$/.test(digits)) return false;
+  if (new Set(digits).size === 1) return false; // تمام ارقام یکسان
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += Number(digits[i]) * (10 - i);
+  }
+  const remainder = sum % 11;
+  const checkDigit = Number(digits[9]);
+  const expected = remainder < 2 ? remainder : 11 - remainder;
+  return checkDigit === expected;
+}
+
+/**
+ * اعتبارسنجی فرم پرسنل (همسو با Backend: کد ۸ رقمی، چک‌سام کد ملی، موبایل ایرانی اجباری).
  */
 export const employeeSchema = z.object({
   personnelCode: z
@@ -18,8 +37,11 @@ export const employeeSchema = z.object({
   nationalCode: z
     .string()
     .min(1, "کد ملی الزامی است.")
-    .max(20, "کد ملی حداکثر ۲۰ کاراکتر است."),
-  mobile: z.string().max(20).optional().or(z.literal("")),
+    .refine(isValidIranianNationalCode, "کد ملی معتبر نیست."),
+  mobile: z
+    .string()
+    .min(1, "شماره همراه الزامی است.")
+    .regex(/^09[0-9]{9}$/, "شماره همراه باید فرمت ایرانی معتبر داشته باشد (مانند 09121234567)."),
 });
 
 export type EmployeeForm = z.infer<typeof employeeSchema>;

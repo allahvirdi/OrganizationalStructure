@@ -10,7 +10,7 @@ namespace OrganizationalStructure.Application.Employees.CreateEmployee;
 /// <param name="FirstName">نام</param>
 /// <param name="LastName">نام خانوادگی</param>
 /// <param name="NationalCode">کد ملی</param>
-/// <param name="Mobile">شماره موبایل (اختیاری)</param>
+/// <param name="Mobile">شماره همراه (اجباری، فرمت ایرانی)</param>
 /// <param name="BirthDate">تاریخ تولد (اختیاری)</param>
 /// <param name="ServiceYears">سال سابقه حراست (اختیاری؛ همراه ماه)</param>
 /// <param name="ServiceMonths">ماه سابقه حراست ۰..۱۱ (اختیاری؛ همراه سال)</param>
@@ -21,7 +21,7 @@ public sealed record CreateEmployeeCommand(
     string FirstName,
     string LastName,
     string NationalCode,
-    string? Mobile,
+    string Mobile,
     DateOnly? BirthDate,
     int? ServiceYears,
     int? ServiceMonths,

@@ -69,7 +69,7 @@ export function createEmployee(input: {
   firstName: string;
   lastName: string;
   nationalCode: string;
-  mobile?: string | null;
+  mobile: string;
   birthDate?: string | null;
   serviceYears?: number | null;
   serviceMonths?: number | null;
@@ -90,7 +90,7 @@ export function updateEmployee(
     firstName: string;
     lastName: string;
     nationalCode: string;
-    mobile?: string | null;
+    mobile: string;
   },
 ): Promise<void> {
   return apiFetch<void>(`/api/v1/employees/${id}`, {

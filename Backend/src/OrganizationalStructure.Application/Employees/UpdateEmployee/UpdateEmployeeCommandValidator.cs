@@ -1,4 +1,5 @@
 using FluentValidation;
+using OrganizationalStructure.Application.Common;
 
 namespace OrganizationalStructure.Application.Employees.UpdateEmployee;
 
@@ -31,7 +32,13 @@ public sealed class UpdateEmployeeCommandValidator : AbstractValidator<UpdateEmp
         RuleFor(x => x.NationalCode)
             .NotEmpty()
             .WithMessage("کد ملی الزامی است.")
-            .MaximumLength(20)
-            .WithMessage("کد ملی حداکثر ۲۰ کاراکتر است.");
+            .Must(IranianNationalCodeValidator.IsValid)
+            .WithMessage("کد ملی معتبر نیست.");
+
+        RuleFor(x => x.Mobile)
+            .NotEmpty()
+            .WithMessage("شماره همراه الزامی است.")
+            .Matches("^09[0-9]{9}$")
+            .WithMessage("شماره همراه باید فرمت ایرانی معتبر داشته باشد (مانند 09121234567).");
     }
 }

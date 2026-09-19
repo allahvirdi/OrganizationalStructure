@@ -24,7 +24,7 @@ public sealed class EmployeesApiTests : IClassFixture<TestWebApplicationFactory>
         personnelCode = code,
         firstName = "علی",
         lastName = "رضایی",
-        nationalCode = "0012345678",
+        nationalCode = "0013542419",
         mobile = "09120000000",
         birthDate = "1981-08-03",
         serviceYears = 12,
@@ -60,7 +60,7 @@ public sealed class EmployeesApiTests : IClassFixture<TestWebApplicationFactory>
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await getResponse.Content.ReadAsStringAsync();
-        body.Should().Contain("علی").And.Contain("0012345678");
+        body.Should().Contain("علی").And.Contain("0013542419");
     }
 
     /// <summary>
