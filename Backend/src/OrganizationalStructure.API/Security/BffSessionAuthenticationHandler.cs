@@ -83,10 +83,12 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
             }
 
             var scope = session.VisibleOrganizationIds;
+            var visibleOrganizations = session.VisibleOrganizations;
             var refreshed = await RefreshScopeAsync(session.AccessToken, validation.OrganizationId);
             if (refreshed.Count > 0)
             {
-                scope = refreshed;
+                scope = refreshed.Select(organization => organization.Id).ToArray();
+                visibleOrganizations = refreshed;
             }
 
             session = session with
@@ -97,7 +99,8 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
                 OrganizationId = validation.OrganizationId ?? session.OrganizationId,
                 Roles = validation.Roles.Count > 0 ? validation.Roles : session.Roles,
                 Permissions = validation.Permissions.Count > 0 ? validation.Permissions : session.Permissions,
-                VisibleOrganizationIds = scope
+                VisibleOrganizationIds = scope,
+                VisibleOrganizations = visibleOrganizations
             };
             await _sessions.SaveAsync(session);
         }
@@ -135,6 +138,13 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
             claims.Add(new Claim(ClaimNames.OrganizationScope, organizationId.ToString()));
         }
 
+        foreach (var organization in session.VisibleOrganizations)
+        {
+            claims.Add(new Claim(
+                ClaimNames.OrganizationScopeNode,
+                OrganizationScopeClaim.Serialize(organization)));
+        }
+
         var identity = new ClaimsIdentity(claims, SchemeName);
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, SchemeName);
@@ -145,7 +155,7 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
     /// <summary>
     /// بازیابی Scope از درخت IAM؛ در صورت شکست، مجموعه قبلی حفظ می‌شود.
     /// </summary>
-    private Task<IReadOnlyList<Guid>> RefreshScopeAsync(
+    private Task<IReadOnlyList<OrganizationReference>> RefreshScopeAsync(
         string accessToken,
         string? organizationId) =>
         _scopeResolver.ResolveScopeAsync(accessToken, organizationId);

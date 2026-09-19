@@ -6,7 +6,7 @@ import { Box, CircularProgress } from "@mui/material";
 import { useMe } from "../features/auth/useAuth";
 
 /**
- * نگهبان مسیر: بدون احراز به صفحه ورود هدایت می‌کند.
+ * نگهبان مسیر: بدون احراز به صفحه لندینگ (ورود) هدایت می‌کند.
  * همچنین بررسی می‌کند که کاربر دارای شناسه معتبر باشد (userId).
  * این برای مقابله با APIهایی که به‌جای ۴۰۱، ۲۰۰ با خطا برمی‌گردانند.
  */
@@ -18,7 +18,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
     // کاربر معتبر باید userId داشته باشد
     const isAuthenticated = !isLoading && !isError && user?.userId;
     if (!isLoading && !isAuthenticated) {
-      router.replace("/login");
+      router.replace("/");
     }
   }, [isLoading, isError, user, router]);
 

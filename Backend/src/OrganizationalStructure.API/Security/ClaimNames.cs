@@ -39,4 +39,9 @@ public static class ClaimNames
     /// محدوده سازمانی محاسبه‌شده BFF (چند مقداری).
     /// </summary>
     public const string OrganizationScope = "organization_scope";
+
+    /// <summary>
+    /// مرجع سازمان داخل محدوده BFF (چند مقداری؛ هر مقدار یک JSON شامل شناسه/نام/کد/والد/عمق).
+    /// </summary>
+    public const string OrganizationScopeNode = "organization_scope_node";
 }

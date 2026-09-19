@@ -3,8 +3,8 @@
 > این پوشه شامل قراردادهای API سیستم است.
 > طبق اصل API-First (Baseline §۶)، **قبل از شروع هر فیچر Frontend** قرارداد API باید اینجا تعریف و ثبت شود.
 
-**آخرین به‌روزرسانی:** `2026-09-14`
-**وضعیت:** اسکلت — مستندات در Phase 3/5 ایجاد می‌شوند.
+**آخرین به‌روزرسانی:** `2026-09-18`
+**وضعیت:** قراردادهای Sliceهای پیاده‌شده ثبت شده‌اند (Phase 3/5/6).
 
 ---
 
@@ -33,11 +33,12 @@
 
 ## فایل‌های قراردادی
 
-- `posts.md` — (Phase 3)
+- `posts.md` — ✅ Phase 3 (به‌روزرسانی Phase 6: محدوده سازمانی)
 - `employees.md` — (Phase 3)
 - `assignments.md` — (Phase 3)
-- `authority.md` — (Phase 3)
-- `organizations.md` — (Phase 5)
+- `organizations.md` — ✅ Phase 6 (مرجع IAM — گزینه‌های سازمان کاربر)
+- `responsibilities.md` — ✅ Assignment (ADR-011)
+- `authorities.md` — ✅ Assignment (ADR-011)
 - `import.md` — (Phase 7)
 
 > اسکلت در فاز ۰؛ تکمیل دقیق با تعریف Vertical Slice در فاز ۳ و قبل از Frontend (فاز ۶).

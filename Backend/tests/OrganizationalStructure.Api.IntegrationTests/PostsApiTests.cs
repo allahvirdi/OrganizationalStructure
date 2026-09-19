@@ -19,6 +19,44 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
         _factory = factory;
     }
 
+    /// <summary>هر دو نقش بدون مجوز صریح می‌توانند والد را جستجو و فرزند را در همان سازمان ثبت کنند.</summary>
+    [Theory]
+    [InlineData("SystemAdmin")]
+    [InlineData("OrganizationStructureAdmin")]
+    public async Task Create_WithAdminRoleAndParent_ShouldPersistHierarchy(string role)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", role);
+        var organizationId = TestAuthHandler.TestOrganizationId;
+        var code = Guid.NewGuid().ToString("N");
+        var parentResponse = await client.PostAsJsonAsync("/api/v1/posts", NewPostPayload(organizationId, code));
+        parentResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var parentId = await parentResponse.Content.ReadFromJsonAsync<Guid>();
+        var search = await client.GetAsync($"/api/v1/posts?organizationId={organizationId}&searchTerm={code}");
+        search.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await search.Content.ReadAsStringAsync()).Should().Contain(parentId.ToString());
+        var response = await client.PostAsJsonAsync("/api/v1/posts", NewPostPayload(organizationId, Guid.NewGuid().ToString("N"), parentId));
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var id = await response.Content.ReadFromJsonAsync<Guid>();
+        var detail = await client.GetFromJsonAsync<System.Text.Json.JsonElement>($"/api/v1/posts/{id}");
+        detail.GetProperty("organizationId").GetGuid().Should().Be(organizationId);
+        detail.GetProperty("parentId").GetGuid().Should().Be(parentId);
+        var forbidden = await client.PostAsJsonAsync("/api/v1/posts", NewPostPayload(Guid.NewGuid(), code));
+        forbidden.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    /// <summary>نقش عادی و نام مشابه مدیر بدون مجوز ایجاد پذیرفته نمی‌شوند.</summary>
+    [Theory]
+    [InlineData("User")]
+    [InlineData("organizationstructureadmin")]
+    public async Task Create_WithoutAuthorizedRole_ShouldReturnForbidden(string role)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", role);
+        var response = await client.PostAsJsonAsync("/api/v1/posts", NewPostPayload(TestAuthHandler.TestOrganizationId, "DENIED"));
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     private static object NewPostPayload(Guid organizationId, string code, Guid? parentId = null) => new
     {
         organizationId,
@@ -127,7 +165,7 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
     }
 
     /// <summary>
-    /// جستجو باید نتیجه صفحه‌بندی‌شده برگرداند.
+    /// جستجو باید نتیجه صفحه‌بندیشده برگرداند.
     /// </summary>
     [Fact]
     public async Task Search_WithFilter_ShouldReturnPagedResult()
@@ -138,10 +176,25 @@ public sealed class PostsApiTests : IClassFixture<TestWebApplicationFactory>
         await client.PostAsJsonAsync("/api/v1/posts", NewPostPayload(organizationId, "S-001"));
 
         var response = await client.GetAsync(
-            $"/api/v1/posts?organizationId={organizationId}&page=1&pageSize=10");
+            $"/api/v1/posts?organizationId={organizationId}&searchTerm=S-001&page=1&pageSize=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadAsStringAsync();
         body.Should().Contain("S-001");
+    }
+
+    /// <summary>
+    /// ثبت پست در سازمان زیرمجموعه (داخل Scope کاربر) باید مجاز باشد.
+    /// </summary>
+    [Fact]
+    public async Task Create_InDescendantOrganization_ShouldReturnCreated()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/v1/posts",
+            NewPostPayload(TestAuthHandler.TestChildOrganizationId, Guid.NewGuid().ToString("N")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }

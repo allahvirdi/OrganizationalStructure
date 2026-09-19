@@ -1,3 +1,5 @@
+using OrganizationalStructure.Domain.Abstractions;
+
 namespace OrganizationalStructure.Application.Integration.Iam;
 
 /// <summary>
@@ -59,6 +61,12 @@ public sealed record BffSession
     /// شناسه‌های سازمان‌های داخل Scope مشاهده (خود سازمان + زیرمجموعه‌ها).
     /// </summary>
     public IReadOnlyList<Guid> VisibleOrganizationIds { get; init; } = Array.Empty<Guid>();
+
+    /// <summary>
+    /// سازمان‌های داخل Scope مشاهده همراه با نام و کد (برای نمایش/انتخاب سازمان در UI).
+    /// </summary>
+    public IReadOnlyList<OrganizationReference> VisibleOrganizations { get; init; } =
+        Array.Empty<OrganizationReference>();
 }
 
 /// <summary>

@@ -24,16 +24,25 @@ public sealed class TestCurrentUser : ICurrentUser
 {
     private readonly Guid _tenantId;
     private readonly IReadOnlyCollection<Guid> _scope;
+    private readonly IReadOnlyCollection<OrganizationReference> _organizations;
 
     /// <summary>
     /// ساخت کاربر جاری تست.
     /// </summary>
     /// <param name="tenantId">شناسه مستأجر ثابت</param>
     /// <param name="scope">محدوده سازمانی صریح (خالی یعنی بدون دسترسی)</param>
-    public TestCurrentUser(Guid tenantId, IEnumerable<Guid>? scope = null)
+    /// <param name="organizations">مراجع سازمانهای داخل محدوده (برای تست گزینه‌های سازمان)</param>
+    /// <param name="organizationId">سازمان خود کاربر (برای تشخیص IsCurrent)</param>
+    public TestCurrentUser(
+        Guid tenantId,
+        IEnumerable<Guid>? scope = null,
+        IEnumerable<OrganizationReference>? organizations = null,
+        Guid? organizationId = null)
     {
         _tenantId = tenantId;
         _scope = scope?.ToArray() ?? Array.Empty<Guid>();
+        _organizations = organizations?.ToArray() ?? Array.Empty<OrganizationReference>();
+        OrganizationId = organizationId;
     }
 
     /// <inheritdoc />
@@ -46,13 +55,16 @@ public sealed class TestCurrentUser : ICurrentUser
     public Guid TenantId => _tenantId;
 
     /// <inheritdoc />
-    public Guid? OrganizationId => null;
+    public Guid? OrganizationId { get; }
 
     /// <inheritdoc />
     public IReadOnlyCollection<string> Roles => Array.Empty<string>();
 
     /// <inheritdoc />
     public IReadOnlyCollection<Guid> VisibleOrganizationIds => _scope;
+
+    /// <inheritdoc />
+    public IReadOnlyCollection<OrganizationReference> VisibleOrganizations => _organizations;
 }
 
 /// <summary>

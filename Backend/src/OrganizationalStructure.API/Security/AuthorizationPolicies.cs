@@ -132,9 +132,13 @@ public static class AuthorizationPoliciesExtensions
             {
                 options.AddPolicy(
                     policy,
-                    policyBuilder => policyBuilder.RequireClaim(
-                        AuthorizationPolicies.PermissionClaimType,
-                        policy));
+                    policyBuilder => policyBuilder
+                        .RequireAuthenticatedUser()
+                        .RequireAssertion(context =>
+                            context.User.IsInRole("SystemAdmin") ||
+                            (context.User.IsInRole("OrganizationStructureAdmin") &&
+                                (policy == AuthorizationPolicies.Post.Create || policy == AuthorizationPolicies.Post.View)) ||
+                            context.User.HasClaim(AuthorizationPolicies.PermissionClaimType, policy)));
             }
 
             options.FallbackPolicy = new AuthorizationPolicyBuilder()

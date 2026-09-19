@@ -37,6 +37,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const pathname = usePathname();
 
+  // stylis-plugin-rtl mirrors the left anchor to the physical right edge.
   const drawer = <SidebarContent onNavigate={() => setMobileOpen(false)} />;
 
   return (
@@ -46,7 +47,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         sx={{ width: { lg: drawerWidth }, flexShrink: { lg: 0 } }}
       >
         <Drawer
-          variant="temporary" anchor="right"
+          variant="temporary" anchor="left"
           open={mobileOpen}
           onClose={() => setMobileOpen(false)}
           ModalProps={{ keepMounted: true }}
@@ -58,7 +59,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {drawer}
         </Drawer>
         <Drawer
-          variant="permanent" anchor="right"
+          variant="permanent" anchor="left"
           sx={{
             display: { xs: "none", lg: "block" },
             "& .MuiDrawer-paper": { width: drawerWidth },
@@ -72,7 +73,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <Header onMenu={() => setMobileOpen(true)} pathname={pathname} />
         <Box
           component="main"
-          sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1440, mx: "auto" }}
+          sx={{ p: { xs: 2, sm: 3, lg: 4 }, maxWidth: 1440, mx: "auto" }}
         >
           {children}
         </Box>
@@ -85,8 +86,8 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
   const { data: user } = useMe();
   const pathname = usePathname();
   const visibleMenu = React.useMemo(
-    () => filterMenuByPermissions(user?.permissions),
-    [user?.permissions],
+    () => filterMenuByPermissions(user?.permissions, user?.roles),
+    [user?.permissions, user?.roles],
   );
 
   return (
@@ -106,6 +107,8 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
             borderRadius: 3,
             bgcolor: "primary.main",
             color: "#fff",
+            flexShrink: 0,
+            boxShadow: "0 10px 15px rgba(10, 139, 123, 0.2)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -141,7 +144,7 @@ function SidebarContent({ onNavigate }: { onNavigate: () => void }) {
               href={item.path}
               onClick={onNavigate}
               selected={active}
-              sx={{ borderRadius: 2 }}
+              sx={{ borderRadius: "12px" }}
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
                 <Icon fontSize="small" />
@@ -200,7 +203,7 @@ function UserCard() {
           onClick={() => {
             setAnchor(null);
             logout.mutate(undefined, {
-              onSettled: () => router.replace("/login"),
+              onSettled: () => router.replace("/"),
             });
           }}
         >
@@ -222,7 +225,7 @@ function Header({
   const { mode, toggleMode } = useColorMode();
   const { data: user } = useMe();
   const title =
-    filterMenuByPermissions(user?.permissions).find(
+    filterMenuByPermissions(user?.permissions, user?.roles).find(
       (item) => pathname === item.path || pathname.startsWith(`${item.path}/`),
     )?.label ?? "داشبورد";
 
@@ -235,9 +238,10 @@ function Header({
         borderBottom: 1,
         borderColor: "divider",
         bgcolor: "background.default",
+        backdropFilter: "blur(24px)",
       }}
     >
-      <Toolbar sx={{ minHeight: 82 }}>
+      <Toolbar sx={{ height: 82, minHeight: "82px !important", px: { xs: 2, sm: 3, lg: 4 }, gap: 1.5 }}>
         <IconButton
           onClick={onMenu}
           sx={{ display: { lg: "none" }, ml: 1 }}
@@ -245,9 +249,14 @@ function Header({
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" component="h1" sx={{ fontWeight: 800 }}>
-          {title}
-        </Typography>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: 12 }}>
+            سامانه ساختار سازمانی
+          </Typography>
+          <Typography component="h1" sx={{ fontWeight: 800, fontSize: { xs: 20, sm: 24 } }}>
+            {title}
+          </Typography>
+        </Box>
         <Box sx={{ flexGrow: 1 }} />
         <IconButton onClick={toggleMode} aria-label="تغییر حالت نمایش">
           {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}

@@ -1,4 +1,5 @@
 using OrganizationalStructure.Application.Integration.Iam;
+using OrganizationalStructure.Domain.Abstractions;
 
 namespace OrganizationalStructure.Application.Authorization;
 
@@ -30,6 +31,44 @@ public static class OrganizationScope
 
         Collect(target, result);
         return result;
+    }
+
+    /// <summary>
+    /// محاسبه فهرست واحدهای سازمانی داخل Scope همراه با نام، کد، والد و عمق.
+    /// </summary>
+    /// <param name="roots">ریشه‌های درخت سازمان IAM</param>
+    /// <param name="userOrganizationId">شناسه سازمان کاربر</param>
+    /// <returns>
+    /// سازمان خود کاربر (عمق ۰) و تمام زیرمجموعه‌ها به ترتیب پیمایش عمق‌اول؛
+    /// فهرست خالی در صورت نبود سازمان کاربر در درخت (fail-closed).
+    /// </returns>
+    public static IReadOnlyList<OrganizationReference> ComputeVisibleOrganizations(
+        IReadOnlyList<IamOrganizationNode> roots,
+        Guid userOrganizationId)
+    {
+        var target = FindNode(roots, userOrganizationId);
+        if (target is null)
+        {
+            return Array.Empty<OrganizationReference>();
+        }
+
+        var result = new List<OrganizationReference>();
+        CollectVisible(target, parentId: null, depth: 0, result);
+        return result;
+    }
+
+    private static void CollectVisible(
+        IamOrganizationNode node,
+        Guid? parentId,
+        int depth,
+        List<OrganizationReference> result)
+    {
+        result.Add(new OrganizationReference(node.Id, node.Name, node.Code, parentId, depth));
+
+        foreach (var child in node.Children)
+        {
+            CollectVisible(child, node.Id, depth + 1, result);
+        }
     }
 
     private static IamOrganizationNode? FindNode(

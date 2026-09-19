@@ -212,4 +212,43 @@ public sealed class IamClientTests
         result.IsValid.Should().BeFalse();
         handler.LastRequest.Should().BeNull();
     }
+
+    /// <summary>
+    /// درخت سازمان IAM باید با شناسه/نام/کد و فرزندان نگاشت شود (مبنای نمایش «نام» سازمان در UI).
+    /// </summary>
+    [Fact]
+    public async Task GetOrganizationTreeAsync_ShouldMapNamesCodesAndChildren()
+    {
+        var handler = new StubHandler(_ => Json(
+            HttpStatusCode.OK,
+            "{\"isSuccess\":true,\"value\":[{\"id\":\"11111111-1111-1111-1111-111111111111\"," +
+            "\"name\":\"شرکت آزمون\",\"code\":\"ROOT\",\"children\":[" +
+            "{\"id\":\"22222222-2222-2222-2222-222222222222\",\"name\":\"واحد فناوری\",\"code\":\"CHILD\",\"children\":[]}]}]}"));
+
+        var tree = await CreateClient(handler).GetOrganizationTreeAsync("token");
+
+        tree.Should().ContainSingle();
+        tree[0].Name.Should().Be("شرکت آزمون");
+        tree[0].Code.Should().Be("ROOT");
+        tree[0].Children.Should().ContainSingle();
+        tree[0].Children[0].Name.Should().Be("واحد فناوری");
+        tree[0].Children[0].Code.Should().Be("CHILD");
+        handler.LastRequest!.RequestUri!.ToString().Should().Be($"{BaseAddress}/api/organizations/tree");
+        handler.LastRequest.Headers.Authorization!.Scheme.Should().Be("Bearer");
+        handler.LastRequest.Headers.Authorization.Parameter.Should().Be("token");
+    }
+
+    /// <summary>
+    /// پاسخ ناموفق/نامعتبر IAM در درخت سازمان باید به فهرست خالی تبدیل شود (fail-closed).
+    /// </summary>
+    [Fact]
+    public async Task GetOrganizationTreeAsync_FailedEnvelope_ShouldFailClosed()
+    {
+        var handler = new StubHandler(_ => Json(
+            HttpStatusCode.OK, "{\"isSuccess\":false,\"error\":\"TenantId not found in token\"}"));
+
+        var tree = await CreateClient(handler).GetOrganizationTreeAsync("token");
+
+        tree.Should().BeEmpty();
+    }
 }

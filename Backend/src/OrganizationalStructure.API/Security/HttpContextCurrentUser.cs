@@ -42,6 +42,9 @@ public sealed class HttpContextCurrentUser : ICurrentUser
     /// <inheritdoc />
     public IReadOnlyCollection<Guid> VisibleOrganizationIds => ReadScope();
 
+    /// <inheritdoc />
+    public IReadOnlyCollection<OrganizationReference> VisibleOrganizations => ReadVisibleOrganizations();
+
     private Guid? ReadGuidClaim(string claimType)
     {
         var value = _httpContextAccessor.HttpContext?.User.FindFirstValue(claimType);
@@ -80,6 +83,21 @@ public sealed class HttpContextCurrentUser : ICurrentUser
             .Where(v => Guid.TryParse(v, out _))
             .Select(Guid.Parse)
             .Distinct()
+            .ToArray();
+    }
+
+    private IReadOnlyCollection<OrganizationReference> ReadVisibleOrganizations()
+    {
+        if (_httpContextAccessor.HttpContext?.User is not ClaimsPrincipal principal)
+        {
+            return Array.Empty<OrganizationReference>();
+        }
+
+        return principal.FindAll(ClaimNames.OrganizationScopeNode)
+            .Select(claim => OrganizationScopeClaim.Parse(claim.Value))
+            .Where(reference => reference is not null)
+            .Select(reference => reference!)
+            .DistinctBy(reference => reference.Id)
             .ToArray();
     }
 }

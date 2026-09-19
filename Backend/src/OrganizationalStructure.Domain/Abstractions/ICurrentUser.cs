@@ -38,4 +38,12 @@ public interface ICurrentUser
     /// شناسه‌های سازمان‌های داخل Scope مشاهده کاربر جاری.
     /// </summary>
     IReadOnlyCollection<Guid> VisibleOrganizationIds { get; }
+
+    /// <summary>
+    /// سازمان‌های داخل Scope مشاهده کاربر جاری همراه با نام و کد (خود سازمان + زیرمجموعه‌ها).
+    /// </summary>
+    /// <remarks>
+    /// برای نمایش «نام» سازمان در UI (بدون افشای شناسه خام) و انتخاب سازمان در فرم‌ها.
+    /// </remarks>
+    IReadOnlyCollection<OrganizationReference> VisibleOrganizations { get; }
 }

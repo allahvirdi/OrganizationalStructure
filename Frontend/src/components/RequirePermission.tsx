@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Alert, Box, CircularProgress } from "@mui/material";
 import { useMe } from "../features/auth/useAuth";
+import { hasPermission } from "../lib/permissions";
 
 /**
  * نگهبان دسترسی: فقط با داشتن Permission مشخص محتوا را نشان می‌دهد.
@@ -27,10 +28,10 @@ export default function RequirePermission({
     );
   }
 
-  if (!user?.permissions?.includes(permission)) {
+  if (!hasPermission(user, permission)) {
     return (
       <>
-        {fallback ?? (
+        {fallback !== undefined ? fallback : (
           <Alert severity="warning">برای این بخش دسترسی ندارید.</Alert>
         )}
       </>

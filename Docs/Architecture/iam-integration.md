@@ -4,7 +4,7 @@
 > وضعیت: **مصوب و پیاده‌سازی‌شده در Phase 4** (الگوی BFF — DEC-018)
 > سامانه خارجی: `C:\Users\hp_zbook\Documents\GitHub\Herasat\Enterprise-IAM-V2` (فقط‌خواندنی از دید OrgStructure)
 
-**آخرین به‌روزرسانی:** `2026-09-17`
+**آخرین به‌روزرسانی:** `2026-09-18`
 
 ---
 
@@ -24,7 +24,7 @@
 - مرورگر فقط کوکی نشست HttpOnly (`orgstructure_session`) دارد؛ توکن‌های IAM فقط سمت سرور (`IBffSessionStore`).
 - اعتبارسنجی با کش کوتاه (`IamOptions.ValidationCacheSeconds`) و fail-closed؛ در دسترس‌نبودن IAM یعنی رد درخواست.
 - در ورود: حل Scope از درخت IAM (`GET /api/organizations/tree` با Bearer کاربر)؛ Scope خالی یعنی شکست ورود.
-- Claimهای نشست: `user_id`، `tenant_id`، `organization_id`، `role`، `permission`، `organization_scope` (چندمقداری).
+- Claimهای نشست: `user_id`، `tenant_id`، `organization_id`، `role`، `permission`، `organization_scope` (چندمقداری)، `organization_scope_node` (چندمقداری؛ هر مقدار یک JSON شامل شناسه/نام/کد/والد/عمق سازمان داخل محدوده). Claim دوم اضافه شد تا UI بتواند سازمان را با **نام** (نه شناسه خام) نمایش دهد؛ JSON برای مقاوم‌بودن به نویسه‌های خاص در نام سازمان (`OrganizationScopeClaim`).
 
 ## ۴. پیاده‌سازی (Phase 4)
 | جزء | مسیر |
@@ -34,6 +34,9 @@
 | هندلر احراز هویت | `API/Security/BffSessionAuthenticationHandler` (Scheme «Bff») |
 | ورود/خروج/کاربر جاری | `API/Controllers/AuthController` |
 | Scope | `Application/Authorization/OrganizationScope` (خالص) |
+| حل Scope از درخت IAM (مشترک BFF/Bearer) | `API/Security/OrganizationScopeResolver` |
+| گزینه‌های سازمان برای UI | `Application/Organizations/GetOrganizationOptions` + `API/Controllers/OrganizationsController` |
+| سریال‌سازی Claim سازمان | `API/Security/OrganizationScopeClaim` |
 | Policyها (۲۷) + Fallback | `API/Security/AuthorizationPolicies` |
 
 محدودیت ثبت‌شده: نشست درون‌حافظه‌ای (تک‌نمونه)؛ Redis برای چندنمونه‌ای در Phase 8.

@@ -11,7 +11,7 @@ export const VIEW_SENSITIVE_DATA = "OrganizationStructure.Employee.ViewSensitive
  */
 export function useCanViewSensitiveData(): boolean {
   const { data: user } = useMe();
-  return user?.permissions?.includes(VIEW_SENSITIVE_DATA) ?? false;
+  return user?.roles?.includes("SystemAdmin") === true || user?.permissions?.includes(VIEW_SENSITIVE_DATA) === true;
 }
 
 /**

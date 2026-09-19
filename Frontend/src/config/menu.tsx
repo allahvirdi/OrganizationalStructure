@@ -1,3 +1,4 @@
+import { hasPermission } from "../lib/permissions";
 import type { SvgIconComponent } from "@mui/icons-material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
@@ -59,12 +60,17 @@ export const mainMenu: MenuItem[] = [
 
 /**
  * پالایش منو بر اساس دسترسی‌های کاربر.
+ *
+ * SystemAdmin معتبر IAM همه صفحات را می‌بیند؛ سایر کاربران فقط صفحات مجاز را.
+ * این تصمیم نمایشی است؛ مجوز واقعی و محدوده سازمانی در بک‌اند اعمال می‌شوند.
  */
 export function filterMenuByPermissions(
   permissions: readonly string[] | null | undefined,
+  roles: readonly string[] = [],
 ): MenuItem[] {
+  if (roles.includes("SystemAdmin")) return mainMenu;
   return mainMenu.filter(
     (item) =>
-      item.permission === undefined || permissions?.includes(item.permission),
+      item.permission === undefined || hasPermission({ permissions, roles }, item.permission),
   );
 }

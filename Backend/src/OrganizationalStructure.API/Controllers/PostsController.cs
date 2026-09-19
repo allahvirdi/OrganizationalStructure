@@ -38,7 +38,6 @@ public sealed class PostsController : ApiControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Policy = AuthorizationPolicies.Post.Create)]
-    [Authorize(Policy = AuthorizationPolicies.Post.Create)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

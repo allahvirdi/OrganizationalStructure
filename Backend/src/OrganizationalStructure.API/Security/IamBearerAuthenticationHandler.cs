@@ -89,9 +89,12 @@ public sealed class IamBearerAuthenticationHandler : AuthenticationHandler<Authe
             claims.Add(new Claim("permission", permission));
         }
 
-        foreach (var organizationId in scope.Distinct())
+        foreach (var organization in scope)
         {
-            claims.Add(new Claim(ClaimNames.OrganizationScope, organizationId.ToString()));
+            claims.Add(new Claim(ClaimNames.OrganizationScope, organization.Id.ToString()));
+            claims.Add(new Claim(
+                ClaimNames.OrganizationScopeNode,
+                OrganizationScopeClaim.Serialize(organization)));
         }
 
         var identity = new ClaimsIdentity(claims, AuthenticationSchemes.IamBearer);

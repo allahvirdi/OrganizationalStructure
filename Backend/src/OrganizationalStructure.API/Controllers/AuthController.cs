@@ -227,7 +227,8 @@ public sealed class AuthController : ApiControllerBase
             OrganizationId = validation.OrganizationId,
             Roles = validation.Roles,
             Permissions = validation.Permissions,
-            VisibleOrganizationIds = scope
+            VisibleOrganizationIds = scope.Select(organization => organization.Id).ToArray(),
+            VisibleOrganizations = scope
         }, cancellationToken);
 
         Response.Cookies.Append(
@@ -252,20 +253,19 @@ public sealed class AuthController : ApiControllerBase
     /// <summary>
     /// حل محدوده سازمانی از درخت IAM؛ خالی یعنی عدم امکان ورود (fail-closed).
     /// </summary>
-    private async Task<IReadOnlyList<Guid>> ResolveScopeAsync(
+    private async Task<IReadOnlyList<OrganizationReference>> ResolveScopeAsync(
         string accessToken,
         string? organizationId,
         CancellationToken cancellationToken)
     {
         if (!Guid.TryParse(organizationId, out var orgId))
         {
-            return Array.Empty<Guid>();
+            return Array.Empty<OrganizationReference>();
         }
 
         var tree = await _iam.GetOrganizationTreeAsync(accessToken, cancellationToken);
         return Application.Authorization.OrganizationScope
-            .ComputeScope(tree, orgId)
-            .ToArray();
+            .ComputeVisibleOrganizations(tree, orgId);
     }
 }
 

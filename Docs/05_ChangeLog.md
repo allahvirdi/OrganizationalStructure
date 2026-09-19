@@ -24,6 +24,48 @@
 
 ---
 
+## [2026-09-18] - Session-20260918-Phase6-OrganizationScope
+### Added
+- `GET /api/v1/organizations` (`OrganizationsController` + `GetOrganizationOptions` Query/Handler/Validator + `OrganizationOptionDto`) — فهرست سازمان‌های قابل انتخاب کاربر با نام/کد/والد/عمق و پرچم `isCurrent`، محدود به Scope کاربر.
+- Claim چندمقداری `organization_scope_node` و `OrganizationScopeClaim` (JSON) — حمل نام/کد سازمان‌ها در نشست برای نمایش در UI.
+- `OrganizationScopeResolver` — حل مشترک Scope از درخت IAM برای هندلرهای BFF و Bearer.
+- `OrganizationReference` + `ICurrentUser.VisibleOrganizations` — مراجع سازمان با نام در لایه Application.
+- فرانت: `src/features/organizations/{api,useOrganizations}.ts` — انتخابگر سازمان با نام و جستجو.
+- تست‌ها: `OrganizationsApiTests`، `OrganizationOptionsTests`، `SystemAdminPolicyTests` و موارد جدید `OrganizationScopeTests`/`IamClientTests`/`BffHandlerTests`.
+- قرارداد API: `Docs/api-contracts/organizations.md`.
+
+### Changed
+- `OrganizationScope` علاوه بر مجموعه شناسه‌ها، فهرست مراجع سازمان (نام/کد/والد/عمق) را هم محاسبه می‌کند؛ ترتیب خروجی عمق و سپس نام.
+- فرم ایجاد پست به‌جای «شناسه سازمان»، سازمان را با **نام** (Autocomplete جستجوپذیر) نمایش می‌دهد، پیش‌فرض سازمان خود کاربر است و با تغییر سازمان، والد انتخاب‌شده پاک می‌شود.
+- `IBffSessionStore`/`BffSession` و `IIamClient` برای نگهداری/واکنش به مراجع سازمان گسترش یافتند؛ `ClaimNames` کد جدید Claims را گرفت.
+- `Docs/api-contracts/posts.md` (کد ۴۰۳ و محدوده سازمانی) و `Docs/Architecture/iam-integration.md` (Claim جدید + اجزای Scope) به‌روزرسانی شدند.
+
+### Validation
+- `tsc --noEmit`، `npm run lint`، `npm run build` موفق (بدون خطا/هشدار).
+- Release: Domain ۳۵، Application ۳۹، Infrastructure ۲۴، Architecture ۴، API Integration ۶۶ — همه سبز (۱۶۸ تست).
+- تست تعاملی مرورگر و اتصال به IAM واقعی انجام نشد؛ تغییرات کامیت نشده‌اند.
+### Changed
+- نمایش شناسه سازمان نشست در فرم ایجاد پست و جلوگیری از ثبت بدون سازمان.
+- جستجو و انتخاب والد در سازمان جاری با صفحه‌بندی؛ ارسال parentId هنگام ایجاد، بدون نیاز به جابه‌جایی بعد از ثبت.
+- دسترسی ایجاد/مشاهده پست برای OrganizationStructureAdmin در API، guard و منو؛ حفظ SystemAdmin، permissionهای صریح و محدوده سازمان.
+- حذف attribute تکراری مجوز ایجاد؛ پشتیبانی fallback خالی در guard برای مخفی‌کردن دکمه غیرمجاز.
+### Validation
+- TypeScript، lint، production build و diff --check موفق؛ API: ۵۸/۵۸ و Application: ۳۲/۳۲ در Release.
+- آزمون HTTP ایجاد والد/فرزند و جستجو با دو نقش بدون permission، رد سازمان خارج از محدوده و نقش غیرمجاز اضافه شد. تست قدیمی جستجو از فرض صفحه اول مستقل شد.
+- تست تعاملی فرم انجام نشده؛ نام سازمان در نشست موجود نیست و فعلاً شناسه نمایش داده می‌شود. تغییرات کامیت نشده‌اند.
+
+## [2026-09-17] - Session-20260917-Phase6-ThemeLanding
+### Changed
+- لندینگ `/` به فرم ورود تبدیل شد؛ مسیر قدیمی `/login` به آن هدایت می‌شود.
+- تم MUI با پالت، سایه‌ها، ورودی و منوی SampleAdminPanel همسو شد؛ سازگاری استایل دکمه با MUI 9 اصلاح شد.
+- داشبورد شامل اطلاعات نشست واقعی و پیوندهای صفحات است؛ ستون‌های minmax و دسترسی سریع تک‌ستونی در موبایل، سرریز ۳۲۰px را رفع کردند.
+- تغییرات مجوز جداگانه در working tree: منو تنها برای نقش SystemAdmin همه صفحات را نمایش می‌دهد؛ نگهبان‌ها و policyهای بک‌اند نیز تغییر کرده‌اند (جزء کامیت محدود داشبورد نیستند).
+### Validation
+- TypeScript، lint و production build موفق (۱۷ مسیر).
+- CDP: ۱۰ مسیر × ۴ عرض بدون سرریز سند؛ منوی موبایل راست با عرض ۲۷۲؛ چهار API خواندن پاسخ ۲۰۰. بررسی clipping جدول/برچسب و تم تیره باقی است.
+- مقایسهٔ تصویر ۳۲۰×۱۰۰۰ و ۱۴۴۰×۱۰۰۰: به‌ترتیب ۳۹٫۹٪ و ۲۹٫۸٪ پیکسل‌ها با آستانهٔ ۱۶/۲۵۵ متفاوت‌اند؛ این معیار شامل محتوا است و تطابق چیدمان را تأیید نمی‌کند.
+- ساختار داشبورد و ابزارهای هدر هنوز با نمونه متفاوت‌اند؛ هیچ کامیتی در این ادامه انجام نشد. عبارت «کامیت محدود» در بالا صرفاً دامنهٔ پیشنهادی است، نه کامیت انجام‌شده.
+
 ## [2026-09-17] - Session-20260917-Phase6-IamFix / Phase 6 (اشکال‌زدایی ورود)
 ### Added
 - `IamConfigurationValidator` — بررسی خالص و قابل‌تست کامل بودن پیکربندی IAM (`BaseAddress`، `ClientId`، `ClientSecret`)

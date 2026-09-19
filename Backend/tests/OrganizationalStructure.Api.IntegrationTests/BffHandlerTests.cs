@@ -18,6 +18,9 @@ namespace OrganizationalStructure.Api.IntegrationTests;
 /// </summary>
 public sealed class BffHandlerTests
 {
+    private static readonly Guid SessionOrganizationId =
+        Guid.Parse("77777777-7777-7777-7777-777777777777");
+
     private sealed class MutableClock : IClock
     {
         /// <summary>
@@ -128,8 +131,39 @@ public sealed class BffHandlerTests
         OrganizationId = "o-1",
         Roles = new[] { "R" },
         Permissions = new[] { "P" },
-        VisibleOrganizationIds = new[] { Guid.NewGuid() }
+        VisibleOrganizationIds = new[] { SessionOrganizationId },
+        VisibleOrganizations = new[]
+        {
+            new OrganizationReference(SessionOrganizationId, "سازمان تست", "T-ROOT", null, 0)
+        }
     };
+
+    /// <summary>
+    /// نشست دارای مراجع سازمان باید Claim نام/کد سازمان را برای کاربر جاری صادر کند.
+    /// </summary>
+    [Fact]
+    public async Task FreshSession_WithVisibleOrganizations_ShouldEmitScopeNodeClaims()
+    {
+        var clock = new MutableClock();
+        var store = new InMemoryBffSessionStore(clock);
+        await store.SaveAsync(ValidSession(clock, "s4"));
+        var handler = CreateHandler(store, new FakeIamClient(), clock);
+
+        var result = await AuthenticateWithCookieAsync(handler, "s4");
+
+        result.Succeeded.Should().BeTrue();
+
+        var nodes = result.Principal!.FindAll(ClaimNames.OrganizationScopeNode)
+            .Select(claim => OrganizationScopeClaim.Parse(claim.Value))
+            .Where(reference => reference is not null)
+            .ToArray();
+
+        nodes.Should().ContainSingle();
+        nodes[0]!.Id.Should().Be(SessionOrganizationId);
+        nodes[0]!.Name.Should().Be("سازمان تست");
+        nodes[0]!.Code.Should().Be("T-ROOT");
+        nodes[0]!.Depth.Should().Be(0);
+    }
 
     /// <summary>
     /// بدون کوکی باید NoResult برگردد (نه Fail).

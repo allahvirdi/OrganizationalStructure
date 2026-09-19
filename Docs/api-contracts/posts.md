@@ -75,7 +75,14 @@
 |---|---|
 | `Post.NotFound` / `Post.ParentNotFound` | 404 |
 | `Post.DuplicateCode` / `Post.CrossOrganizationMove` / `Post.CycleDetected` | 409 |
+| `Access.Forbidden` (سازمان خارج از محدوده کاربر) | 403 |
 | خطای اعتبارسنجی (`Validation.Failed`) | 400 |
+
+> **محدوده سازمانی (Phase 6):** تمام Endpointهای پست به Scope مشاهده کاربر (خود سازمان +
+> زیرمجموعهها — از درخت IAM) محدود شده‌اند. خواندن/ویرایش/جابجایی/وضعیت پست خارج از محدوده و
+> همچنین `organizationId` خارج از محدوده در جستجو/ایجاد، `403 Access.Forbidden` میدهد.
+> برای نمایش «نام» سازمان در فرم‌ها (به‌جای شناسه خام) از `GET /api/v1/organizations` استفاده کنید
+> (قرارداد: `organizations.md`).
 
 ---
 

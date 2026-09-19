@@ -212,6 +212,16 @@ public sealed record IamOrganizationNode
     public Guid Id { get; init; }
 
     /// <summary>
+    /// نام نمایشی واحد سازمانی (از DTO درخت IAM).
+    /// </summary>
+    public string Name { get; init; } = string.Empty;
+
+    /// <summary>
+    /// کد واحد سازمانی (از DTO درخت IAM).
+    /// </summary>
+    public string Code { get; init; } = string.Empty;
+
+    /// <summary>
     /// واحدهای زیرمجموعه.
     /// </summary>
     public List<IamOrganizationNode> Children { get; init; } = new();
