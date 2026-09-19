@@ -39,6 +39,6 @@
 - `organizations.md` — ✅ Phase 6 (مرجع IAM — گزینه‌های سازمان کاربر)
 - `responsibilities.md` — ✅ Assignment (ADR-011)
 - `authorities.md` — ✅ Assignment (ADR-011)
-- `import.md` — (Phase 7)
+- `import.md` — ✅ ساختار پست‌ها از اکسل (بخش اول)
 
 > اسکلت در فاز ۰؛ تکمیل دقیق با تعریف Vertical Slice در فاز ۳ و قبل از Frontend (فاز ۶).

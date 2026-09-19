@@ -1,7 +1,7 @@
 # Phase 7 — Import (MVP Secondary)
 
-**وضعیت:** Not Started
-**درصد پیشرفت:** 0%
+**وضعیت:** In Progress
+**درصد پیشرفت:** 30%
 **وابستگی‌ها:** Phase 3
 
 ---
@@ -10,8 +10,8 @@
 - پیاده‌سازی سه مسیر Import اطلاعات پرسنلی برای نقش‌های مجاز ستادی: CSV، Excel، Staging Table.
 
 ## ۲. Deliverables
-- [ ] Import از CSV
-- [ ] Import از Excel
+- [x] Import ساختار پست‌ها از Excel (با قالب فارسی)
+- [ ] Import از CSV (پرسنل)
 - [ ] Import از Staging Table (Schema مصوب — Q-003)
 - [ ] آماده‌سازی Batch/Validation/Error/Duplicate Handling
 - [ ] Audit و پیگیری وضعیت Import
@@ -35,9 +35,9 @@
 ---
 
 ## تسک‌های ≤ ۱۵ دقیقه (پس از Q-003)
-1. `طراحی پیشنهادی Schema واسط + تأیید Business`
-2. `Import CSV (فقط ستاد) + تست`
-3. `Import Excel (فقط ستاد) + تست`
+1. ✅ `Import ساختار پست‌ها از Excel + قالب فارسی + صفحه فرانت`
+2. `طراحی پیشنهادی Schema واسط + تأیید Business`
+3. `Import CSV پرسنل (فقط ستاد) + تست`
 4. `Import جدول واسط + Batch/Error/Duplicate + تست`
-5. `صفحه Import در Frontend (پس از فاز ۶)`
+5. `صفحه Import پرسنل در Frontend`
 6. `Progress/ChangeLog/SessionReport + بستن فاز ۷`

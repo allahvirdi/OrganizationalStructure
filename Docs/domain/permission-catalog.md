@@ -6,6 +6,7 @@
 
 > **قوانین:**
 > - مالکیت Role/Policy/Permission با IAM است؛ این سامانه هیچ Role/Policy موازی نمی‌سازد.
+> - ورود ساختار پست‌ها از فایل اکسل (`POST /api/v1/import/posts`) با مجوز موجود `OrganizationStructure.Post.Create` محافظت می‌شود (مجوز جدید = ثبت در IAM؛ تا آن زمان مجوز جدیدی اضافه نمی‌شود).
 > - این فهرست ۲۷ Permission با قالب سه‌بخشی `OrganizationStructure.{Resource}.{Action}` مصوب شد.
 > - ثبت در IAM فقط توسط مالک IAM انجام می‌شود.
 > - OrgStructure فقط این Permissionها را مصرف و در سطح Domain enforce می‌کند (Phase 4).
@@ -38,7 +39,7 @@
 | `OrganizationStructure.Employee.Disable` | فعال/غیرفعال کردن پرسنل | `PATCH /api/v1/employees/{id}/status` | عملیات ردیف |
 | `OrganizationStructure.Employee.AssignPost` | انتساب پست به پرسنل | `POST /api/v1/employees/{id}/posts` | دیالوگ انتساب |
 | `OrganizationStructure.Employee.RemovePost` | قطع انتساب پست از پرسنل | `DELETE /api/v1/employees/{id}/posts/{postId}` | عملیات حذف انتساب |
-| `OrganizationStructure.Employee.Import` | ورود از CSV/Excel/جدول واسط (فقط ستاد) | `POST /api/v1/import/*` | صفحه Import |
+| `OrganizationStructure.Employee.Import` | ورود پرسنل از CSV/Excel/جدول واسط (فقط ستاد) | `POST /api/v1/import/employees` | صفحه Import پرسنل |
 | `OrganizationStructure.Employee.ViewSensitiveData` | مشاهده فیلدهای PII (نام، کد ملی، موبایل‌ها، تاریخ تولد) | پاسخ‌های شامل PII | نمایش/ماسک فیلدهای حساس در UI |
 
 ## Authority (۵ مورد — بازنگری‌شده با ADR-011)

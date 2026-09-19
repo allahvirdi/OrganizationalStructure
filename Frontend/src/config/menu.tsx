@@ -6,6 +6,7 @@ import WorkIcon from "@mui/icons-material/Work";
 import PeopleIcon from "@mui/icons-material/People";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 /**
  * قلم منوی اصلی (مرتبط با روت‌ها + Permission لازم).
@@ -55,6 +56,13 @@ export const mainMenu: MenuItem[] = [
     path: "/authorities",
     icon: VerifiedUserIcon,
     permission: "OrganizationStructure.Authority.View",
+  },
+  {
+    id: "import",
+    label: "ورود ساختار",
+    path: "/import",
+    icon: FileUploadIcon,
+    permission: "OrganizationStructure.Post.Create",
   },
 ];
 
