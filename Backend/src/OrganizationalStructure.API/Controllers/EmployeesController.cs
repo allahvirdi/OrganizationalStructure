@@ -85,7 +85,7 @@ public sealed class EmployeesController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
-            new UpdateSupplementaryCommand(id, request.BirthDate, request.ServiceYears, request.ServiceMonths, request.PezhvakMobile),
+            new UpdateSupplementaryCommand(id, request.BirthDate, request.ServiceYears, request.ServiceMonths, request.PezhvakMobile, request.PezhvakIsActive),
             cancellationToken);
         return HandleResult(result);
     }
@@ -242,20 +242,30 @@ public sealed class EmployeesController : ApiControllerBase
 /// <summary>
 /// بدنه درخواست ویرایش پرسنل.
 /// </summary>
+/// <param name="FirstName">نام</param>
+/// <param name="LastName">نام خانوادگی</param>
+/// <param name="NationalCode">کد ملی</param>
+/// <param name="Mobile">شماره همراه (اجباری، فرمت ایرانی)</param>
 public sealed record UpdateEmployeeRequest(
     string FirstName,
     string LastName,
     string NationalCode,
-    string? Mobile);
+    string Mobile);
 
 /// <summary>
 /// بدنه درخواست ویرایش اطلاعات تکمیلی.
 /// </summary>
+/// <param name="BirthDate">تاریخ تولد (اختیاری)</param>
+/// <param name="ServiceYears">سال سابقه حضور در حراست (اختیاری؛ همراه ماه)</param>
+/// <param name="ServiceMonths">ماه سابقه حضور در حراست (اختیاری؛ همراه سال)</param>
+/// <param name="PezhvakMobile">شماره ثبت‌شده در پیام‌رسان پژواک (اجباری)</param>
+/// <param name="PezhvakIsActive">آیا شماره در شبکه پژواک فعال است؟ (اجباری)</param>
 public sealed record UpdateSupplementaryRequest(
     DateOnly? BirthDate,
     int? ServiceYears,
     int? ServiceMonths,
-    string? PezhvakMobile);
+    string? PezhvakMobile,
+    bool? PezhvakIsActive);
 
 /// <summary>
 /// بدنه درخواست انتساب به پست.

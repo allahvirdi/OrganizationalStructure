@@ -24,6 +24,39 @@
 
 ---
 
+## [2026-09-20] - Session-20260920-Phase6-PezhvakStatus / Phase 6 (ادامه)
+### Added
+- فیلد `PezhvakIsActive` (`bool?` — غیر PII) روی Aggregate `Employee` + ستون `bit NULL` در جدول `Employees`؛ `null` = هنوز تعیین نشده.
+- `UpdateSupplementaryCommand/Handler/Validator` و `UpdateSupplementaryRequest` و `EmployeeDto` به `PezhvakIsActive` گسترش یافتند (اعتبارسنجی: `NotNull`).
+- `Frontend/src/lib/date/jalali.ts` — تبدیل جلالی↔میلادی بدون افزودن کتابخانه تازه به استک منجمد (ADR-001).
+- `Frontend/src/components/JalaliDatePicker.tsx` — انتخابگر تاریخ شمسی با مکالمهٔ سال/ماه/روز و خروجی ISO میلادی (حذف ورودی متنی آزاد تاریخ تولد).
+- `Frontend/src/features/employees/schemas.ts` — `supplementarySchema`: شماره پژواک و وضعیت فعال بودن آن اجباری + بررسی ISO/جلالی بودن `birthDate`.
+- صفحهٔ پرسنل: ردیف «وضعیت شبکه پژواک» و ویرایش اجباری آن با `Select`؛ نمایش تاریخ تولد به قالب جلالی با حفظ ماسک PII.
+- تست دامنه: تغییر فقط پرچم پژواک باید رویداد `EmployeeUpdated` دهد؛ پرسنل تازه‌ایجادشده باید `PezhvakIsActive = null` داشته باشد.
+- `Docs/adr/ADR-013-pezhvak-network-status.md` (وضعیت: Proposed — Pending Approval).
+- Migration: `20260920045347_AddEmployeePezhvakActiveFlag` (افزودن ستون + ایندکس `(TenantId, OrganizationId)` که از Session قبل کامیت‌نشده بود).
+
+### Changed
+- `Employee.UpdateSupplementaryInfo` پارامتر `pezhvakIsActive` گرفت و مقایسهٔ «بدون تغییر» را شامل آن کرد؛ `Employee.Create` پارامتر اختیاری پایانی گرفت (سازگاربه‌عقب).
+- `PezhvakMobile` در ویرایش تکمیلی اجباری شد (هم در FluentValidation بک‌اند و هم Zod فرانت‌اند)؛ در `POST /api/v1/employees` همچنان اختیاری است.
+- `UpdateEmployeeRequest.Mobile` از `string?` به `string` تغییر کرد (هم‌راستا با قاعدهٔ موجود «موبایل اجباری» در `UpdateEmployeeCommandValidator`) + مستند XML اضافه شد.
+- فرانت‌اند: اتصال `JalaliDatePicker` و `Select` پژواک به `Controller` (حذف `watch`/`setValue` دستی)؛ پاک‌کردن `InputAdornment` بی‌استفاده و جایگزینی `useEffect` بازنشانی پیش‌نویس با هندلر `openDialog`.
+- `Docs/api-contracts/employees.md`: `pezhvakIsActive` در `EmployeeDto` و بدنهٔ `PATCH .../supplementary` + جدول قواعد اعتبارسنجی ویرایش تکمیلی + `organizationId` در نمونهٔ ثبت.
+- `Docs/Architecture/erd.md` و `Docs/01_Architecture.md` و `Docs/decision-log.md` به‌روزرسانی شدند.
+
+### Fixed
+- `EmployeeCommandTests.Update_MissingEmployee_ShouldReturnNotFound` با ارسال `mobile: null` روی رکوردی ساخته می‌شد که اعتبارسنج آن موبایل را اجباری می‌داند؛ مقدار معتبر جایگزین شد.
+
+### Validation
+- `npx tsc --noEmit`: بدون خطا · `npx eslint . --max-warnings 0`: بدون خطا/هشدار · `npm run build`: موفق (۱۶ روت).
+- `dotnet build` (Release): ۰ خطا / ۰ هشدار · `dotnet test` (Release): همهٔ مجموعه‌ها سبز (exit 0) — Domain ۳۷، Infrastructure ۲۴، Architecture ۴، API Integration ۷۰ + Application سبز.
+- `git diff --check`: تمیز.
+
+### Decisions / ADRs
+- ADR-013 تدوین شد با وضعیت **Proposed — Pending Approval**؛ DEC-029 به‌عنوان در انتظار تأیید کارفرما ثبت شد (هیچ تصمیمی بدون تأیید انسانی قطعی نیست).
+
+---
+
 ## [2026-09-18] - Session-20260918-Phase6-OrganizationScope
 ### Added
 - `GET /api/v1/organizations` (`OrganizationsController` + `GetOrganizationOptions` Query/Handler/Validator + `OrganizationOptionDto`) — فهرست سازمان‌های قابل انتخاب کاربر با نام/کد/والد/عمق و پرچم `isCurrent`، محدود به Scope کاربر.

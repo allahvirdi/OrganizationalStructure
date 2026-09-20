@@ -30,5 +30,15 @@ public sealed class UpdateSupplementaryCommandValidator : AbstractValidator<Upda
             .Must(x => x.ServiceYears.HasValue == x.ServiceMonths.HasValue)
             .WithMessage("سال و ماه سابقه باید با هم وارد شوند.")
             .WithName("ServiceRecord");
+
+        RuleFor(x => x.PezhvakMobile)
+            .NotEmpty()
+            .WithMessage("شماره ثبت‌شده در پیام‌رسان پژواک الزامی است.")
+            .Matches("^09[0-9]{9}$")
+            .WithMessage("شماره پژواک باید فرمت موبایل ایرانی معتبر داشته باشد (مانند 09191234567).");
+
+        RuleFor(x => x.PezhvakIsActive)
+            .NotNull()
+            .WithMessage("وضعیت فعال بودن شماره در شبکه پژواک الزامی است.");
     }
 }

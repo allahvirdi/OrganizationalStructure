@@ -46,4 +46,12 @@ public static class EmployeeErrors
         "Employee.NoActiveAssignment",
         "انتساب فعالی به این پست وجود ندارد.",
         ErrorType.Conflict);
+
+    /// <summary>
+    /// ساخت خطای «پست متعلق به سازمان پرسنل نیست» (ADR-004 + ADR-013).
+    /// </summary>
+    public static Error PostOrganizationMismatch() => new(
+        "Employee.PostOrganizationMismatch",
+        "پست انتخاب‌شده متعلق به سازمان پرسنل نیست؛ فقط پست‌های همان سازمان قابل انتساب‌اند.",
+        ErrorType.Conflict);
 }

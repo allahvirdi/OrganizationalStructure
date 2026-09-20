@@ -181,7 +181,7 @@ public sealed class EmployeeTests
     }
 
     /// <summary>
-    /// ثبت اطلاعات تکمیلی (تاریخ تولد، سابقه، موبایل پژواک) باید موفق باشد و رویداد منتشر کند.
+    /// ثبت اطلاعات تکمیلی (تاریخ تولد، سابقه حضور در حراست، پژواک) باید موفق باشد و رویداد منتشر کند.
     /// </summary>
     [Fact]
     public void UpdateSupplementaryInfo_ValidData_ShouldSucceedAndRaiseEvent()
@@ -193,13 +193,43 @@ public sealed class EmployeeTests
             new DateOnly(1360, 5, 12),
             new ValueObjects.HerasatServiceRecord(12, 3),
             "09190000000",
+            true,
             OccurredOn);
 
         employee.BirthDate.Should().Be(new DateOnly(1360, 5, 12));
         employee.ServiceRecord.Should().Be(new ValueObjects.HerasatServiceRecord(12, 3));
         employee.ServiceRecord!.ToString().Should().Be("12 سال و 3 ماه");
         employee.PezhvakMobile.Should().Be("09190000000");
+        employee.PezhvakIsActive.Should().BeTrue();
         employee.DomainEvents.OfType<EmployeeUpdated>().Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// تغییر فقط وضعیت فعال بودن شماره در شبکه پژواک باید رویداد انتشار دهد (ADR-013).
+    /// </summary>
+    [Fact]
+    public void UpdateSupplementaryInfo_OnlyPezhvakActiveFlag_ShouldRaiseEvent()
+    {
+        var employee = CreateValidEmployee();
+        employee.UpdateSupplementaryInfo(null, null, "09190000000", true, OccurredOn);
+        employee.ClearDomainEvents();
+
+        employee.UpdateSupplementaryInfo(null, null, "09190000000", false, OccurredOn);
+
+        employee.PezhvakIsActive.Should().BeFalse();
+        employee.DomainEvents.OfType<EmployeeUpdated>().Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// پرسنل تازه‌ایجادشده باید وضعیت پژواک را «تعیین‌نشده» داشته باشد (سازگاری با رکوردهای موجود).
+    /// </summary>
+    [Fact]
+    public void Create_WithoutPezhvakData_ShouldLeaveFlagUnset()
+    {
+        var employee = CreateValidEmployee();
+
+        employee.PezhvakMobile.Should().BeNull();
+        employee.PezhvakIsActive.Should().BeNull();
     }
 
     /// <summary>
@@ -222,7 +252,12 @@ public sealed class EmployeeTests
         var employee = CreateValidEmployee();
         employee.ClearDomainEvents();
 
-        employee.UpdateSupplementaryInfo(employee.BirthDate, employee.ServiceRecord, employee.PezhvakMobile, OccurredOn);
+        employee.UpdateSupplementaryInfo(
+            employee.BirthDate,
+            employee.ServiceRecord,
+            employee.PezhvakMobile,
+            employee.PezhvakIsActive,
+            OccurredOn);
 
         employee.DomainEvents.Should().BeEmpty();
     }

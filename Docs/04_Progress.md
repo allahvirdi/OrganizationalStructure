@@ -3,8 +3,18 @@
 > این فایل باید در **پایان هر Session** به‌روز شود.
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
-**آخرین به‌روزرسانی:** `2026-09-18`
-**Session مربوطه:** `Session-20260918-Phase6-OrganizationScope`
+**آخرین به‌روزرسانی:** `2026-09-20`
+**Session مربوطه:** `Session-20260920-Phase6-PezhvakStatus`
+
+## ادامه — وضعیت شبکه پژواک + اجباری‌بودن شماره پژواک (2026-09-20)
+- نیاز: شماره ثبت‌شده در پژواک در **ویرایش تکمیلی** اجباری شود و وضعیت فعال بودن آن در شبکه پژواک ثبت/نمایش شود.
+- مدل: ستون غیر PII `PezhvakIsActive` (`bool?`) با معنای سه‌حالتی (`true`/`false`/`null` = تعیین نشده)؛ رکوردهای موجود `null` می‌مانند تا داده تاریخی جعل نشود. در `POST` ثبت اولیه هیچ‌کدام اجباری نشد (سازگاری با Import/Q-003 و Seedها).
+- قرارداد API: `PATCH /api/v1/employees/{id}/supplementary` حالا `pezhvakMobile` (فرمت `^09[0-9]{9}$`) و `pezhvakIsActive` (بولی) را اجباری می‌خواهد؛ `EmployeeDto` فیلد جدید را برمی‌گرداند.
+- UI: تاریخ تولد فقط با `JalaliDatePicker` (خروجی ISO میلادی، ورودی متنی آزاد حذف) و وضعیت پژواک با `Select` اجباری پر می‌شود؛ هر دو از طریق `Controller` به React Hook Form متصل‌اند (نه `setValue` دستی).
+- معماری/اسناد: `ADR-013` به‌صورت **Proposed — Pending Approval** نوشته شد و `DEC-029` در انتظار تأیید کارفرماست؛ `erd.md`، `01_Architecture.md`، `api-contracts/employees.md` و ChangeLog به‌روز شدند.
+- Migration `20260920045347_AddEmployeePezhvakActiveFlag` ساخته شد (ستون + ایندکس `(TenantId, OrganizationId)` که از Session قبل در درخت کاری معوق بود).
+- اعتبارسنجی: `tsc` و `eslint --max-warnings 0` (کل پروژه) و `next build` (۱۶ روت) تمیز؛ `dotnet build/test` در Release سبز (Domain ۳۷ / Infrastructure ۲۴ / Architecture ۴ / API Integration ۷۰ / Application سبز)؛ `git diff --check` تمیز.
+- انجام‌نشده: آزمون تعاملی مرورگر با نشست واقعی IAM، اجرای Migration روی SQL Server، و تست HTTP زندهٔ `PATCH` با بدنهٔ ناقص (فقط شواهد تست واحد/یکپارچگی با `TestAuthHandler`). هیچ کامیتی انجام نشد؛ درخت کاری شامل تغییرات معوق Sessionهای قبل (محدوده سازمانی/تم/مجوز) نیز هست و هنگام کامیت باید تفکیک شود. گزارش: `Session-20260920-Phase6-PezhvakStatus.md`.
 
 ## ادامه — نام سازمان در UI و محدوده سازمانی (2026-09-18)
 - ادعای «سازمان فقط با شناسه خام نمایش داده می‌شود» باطل شد: Endpoint جدید `GET /api/v1/organizations` نام/کد/والد/عمق سازمان‌های مجاز را برمی‌گرداند و فرم ایجاد پست سازمان را با **نام** (جستجوپذیر روی نام/کد و تودرتو با عمق) نشان می‌دهد؛ پیش‌فرض «سازمان خود کاربر».

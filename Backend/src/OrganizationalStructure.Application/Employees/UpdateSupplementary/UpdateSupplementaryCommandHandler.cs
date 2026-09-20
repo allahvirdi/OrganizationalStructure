@@ -44,6 +44,7 @@ public sealed class UpdateSupplementaryCommandHandler : IRequestHandler<UpdateSu
             request.BirthDate,
             serviceRecord,
             request.PezhvakMobile,
+            request.PezhvakIsActive,
             _clock.UtcNow);
 
         await _db.SaveChangesAsync(cancellationToken);

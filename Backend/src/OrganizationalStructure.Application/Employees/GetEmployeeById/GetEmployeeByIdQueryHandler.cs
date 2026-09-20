@@ -45,6 +45,7 @@ public sealed class GetEmployeeByIdQueryHandler : IRequestHandler<GetEmployeeByI
                 ServiceYears = e.ServiceRecord != null ? e.ServiceRecord.Years : null,
                 ServiceMonths = e.ServiceRecord != null ? e.ServiceRecord.Months : null,
                 PezhvakMobile = e.PezhvakMobile,
+                PezhvakIsActive = e.PezhvakIsActive,
                 UserId = e.UserId,
                 IsActive = e.IsActive
             })

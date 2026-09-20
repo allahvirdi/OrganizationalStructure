@@ -89,7 +89,7 @@ public sealed class EmployeeCommandTests
         var handler = new UpdateEmployeeCommandHandler(db, clock);
 
         var result = await handler.Handle(
-            new UpdateEmployeeCommand(Guid.NewGuid(), "A", "B", "C", null),
+            new UpdateEmployeeCommand(Guid.NewGuid(), "A", "B", "C", "09120000000"),
             CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();

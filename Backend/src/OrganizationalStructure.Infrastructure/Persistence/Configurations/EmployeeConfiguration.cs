@@ -37,6 +37,9 @@ public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.Mobile).HasMaxLength(512);
         builder.Property(e => e.PezhvakMobile).HasMaxLength(512);
 
+        // وضعیت فعال بودن شماره در شبکه پژواک — غیر PII (ADR-013)؛ NULL یعنی هنوز تعیین نشده.
+        builder.Property(e => e.PezhvakIsActive).IsRequired(false);
+
         builder.Property(e => e.IsActive).IsRequired();
 
         builder.Property(e => e.Version).IsRowVersion();
@@ -45,6 +48,9 @@ public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .IsUnique();
 
         builder.HasIndex(e => new { e.TenantId, e.UserId });
+
+        // ایندکس پوششی فیلتر سازمانی فهرست پرسنل (Phase 6 — جستجوی پیشرفته).
+        builder.HasIndex(e => new { e.TenantId, e.OrganizationId });
 
         builder.OwnsOne(e => e.ServiceRecord, owned =>
         {

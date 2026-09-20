@@ -65,9 +65,14 @@ public sealed record EmployeeDto
     public int? ServiceMonths { get; init; }
 
     /// <summary>
-    /// موبایل پژواک.
+    /// شماره ثبت‌شده در پیام‌رسان پژواک.
     /// </summary>
     public string? PezhvakMobile { get; init; }
+
+    /// <summary>
+    /// آیا شماره پژواک در شبکه پژواک فعال است؟ (نامشخص = هنوز تعیین نشده)
+    /// </summary>
+    public bool? PezhvakIsActive { get; init; }
 
     /// <summary>
     /// شناسه کاربر IAM.

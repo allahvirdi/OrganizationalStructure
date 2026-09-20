@@ -62,3 +62,9 @@ test-results/
 Thumbs.db
 .idea/
 *.swp
+
+# =========================
+# Agent / temporary logs
+# =========================
+.agent-logs/
+*.tmp.log

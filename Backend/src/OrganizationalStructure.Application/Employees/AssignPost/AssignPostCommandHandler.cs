@@ -52,6 +52,12 @@ public sealed class AssignPostCommandHandler : IRequestHandler<AssignPostCommand
             return Result.Failure(AccessErrors.Forbidden());
         }
 
+        // پست باید متعلق به سازمان مالک پرسنل باشد (ADR-004: هر سازمان درخت پست مستقل خود را دارد).
+        if (post.OrganizationId != employee.OrganizationId)
+        {
+            return Result.Failure(EmployeeErrors.PostOrganizationMismatch());
+        }
+
         try
         {
             var assignment = employee.AssignToPost(

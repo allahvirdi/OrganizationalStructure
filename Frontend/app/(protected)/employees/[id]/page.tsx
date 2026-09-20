@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   updateEmployeeBasicSchema,
@@ -19,8 +19,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Autocomplete,
+  FormControl,
   FormControlLabel,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -45,6 +50,14 @@ import {
   supplementarySchema,
   type SupplementaryForm,
 } from "../../../../src/features/employees/schemas";
+import JalaliDatePicker from "../../../../src/components/JalaliDatePicker";
+import {
+  formatJalali,
+  isoToJalali,
+} from "../../../../src/lib/date/jalali";
+import { fetchPosts } from "../../../../src/features/posts/api";
+import type { PostSummary } from "../../../../src/features/org-chart/api";
+import { useQuery } from "@tanstack/react-query";
 import { ApiError } from "../../../../src/lib/api/client";
 
 /**
@@ -110,11 +123,11 @@ function EmployeeDetailContent() {
             value={maskSensitive(employee.mobile, canViewSensitive)}
           />
           <InfoRow
-            label="تاریخ تولد"
-            value={maskSensitive(employee.birthDate, canViewSensitive)}
+            label="تاریخ تولد (شمسی)"
+            value={formatBirthDate(employee.birthDate, canViewSensitive)}
           />
           <InfoRow
-            label="سابقه حراست"
+            label="سابقه حضور در حراست"
             value={
               employee.serviceYears !== null &&
               employee.serviceYears !== undefined
@@ -123,8 +136,12 @@ function EmployeeDetailContent() {
             }
           />
           <InfoRow
-            label="موبایل پژواک"
+            label="شماره ثبت شده در پیام رسان پژواک"
             value={maskSensitive(employee.pezhvakMobile, canViewSensitive)}
+          />
+          <InfoRow
+            label="وضعیت شبکه پژواک"
+            value={formatPezhvakStatus(employee.pezhvakIsActive)}
           />
         </Paper>
         <BasicInfoEditor
@@ -140,8 +157,12 @@ function EmployeeDetailContent() {
           serviceYears={employee.serviceYears}
           serviceMonths={employee.serviceMonths}
           pezhvakMobile={employee.pezhvakMobile ?? ""}
+          pezhvakIsActive={employee.pezhvakIsActive}
         />
-        <AssignmentSection employeeId={employee.id} />
+        <AssignmentSection
+          employeeId={employee.id}
+          organizationId={employee.organizationId}
+        />
       </Box>
     </Container>
   );
@@ -156,6 +177,37 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <Typography variant="body2">{value}</Typography>
     </Box>
   );
+}
+
+/**
+ * نمایش تاریخ تولد به قالب جلالی با حفظ ماسک داده حساس.
+ */
+function formatBirthDate(
+  value: string | null | undefined,
+  canView: boolean,
+): string {
+  if (!value) {
+    return maskSensitive(value, canView);
+  }
+  const masked = maskSensitive(value, canView);
+  if (masked !== value) {
+    return masked;
+  }
+  const jalali = isoToJalali(value);
+  return jalali ? formatJalali(jalali) : value;
+}
+
+/**
+ * نمایش وضعیت فعال بودن شماره ثبت‌شده در شبکه پژواک.
+ */
+function formatPezhvakStatus(isActive: boolean | null | undefined): string {
+  if (isActive === true) {
+    return "فعال";
+  }
+  if (isActive === false) {
+    return "غيرفعال";
+  }
+  return "تعيين نشده";
 }
 
 function BasicInfoEditor({
@@ -250,17 +302,20 @@ function SupplementaryEditor({
   serviceYears,
   serviceMonths,
   pezhvakMobile,
+  pezhvakIsActive,
 }: {
   employeeId: string;
   birthDate: string;
   serviceYears?: number | null;
   serviceMonths?: number | null;
   pezhvakMobile: string;
+  pezhvakIsActive?: boolean | null;
 }) {
   const updateSupplementary = useUpdateSupplementary(employeeId);
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<SupplementaryForm>({
     resolver: zodResolver(supplementarySchema),
@@ -269,6 +324,12 @@ function SupplementaryEditor({
       serviceYears: serviceYears?.toString() ?? "",
       serviceMonths: serviceMonths?.toString() ?? "",
       pezhvakMobile,
+      pezhvakIsActive:
+        pezhvakIsActive === true
+          ? "true"
+          : pezhvakIsActive === false
+            ? "false"
+            : "",
     },
   });
 
@@ -283,7 +344,8 @@ function SupplementaryEditor({
         values.serviceMonths === "" || values.serviceMonths === undefined
           ? null
           : Number(values.serviceMonths),
-      pezhvakMobile: values.pezhvakMobile || null,
+      pezhvakMobile: values.pezhvakMobile,
+      pezhvakIsActive: values.pezhvakIsActive === "true",
     });
   };
 
@@ -297,12 +359,22 @@ function SupplementaryEditor({
         onSubmit={handleSubmit(onSubmit)}
         sx={{ display: "grid", gap: 2 }}
       >
-        <TextField
-          label="تاریخ تولد (اختیاری)"
-          placeholder="1360-05-12"
-          fullWidth
-          {...register("birthDate")}
+        <Controller
+          name="birthDate"
+          control={control}
+          render={({ field }) => (
+            <JalaliDatePicker
+              label="تاریخ تولد"
+              value={field.value || null}
+              onChange={(iso) => field.onChange(iso ?? "")}
+              error={Boolean(errors.birthDate)}
+              helperText={errors.birthDate?.message}
+            />
+          )}
         />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          سابقه حضور در حراست
+        </Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             label="سال سابقه"
@@ -320,10 +392,38 @@ function SupplementaryEditor({
           />
         </Box>
         <TextField
-          label="موبایل پژواک (اختیاری)"
+          label="شماره ثبت شده در پیام رسان پژواک"
           fullWidth
+          required
+          error={Boolean(errors.pezhvakMobile)}
+          helperText={errors.pezhvakMobile?.message}
           {...register("pezhvakMobile")}
         />
+        <FormControl fullWidth error={Boolean(errors.pezhvakIsActive)} required>
+          <InputLabel id="pezhvak-active-label">
+            فعال بودن شماره در شبکه پژواک
+          </InputLabel>
+          <Controller
+            name="pezhvakIsActive"
+            control={control}
+            render={({ field }) => (
+              <Select
+                labelId="pezhvak-active-label"
+                label="فعال بودن شماره در شبکه پژواک"
+                value={field.value}
+                onChange={field.onChange}
+              >
+                <MenuItem value="true">فعال است</MenuItem>
+                <MenuItem value="false">غيرفعال است</MenuItem>
+              </Select>
+            )}
+          />
+          {errors.pezhvakIsActive && (
+            <Typography variant="caption" color="error">
+              {errors.pezhvakIsActive.message}
+            </Typography>
+          )}
+        </FormControl>
         <Button
           type="submit"
           variant="outlined"
@@ -336,22 +436,63 @@ function SupplementaryEditor({
   );
 }
 
-function AssignmentSection({ employeeId }: { employeeId: string }) {
+function AssignmentSection({
+  employeeId,
+  organizationId,
+}: {
+  employeeId: string;
+  organizationId: string;
+}) {
   const { data: assignments } = useEmployeePosts(employeeId);
   const assignPost = useAssignPost(employeeId);
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [postId, setPostId] = React.useState("");
+  const [selectedPost, setSelectedPost] = React.useState<PostSummary | null>(
+    null,
+  );
+  const [postSearch, setPostSearch] = React.useState("");
+  const [postPage, setPostPage] = React.useState(1);
   const [isPrimary, setIsPrimary] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // جستجوی سروری پست‌ها فقط در سازمان کارمند (ADR-004: هر سازمان درخت پست مستقل دارد).
+  const postsQuery = useQuery({
+    queryKey: [
+      "posts",
+      "employee-assign-options",
+      organizationId,
+      postSearch,
+      postPage,
+    ],
+    enabled: dialogOpen && Boolean(organizationId),
+    queryFn: () =>
+      fetchPosts({
+        organizationId,
+        searchTerm: postSearch || undefined,
+        isActive: true,
+        page: postPage,
+        pageSize: 20,
+      }),
+  });
+
+  const assignedPostIds = new Set((assignments ?? []).map((a) => a.postId));
+  const postOptions = (postsQuery.data?.items ?? []).filter(
+    (post) => post.isActive && !assignedPostIds.has(post.id),
+  );
+
   const onAssign = () => {
+    if (!selectedPost) {
+      setError("انتخاب پست الزامی است.");
+      return;
+    }
     setError(null);
     assignPost.mutate(
-      { postId: postId.trim(), isPrimary },
+      { postId: selectedPost.id, isPrimary },
       {
         onSuccess: () => {
           setDialogOpen(false);
-          setPostId("");
+          setSelectedPost(null);
+          setPostSearch("");
+          setPostPage(1);
         },
         onError: (e) => {
           setError(e instanceof ApiError ? e.message : "خطا در انتساب.");
@@ -399,13 +540,43 @@ function AssignmentSection({ employeeId }: { employeeId: string }) {
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>انتساب به پست</DialogTitle>
         <DialogContent sx={{ display: "grid", gap: 2, pt: 2, minWidth: 320 }}>
-          <TextField
-            label="شناسه پست"
-            fullWidth
-            sx={{ mt: 1 }}
-            value={postId}
-            onChange={(e) => setPostId(e.target.value)}
+          <Autocomplete
+            options={postOptions}
+            value={selectedPost}
+            onChange={(_, value) => setSelectedPost(value)}
+            onInputChange={(_, value, reason) => {
+              if (reason === "input" || reason === "clear") {
+                setPostSearch(value);
+                setPostPage(1);
+              }
+            }}
+            getOptionLabel={(option) => `${option.code} - ${option.title}`}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterOptions={(options) => options}
+            loading={postsQuery.isFetching}
+            disabled={!organizationId || assignPost.isPending}
+            loadingText="در حال جستجو..."
+            noOptionsText={
+              postsQuery.isError ? "خطا در دریافت پست‌ها" : "پستی یافت نشد"
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="پست (جستجوی کد یا عنوان)"
+                helperText="فقط پست‌های فعالِ همان سازمان کارمند قابل انتخاب‌اند."
+              />
+            )}
           />
+          {postsQuery.isError && (
+            <Alert
+              severity="error"
+              action={
+                <Button onClick={() => postsQuery.refetch()}>تلاش مجدد</Button>
+              }
+            >
+              دریافت پست‌های سازمان ناموفق بود.
+            </Alert>
+          )}
           <FormControlLabel
             control={
               <Checkbox
@@ -421,7 +592,7 @@ function AssignmentSection({ employeeId }: { employeeId: string }) {
           <Button onClick={() => setDialogOpen(false)}>انصراف</Button>
           <Button
             variant="contained"
-            disabled={assignPost.isPending || postId.trim() === ""}
+            disabled={assignPost.isPending || selectedPost === null}
             onClick={onAssign}
           >
             انتساب

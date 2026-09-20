@@ -13,6 +13,8 @@
 ```json
 {
   "id": "...",
+  "organizationId": "...",
+  "organizationName": "اداره کل",
   "personnelCode": "00000001",
   "firstName": "علی",
   "lastName": "رضایی",
@@ -22,6 +24,7 @@
   "serviceYears": 12,
   "serviceMonths": 3,
   "pezhvakMobile": "09190000000",
+  "pezhvakIsActive": true,
   "userId": null,
   "isActive": true
 }
@@ -48,6 +51,7 @@
 Request:
 ```json
 {
+  "organizationId": "...",
   "personnelCode": "00000001",
   "firstName": "علی", "lastName": "رضایی",
   "nationalCode": "0013542419", "mobile": "09120000000",
@@ -75,8 +79,16 @@ Request: `{ "firstName": "...", "lastName": "...", "nationalCode": "...", "mobil
 > قواعد اعتبارسنجی مشابه ثبت پرسنل (چک‌سام کد ملی + فرمت موبایل ایرانی اجباری).
 
 ### ویرایش تکمیلی — `PATCH /api/v1/employees/{id}/supplementary`
-Request: `{ "birthDate": "...", "serviceYears": 12, "serviceMonths": 3, "pezhvakMobile": "..." }`
+Request: `{ "birthDate": "...", "serviceYears": 12, "serviceMonths": 3, "pezhvakMobile": "...", "pezhvakIsActive": true }`
 - موفق: `204` — ناموفق: `400` / `404`
+
+**قواعد اعتبارسنجی ویرایش تکمیلی:**
+| فیلد | قاعده |
+|---|---|
+| `birthDate` | اختیاری؛ قالب ISO میلادی (`yyyy-MM-dd`). در UI با انتخابگر جلالی وارد می‌شود اما قرارداد API میلادی است. |
+| `serviceYears`/`serviceMonths` | اختیاری ولی فقط با هم (هر دو یا هیچ‌کدام) |
+| `pezhvakMobile` | اجباری؛ شماره موبایل ایرانی (`^09[0-9]{9}$`) |
+| `pezhvakIsActive` | اجباری؛ مقدار بولی (`true`/`false`) |
 
 ### انتساب به پست — `POST /api/v1/employees/{id}/posts`
 Request: `{ "postId": "...", "fromDate": null, "toDate": null, "isPrimary": true }`

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoToJalali, isValidJalali } from "../../lib/date/jalali";
 
 /**
  * بررسی اعتبار کد ملی ایران (الگوریتم چک‌سام رسمی).
@@ -62,7 +63,12 @@ export const updateEmployeeBasicSchema = employeeSchema.pick({
 export type EmployeeBasicForm = z.infer<typeof updateEmployeeBasicSchema>;
 
 /**
- * اعتبارسنجی اطلاعات تکمیلی (سال و ماه با هم).
+ * اعتبارسنجی اطلاعات تکمیلی پرسنل.
+ *
+ * @remarks
+ * - birthDate: خروجی دیت‌پیکر جلالی همیشه ISO میلادی است؛ خالی مجاز است.
+ * - سال و ماه سابقه فقط با هم وارد می‌شوند (هر دو یا هیچ‌کدام).
+ * - شماره پژواک و وضعیت فعال بودن آن اجباری‌اند (ADR-013).
  */
 export const supplementarySchema = z
   .object({
@@ -77,13 +83,41 @@ export const supplementarySchema = z
       .regex(/^(?:[0-9]|1[01])$/, "ماه سابقه باید بین ۰ تا ۱۱ باشد.")
       .optional()
       .or(z.literal("")),
-    pezhvakMobile: z.string().max(20).optional().or(z.literal("")),
+    pezhvakMobile: z
+      .string()
+      .min(1, "شماره ثبت شده در پیام رسان پژواک الزامی است.")
+      .regex(
+        /^09[0-9]{9}$/,
+        "شماره پژواک باید فرمت موبایل ایرانی معتبر داشته باشد (مانند 09191234567).",
+      ),
+    pezhvakIsActive: z.string(),
   })
   .refine(
     (v) => (v.serviceYears || "") === "" === ((v.serviceMonths || "") === ""),
     {
       message: "سال و ماه سابقه باید با هم وارد شوند.",
       path: ["serviceMonths"],
+    },
+  )
+  .refine(
+    (v) => {
+      const iso = (v.birthDate ?? "").trim();
+      if (iso === "") {
+        return true;
+      }
+      const jalali = isoToJalali(iso);
+      return jalali !== null && isValidJalali(jalali);
+    },
+    {
+      message: "تاریخ تولد معتبر نیست.",
+      path: ["birthDate"],
+    },
+  )
+  .refine(
+    (v) => v.pezhvakIsActive === "true" || v.pezhvakIsActive === "false",
+    {
+      message: "وضعیت فعال بودن شماره در شبکه پژواک الزامی است.",
+      path: ["pezhvakIsActive"],
     },
   );
 

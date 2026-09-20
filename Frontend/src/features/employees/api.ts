@@ -14,6 +14,7 @@ export interface Employee {
   serviceYears?: number | null;
   serviceMonths?: number | null;
   pezhvakMobile?: string | null;
+  pezhvakIsActive?: boolean | null;
   userId?: string | null;
   isActive: boolean;
 }
@@ -118,6 +119,7 @@ export function updateSupplementary(
     serviceYears?: number | null;
     serviceMonths?: number | null;
     pezhvakMobile?: string | null;
+    pezhvakIsActive?: boolean | null;
   },
 ): Promise<void> {
   return apiFetch<void>(`/api/v1/employees/${id}/supplementary`, {

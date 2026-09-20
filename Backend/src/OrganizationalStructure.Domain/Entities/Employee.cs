@@ -79,11 +79,17 @@ public sealed class Employee : FullAuditableEntity
     public DateOnly? BirthDate { get; private set; }
 
     /// <summary>
-    /// شماره موبایل پژواک (اختیاری).
+    /// شماره ثبت‌شده در پیام‌رسان پژواک (اختیاری در ثبت اولیه؛ در ویرایش تکمیلی اجباری است).
     /// </summary>
-    /// <remarks>داده حساس — رمزنگاری قطعی (Deterministic) برای جستجو (ADR-010).</remarks>
+    /// <remarks>داده حساس — رمزنگاری قطعی (Deterministic) برای جستجو (ADR-010، ADR-013).</remarks>
     [PiiEncrypted(EncryptionType.Deterministic)]
     public string? PezhvakMobile { get; private set; }
+
+    /// <summary>
+    /// آیا شماره پژواک در شبکه پژواک فعال است؟ (خالی یعنی هنوز تعیین نشده).
+    /// </summary>
+    /// <remarks>غیر PII — فقط وضعیت اشتراک در شبکه پژواک (ADR-013).</remarks>
+    public bool? PezhvakIsActive { get; private set; }
 
     /// <summary>
     /// سابقه خدمت در حراست (اختیاری؛ غیر PII).
@@ -118,7 +124,8 @@ public sealed class Employee : FullAuditableEntity
     /// <param name="occurredOn">زمان وقوع (از ساعت تزریقی لایه کاربرد)</param>
     /// <param name="birthDate">تاریخ تولد (اختیاری؛ ADR-010)</param>
     /// <param name="serviceRecord">سابقه خدمت در حراست (اختیاری؛ ADR-010)</param>
-    /// <param name="pezhvakMobile">شماره موبایل پژواک (اختیاری؛ ADR-010)</param>
+    /// <param name="pezhvakMobile">شماره ثبت‌شده در پیام‌رسان پژواک (اختیاری؛ ADR-010)</param>
+    /// <param name="pezhvakIsActive">آیا شماره در شبکه پژواک فعال است؟ (اختیاری؛ ADR-013)</param>
     /// <returns>پرسنل ایجادشده</returns>
     /// <exception cref="ArgumentException">در صورت نامعتبر بودن ورودی‌ها</exception>
     public static Employee Create(
@@ -134,7 +141,8 @@ public sealed class Employee : FullAuditableEntity
         DateTimeOffset occurredOn,
         DateOnly? birthDate = null,
         HerasatServiceRecord? serviceRecord = null,
-        string? pezhvakMobile = null)
+        string? pezhvakMobile = null,
+        bool? pezhvakIsActive = null)
     {
         if (id == Guid.Empty)
         {
@@ -185,6 +193,7 @@ public sealed class Employee : FullAuditableEntity
             BirthDate = birthDate,
             ServiceRecord = serviceRecord,
             PezhvakMobile = string.IsNullOrWhiteSpace(pezhvakMobile) ? null : pezhvakMobile.Trim(),
+            PezhvakIsActive = pezhvakIsActive,
             IsActive = true
         };
 
@@ -236,21 +245,26 @@ public sealed class Employee : FullAuditableEntity
     }
 
     /// <summary>
-    /// ویرایش اطلاعات تکمیلی پرسنل (تاریخ تولد، سابقه حراست، موبایل پژواک).
+    /// ویرایش اطلاعات تکمیلی پرسنل (تاریخ تولد، سابقه حضور در حراست، پژواک).
     /// </summary>
     /// <param name="birthDate">تاریخ تولد (اختیاری)</param>
-    /// <param name="serviceRecord">سابقه خدمت در حراست (اختیاری)</param>
-    /// <param name="pezhvakMobile">شماره موبایل پژواک (اختیاری)</param>
+    /// <param name="serviceRecord">سابقه حضور در حراست (اختیاری)</param>
+    /// <param name="pezhvakMobile">شماره ثبت‌شده در پیام‌رسان پژواک (اجباری — الزام در لایه کاربرد)</param>
+    /// <param name="pezhvakIsActive">آیا شماره در شبکه پژواک فعال است؟ (اجباری — الزام در لایه کاربرد)</param>
     /// <param name="occurredOn">زمان وقوع</param>
     public void UpdateSupplementaryInfo(
         DateOnly? birthDate,
         HerasatServiceRecord? serviceRecord,
         string? pezhvakMobile,
+        bool? pezhvakIsActive,
         DateTimeOffset occurredOn)
     {
         var newPezhvakMobile = string.IsNullOrWhiteSpace(pezhvakMobile) ? null : pezhvakMobile.Trim();
 
-        if (BirthDate == birthDate && Equals(ServiceRecord, serviceRecord) && PezhvakMobile == newPezhvakMobile)
+        if (BirthDate == birthDate
+            && Equals(ServiceRecord, serviceRecord)
+            && PezhvakMobile == newPezhvakMobile
+            && PezhvakIsActive == pezhvakIsActive)
         {
             return;
         }
@@ -258,6 +272,7 @@ public sealed class Employee : FullAuditableEntity
         BirthDate = birthDate;
         ServiceRecord = serviceRecord;
         PezhvakMobile = newPezhvakMobile;
+        PezhvakIsActive = pezhvakIsActive;
         AddDomainEvent(new EmployeeUpdated(Id, occurredOn));
     }
 

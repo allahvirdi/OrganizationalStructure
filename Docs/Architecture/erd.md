@@ -1,6 +1,6 @@
 # ERD — مدل داده سامانه ساختار سازمانی
 
-**آخرین به‌روزرسانی:** `2026-09-15`
+**آخرین به‌روزرسانی:** `2026-09-20`
 **وضعیت:** منجمد Phase 2 + اصلاحیه ADR-011 (تفکیک Responsibility/Authority) — پیاده‌سازی EF در Phase 3
 
 > قراردادها: Multi-tenancy با `TenantId` (ADR-005)، Audit/Soft Delete روی جداول اصلی، PII با Always Encrypted (ADR-006)، بدون FK فیزیکی به IAM (ADR-002).
@@ -132,7 +132,8 @@
 | NationalCode | PII (Deterministic) NOT NULL | ایندکس جستجو روی هش/رمز |
 | Mobile | PII (Deterministic) NULL | |
 | BirthDate | date NULL — PII (Randomized, ADR-010) | تاریخ تولد |
-| PezhvakMobile | PII (Deterministic) NULL — ADR-010 | موبایل پژواک |
+| PezhvakMobile | PII (Deterministic) NULL — ADR-010 | موبایل پژواک (در ویرایش تکمیلی اجباری — ADR-013) |
+| PezhvakIsActive | bit NULL — ADR-013 | وضعیت فعال بودن شماره در شبکه پژواک؛ `NULL` = هنوز تعیین نشده (غیر PII) |
 | ServiceYears | int NULL — ADR-010 | سال سابقه حراست (Owned VO) |
 | ServiceMonths | int NULL — ADR-010 | ماه سابقه حراست ۰..۱۱ (Owned VO) |
 | IsActive | bit NOT NULL DEFAULT 1 | پایان فعالیت = غیرفعال؛ هرگز حذف فیزیکی (DEC-022) |

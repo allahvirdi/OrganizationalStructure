@@ -101,6 +101,7 @@ export function useUpdateSupplementary(id: string) {
       serviceYears?: number | null;
       serviceMonths?: number | null;
       pezhvakMobile?: string | null;
+      pezhvakIsActive?: boolean | null;
     }) => updateSupplementary(id, input),
     onSuccess: () => invalidate(),
   });
