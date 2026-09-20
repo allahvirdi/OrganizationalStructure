@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  employeeSchema,
-  type EmployeeForm,
+  updateEmployeeBasicSchema,
+  type EmployeeBasicForm,
 } from "../../../../src/features/employees/schemas";
 import {
   Alert,
@@ -98,6 +98,10 @@ function EmployeeDetailContent() {
         <Paper sx={{ p: 3, display: "grid", gap: 1 }}>
           <InfoRow label="کد پرسنلی" value={employee.personnelCode} />
           <InfoRow
+            label="سازمان"
+            value={employee.organizationName ?? "—"}
+          />
+          <InfoRow
             label="کد ملی"
             value={maskSensitive(employee.nationalCode, canViewSensitive)}
           />
@@ -172,12 +176,12 @@ function BasicInfoEditor({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<EmployeeForm>({
-    resolver: zodResolver(employeeSchema),
+  } = useForm<EmployeeBasicForm>({
+    resolver: zodResolver(updateEmployeeBasicSchema),
     defaultValues: { firstName, lastName, nationalCode, mobile },
   });
 
-  const onSubmit = (values: EmployeeForm) => {
+  const onSubmit = (values: EmployeeBasicForm) => {
     updateEmployee.mutate({
       firstName: values.firstName,
       lastName: values.lastName,

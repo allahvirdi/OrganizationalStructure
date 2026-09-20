@@ -29,6 +29,11 @@ public sealed class Employee : FullAuditableEntity
     }
 
     /// <summary>
+    /// شناسه سازمان مالک پرسنل (مرجع IAM — بدون FK فیزیکی).
+    /// </summary>
+    public Guid OrganizationId { get; private set; }
+
+    /// <summary>
     /// شناسه کاربر متناظر در IAM (اختیاری؛ بدون FK فیزیکی).
     /// </summary>
     public Guid? UserId { get; private set; }
@@ -103,11 +108,12 @@ public sealed class Employee : FullAuditableEntity
     /// </summary>
     /// <param name="id">شناسه پرسنل</param>
     /// <param name="tenantId">شناسه مستأجر</param>
+    /// <param name="organizationId">شناسه سازمان مالک پرسنل (مرجع IAM)</param>
     /// <param name="personnelCode">کد پرسنلی (یکتا درون مستأجر)</param>
     /// <param name="firstName">نام</param>
     /// <param name="lastName">نام خانوادگی</param>
     /// <param name="nationalCode">کد ملی</param>
-    /// <param name="mobile">شماره موبایل (اختیاری)</param>
+    /// <param name="mobile">شماره موبایل (اجباری)</param>
     /// <param name="userId">شناسه کاربر IAM (اختیاری)</param>
     /// <param name="occurredOn">زمان وقوع (از ساعت تزریقی لایه کاربرد)</param>
     /// <param name="birthDate">تاریخ تولد (اختیاری؛ ADR-010)</param>
@@ -118,6 +124,7 @@ public sealed class Employee : FullAuditableEntity
     public static Employee Create(
         Guid id,
         Guid tenantId,
+        Guid organizationId,
         string personnelCode,
         string firstName,
         string lastName,
@@ -137,6 +144,11 @@ public sealed class Employee : FullAuditableEntity
         if (tenantId == Guid.Empty)
         {
             throw new ArgumentException("شناسه مستأجر معتبر نیست.", nameof(tenantId));
+        }
+
+        if (organizationId == Guid.Empty)
+        {
+            throw new ArgumentException("شناسه سازمان معتبر نیست.", nameof(organizationId));
         }
 
         if (!IsValidPersonnelCode(personnelCode))
@@ -163,6 +175,7 @@ public sealed class Employee : FullAuditableEntity
         {
             Id = id,
             TenantId = tenantId,
+            OrganizationId = organizationId,
             PersonnelCode = personnelCode.Trim(),
             FirstName = firstName.Trim(),
             LastName = lastName.Trim(),

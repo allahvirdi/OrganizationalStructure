@@ -20,9 +20,12 @@ function isValidIranianNationalCode(value: string): boolean {
 }
 
 /**
- * اعتبارسنجی فرم پرسنل (همسو با Backend: کد ۸ رقمی، چک‌سام کد ملی، موبایل ایرانی اجباری).
+ * اعتبارسنجی فرم پرسنل (همسو با Backend: سازمان اجباری، کد ۸ رقمی، چک‌سام کد ملی، موبایل ایرانی اجباری).
  */
 export const employeeSchema = z.object({
+  organizationId: z
+    .string()
+    .min(1, "انتخاب سازمان الزامی است."),
   personnelCode: z
     .string()
     .regex(/^[0-9]{8}$/, "کد پرسنلی باید عدد ۸ رقمی باشد."),
@@ -45,6 +48,18 @@ export const employeeSchema = z.object({
 });
 
 export type EmployeeForm = z.infer<typeof employeeSchema>;
+
+/**
+ * اعتبارسنجی ویرایش اطلاعات پایه پرسنل (بدون سازمان و کد پرسنلی).
+ */
+export const updateEmployeeBasicSchema = employeeSchema.pick({
+  firstName: true,
+  lastName: true,
+  nationalCode: true,
+  mobile: true,
+});
+
+export type EmployeeBasicForm = z.infer<typeof updateEmployeeBasicSchema>;
 
 /**
  * اعتبارسنجی اطلاعات تکمیلی (سال و ماه با هم).

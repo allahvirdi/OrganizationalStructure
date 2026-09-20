@@ -1,10 +1,12 @@
 "use client";
 
+import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Container,
@@ -17,6 +19,8 @@ import {
   employeeSchema,
   type EmployeeForm,
 } from "../../../../src/features/employees/schemas";
+import type { OrganizationOption } from "../../../../src/features/organizations/api";
+import { useOrganizations } from "../../../../src/features/organizations/useOrganizations";
 import { ApiError } from "../../../../src/lib/api/client";
 
 /**
@@ -31,15 +35,22 @@ export default function NewEmployeePage() {
 function NewEmployeeContent() {
   const router = useRouter();
   const createEmployee = useCreateEmployee();
+  const [organizationSearchTerm, setOrganizationSearchTerm] = React.useState("");
+  const organizations = useOrganizations({ searchTerm: organizationSearchTerm });
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
-  } = useForm<EmployeeForm>({ resolver: zodResolver(employeeSchema) });
+  } = useForm<EmployeeForm>({
+    resolver: zodResolver(employeeSchema),
+    defaultValues: { organizationId: "" },
+  });
 
   const onSubmit = (values: EmployeeForm) => {
     createEmployee.mutate(
       {
+        organizationId: values.organizationId,
         personnelCode: values.personnelCode,
         firstName: values.firstName,
         lastName: values.lastName,
@@ -69,6 +80,46 @@ function NewEmployeeContent() {
             onSubmit={handleSubmit(onSubmit)}
             sx={{ display: "grid", gap: 2 }}
           >
+            <Controller
+              name="organizationId"
+              control={control}
+              render={({ field, fieldState }) => {
+                const selected =
+                  (organizations.data ?? []).find(
+                    (option) => option.id === field.value,
+                  ) ?? null;
+                return (
+                  <Autocomplete<OrganizationOption, false, false, false>
+                    options={organizations.data ?? []}
+                    value={selected}
+                    onChange={(_, value) => field.onChange(value?.id ?? "")}
+                    getOptionLabel={(option) => option.name}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    loading={organizations.isFetching}
+                    loadingText="در حال دریافت سازمان‌ها..."
+                    noOptionsText={
+                      organizations.isError
+                        ? "خطا در دریافت سازمان‌ها"
+                        : "سازمانی یافت نشد"
+                    }
+                    onInputChange={(_, value) =>
+                      setOrganizationSearchTerm(value)
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="سازمان"
+                        required
+                        error={Boolean(fieldState.error)}
+                        helperText={fieldState.error?.message}
+                      />
+                    )}
+                  />
+                );
+              }}
+            />
             <TextField
               label="کد پرسنلی (۸ رقم)"
               fullWidth

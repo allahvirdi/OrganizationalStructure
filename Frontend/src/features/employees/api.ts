@@ -3,6 +3,8 @@ import { apiFetch } from "../../lib/api/client";
 /** پرسنل از API. */
 export interface Employee {
   id: string;
+  organizationId: string;
+  organizationName?: string | null;
   personnelCode: string;
   firstName: string;
   lastName: string;
@@ -36,10 +38,13 @@ export interface PagedEmployees {
 }
 
 /**
- * فهرست پرسنل.
+ * فهرست پرسنل با فیلترهای پیشرفته (کد پرسنلی، کد ملی، سازمان).
  */
 export function fetchEmployees(input: {
   searchTerm?: string;
+  personnelCode?: string;
+  nationalCode?: string;
+  organizationId?: string;
   isActive?: boolean;
   page: number;
   pageSize: number;
@@ -47,6 +52,9 @@ export function fetchEmployees(input: {
   return apiFetch<PagedEmployees>("/api/v1/employees", {
     query: {
       searchTerm: input.searchTerm || undefined,
+      personnelCode: input.personnelCode || undefined,
+      nationalCode: input.nationalCode || undefined,
+      organizationId: input.organizationId || undefined,
       isActive: input.isActive,
       page: input.page,
       pageSize: input.pageSize,
@@ -62,9 +70,10 @@ export function fetchEmployee(id: string): Promise<Employee> {
 }
 
 /**
- * ثبت پرسنل.
+ * ثبت پرسنل (سازمان اجباری است).
  */
 export function createEmployee(input: {
+  organizationId: string;
   personnelCode: string;
   firstName: string;
   lastName: string;

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Authorization;
 using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Abstractions;
@@ -36,6 +37,13 @@ public sealed class CreateEmployeeCommandHandler : IRequestHandler<CreateEmploye
         var tenantId = _currentUser.TenantId;
         var code = request.PersonnelCode.Trim();
 
+        // سازمان انتخاب‌شده باید در محدوده دید کاربر باشد.
+        var scope = _currentUser.VisibleOrganizationIds.ToHashSet();
+        if (!scope.Contains(request.OrganizationId))
+        {
+            return Result<Guid>.Failure(AccessErrors.Forbidden());
+        }
+
         var duplicate = await _db.Employees.AnyAsync(
             e => e.PersonnelCode == code,
             cancellationToken);
@@ -52,6 +60,7 @@ public sealed class CreateEmployeeCommandHandler : IRequestHandler<CreateEmploye
         var employee = Employee.Create(
             Guid.NewGuid(),
             tenantId,
+            request.OrganizationId,
             code,
             request.FirstName,
             request.LastName,

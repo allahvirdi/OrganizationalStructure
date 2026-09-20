@@ -15,6 +15,16 @@ public sealed record EmployeeDto
     public Guid Id { get; init; }
 
     /// <summary>
+    /// شناسه سازمان مالک پرسنل.
+    /// </summary>
+    public Guid OrganizationId { get; init; }
+
+    /// <summary>
+    /// نام سازمان (از Scope کاربر؛ ممکن است خالی باشد).
+    /// </summary>
+    public string? OrganizationName { get; init; }
+
+    /// <summary>
     /// کد پرسنلی (۸ رقمی).
     /// </summary>
     public string PersonnelCode { get; init; } = string.Empty;

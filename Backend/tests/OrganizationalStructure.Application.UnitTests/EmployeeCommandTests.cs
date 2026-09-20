@@ -13,16 +13,17 @@ namespace OrganizationalStructure.Application.UnitTests;
 /// </summary>
 public sealed class EmployeeCommandTests
 {
-    private static (OrganizationalStructureDbContext Db, TestClock Clock, TestCurrentUser User)
+    private static (OrganizationalStructureDbContext Db, TestClock Clock, TestCurrentUser User, Guid OrgId)
         CreateContext()
     {
         var tenantId = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
         var db = TestDbContextFactory.Create(tenantId);
-        return (db, new TestClock(), new TestCurrentUser(tenantId));
+        return (db, new TestClock(), new TestCurrentUser(tenantId, new[] { orgId }), orgId);
     }
 
-    private static CreateEmployeeCommand ValidCreateCommand(string code = "00000001") =>
-        new(code, "علی", "رضایی", "0012345678", "09120000000", null, null, null, null, null);
+    private static CreateEmployeeCommand ValidCreateCommand(Guid orgId, string code = "00000001") =>
+        new(orgId, code, "علی", "رضایی", "0012345678", "09120000000", null, null, null, null, null);
 
     /// <summary>
     /// ثبت پرسنل معتبر باید موفق باشد.
@@ -30,10 +31,10 @@ public sealed class EmployeeCommandTests
     [Fact]
     public async Task Create_ValidCommand_ShouldSucceed()
     {
-        var (db, clock, user) = CreateContext();
+        var (db, clock, user, orgId) = CreateContext();
         var handler = new CreateEmployeeCommandHandler(db, clock, user);
 
-        var result = await handler.Handle(ValidCreateCommand(), CancellationToken.None);
+        var result = await handler.Handle(ValidCreateCommand(orgId), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBe(Guid.Empty);
@@ -45,11 +46,11 @@ public sealed class EmployeeCommandTests
     [Fact]
     public async Task Create_DuplicateCode_ShouldReturnConflict()
     {
-        var (db, clock, user) = CreateContext();
+        var (db, clock, user, orgId) = CreateContext();
         var handler = new CreateEmployeeCommandHandler(db, clock, user);
 
-        await handler.Handle(ValidCreateCommand(), CancellationToken.None);
-        var result = await handler.Handle(ValidCreateCommand(), CancellationToken.None);
+        await handler.Handle(ValidCreateCommand(orgId), CancellationToken.None);
+        var result = await handler.Handle(ValidCreateCommand(orgId), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error!.Type.Should().Be(ErrorType.Conflict);
@@ -63,7 +64,7 @@ public sealed class EmployeeCommandTests
     {
         var validator = new CreateEmployeeCommandValidator();
 
-        validator.Validate(ValidCreateCommand("ABC")).IsValid.Should().BeFalse();
+        validator.Validate(ValidCreateCommand(Guid.NewGuid(), "ABC")).IsValid.Should().BeFalse();
     }
 
     /// <summary>
@@ -73,7 +74,7 @@ public sealed class EmployeeCommandTests
     public void CreateValidator_YearsWithoutMonths_ShouldBeInvalid()
     {
         var validator = new CreateEmployeeCommandValidator();
-        var command = ValidCreateCommand() with { ServiceYears = 5, ServiceMonths = null };
+        var command = ValidCreateCommand(Guid.NewGuid()) with { ServiceYears = 5, ServiceMonths = null };
 
         validator.Validate(command).IsValid.Should().BeFalse();
     }
@@ -84,7 +85,7 @@ public sealed class EmployeeCommandTests
     [Fact]
     public async Task Update_MissingEmployee_ShouldReturnNotFound()
     {
-        var (db, clock, _) = CreateContext();
+        var (db, clock, _, _) = CreateContext();
         var handler = new UpdateEmployeeCommandHandler(db, clock);
 
         var result = await handler.Handle(
@@ -101,9 +102,9 @@ public sealed class EmployeeCommandTests
     [Fact]
     public async Task Assign_MissingPost_ShouldReturnNotFound()
     {
-        var (db, clock, user) = CreateContext();
+        var (db, clock, user, orgId) = CreateContext();
         var createHandler = new CreateEmployeeCommandHandler(db, clock, user);
-        var created = await createHandler.Handle(ValidCreateCommand(), CancellationToken.None);
+        var created = await createHandler.Handle(ValidCreateCommand(orgId), CancellationToken.None);
         var handler = new AssignPostCommandHandler(db, clock, user);
 
         var result = await handler.Handle(
@@ -120,9 +121,9 @@ public sealed class EmployeeCommandTests
     [Fact]
     public async Task EndAssignment_NoActive_ShouldReturnConflict()
     {
-        var (db, clock, user) = CreateContext();
+        var (db, clock, user, orgId) = CreateContext();
         var createHandler = new CreateEmployeeCommandHandler(db, clock, user);
-        var created = await createHandler.Handle(ValidCreateCommand(), CancellationToken.None);
+        var created = await createHandler.Handle(ValidCreateCommand(orgId), CancellationToken.None);
         var handler = new EndAssignmentCommandHandler(db, clock, user);
 
         var result = await handler.Handle(

@@ -10,6 +10,10 @@ namespace OrganizationalStructure.Application.Employees.SearchEmployees;
 /// <summary>
 /// پردازش‌گر پرس‌وجوی جستجوی صفحه‌بندی‌شده پرسنل.
 /// </summary>
+/// <remarks>
+/// بهینه‌سازی: فیلتر محدوده سازمانی مستقیماً روی <c>Employee.OrganizationId</c> اعمال می‌شود
+/// (بدون زیرکوئری‌های همبسته روی Assignments/Posts) — کاهش چشمگیر زمان اجرا.
+/// </remarks>
 public sealed class SearchEmployeesQueryHandler
     : IRequestHandler<SearchEmployeesQuery, Result<PagedResult<EmployeeDto>>>
 {
@@ -31,25 +35,41 @@ public sealed class SearchEmployeesQueryHandler
         CancellationToken cancellationToken)
     {
         var scope = _currentUser.VisibleOrganizationIds.ToHashSet();
+        var scopeList = scope.ToList();
 
+        // فیلتر اصلی محدوده سازمانی — مستقیم روی فیلد جدید (بدون زیرکوئری)
         var query = _db.Employees
             .AsNoTracking()
-            .Where(e =>
-                !_db.Assignments.Any(a => a.EmployeeId == e.Id) ||
-                _db.Assignments.Any(a =>
-                    a.EmployeeId == e.Id &&
-                    a.ToDate == null &&
-                    _db.Posts.Any(p =>
-                        p.Id == a.PostId &&
-                        scope.Contains(p.OrganizationId))))
+            .Where(e => scopeList.Contains(e.OrganizationId))
             .AsQueryable();
 
+        // فیلتر کد پرسنلی
+        if (!string.IsNullOrWhiteSpace(request.PersonnelCode))
+        {
+            var pc = request.PersonnelCode.Trim();
+            query = query.Where(e => e.PersonnelCode.Contains(pc));
+        }
+
+        // فیلتر کد ملی (تساوی دقیق — رمزنگاری قطعی)
+        if (!string.IsNullOrWhiteSpace(request.NationalCode))
+        {
+            var nc = request.NationalCode.Trim();
+            query = query.Where(e => e.NationalCode == nc);
+        }
+
+        // جستجوی عمومی (سازگار با نسخه قبلی)
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var term = request.SearchTerm.Trim();
             query = query.Where(e =>
                 e.PersonnelCode.Contains(term) ||
                 e.NationalCode == term);
+        }
+
+        // فیلتر سازمان
+        if (request.OrganizationId.HasValue)
+        {
+            query = query.Where(e => e.OrganizationId == request.OrganizationId.Value);
         }
 
         if (request.IsActive.HasValue)
@@ -66,6 +86,8 @@ public sealed class SearchEmployeesQueryHandler
             .Select(e => new EmployeeDto
             {
                 Id = e.Id,
+                OrganizationId = e.OrganizationId,
+                OrganizationName = null,
                 PersonnelCode = e.PersonnelCode,
                 FirstName = e.FirstName,
                 LastName = e.LastName,
@@ -79,6 +101,17 @@ public sealed class SearchEmployeesQueryHandler
                 IsActive = e.IsActive
             })
             .ToListAsync(cancellationToken);
+
+        // پر کردن نام سازمان از مراجع در دسترس کاربر
+        var orgRefs = _currentUser.VisibleOrganizations;
+        for (var i = 0; i < items.Count; i++)
+        {
+            var orgRef = orgRefs.FirstOrDefault(o => o.Id == items[i].OrganizationId);
+            if (orgRef is not null)
+            {
+                items[i] = items[i] with { OrganizationName = orgRef.Name };
+            }
+        }
 
         var result = new PagedResult<EmployeeDto>(items, totalCount, request.Page, request.PageSize);
         return Result<PagedResult<EmployeeDto>>.Success(result);

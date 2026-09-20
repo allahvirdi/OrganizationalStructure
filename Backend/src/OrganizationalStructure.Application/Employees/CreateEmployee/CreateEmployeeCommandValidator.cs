@@ -13,6 +13,10 @@ public sealed class CreateEmployeeCommandValidator : AbstractValidator<CreateEmp
     /// </summary>
     public CreateEmployeeCommandValidator()
     {
+        RuleFor(x => x.OrganizationId)
+            .NotEmpty()
+            .WithMessage("انتخاب سازمان الزامی است.");
+
         RuleFor(x => x.PersonnelCode)
             .NotEmpty()
             .WithMessage("کد پرسنلی الزامی است.")

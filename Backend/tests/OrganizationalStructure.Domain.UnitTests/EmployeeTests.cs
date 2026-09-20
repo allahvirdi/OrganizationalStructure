@@ -20,6 +20,7 @@ public sealed class EmployeeTests
         return Employee.Create(
             Guid.NewGuid(),
             Guid.NewGuid(),
+            Guid.NewGuid(),
             "00000001",
             "علی",
             "رضایی",
@@ -53,7 +54,7 @@ public sealed class EmployeeTests
     [InlineData("1234567a")]
     public void Create_WithInvalidPersonnelCode_ShouldThrow(string code)
     {
-        var act = () => Employee.Create(Guid.NewGuid(), Guid.NewGuid(), code,
+        var act = () => Employee.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), code,
             "علی", "رضایی", "0012345678", null, null, OccurredOn);
 
         act.Should().Throw<ArgumentException>();

@@ -34,6 +34,8 @@ public sealed class GetEmployeeByIdQueryHandler : IRequestHandler<GetEmployeeByI
             .Select(e => new EmployeeDto
             {
                 Id = e.Id,
+                OrganizationId = e.OrganizationId,
+                OrganizationName = null,
                 PersonnelCode = e.PersonnelCode,
                 FirstName = e.FirstName,
                 LastName = e.LastName,
@@ -58,7 +60,11 @@ public sealed class GetEmployeeByIdQueryHandler : IRequestHandler<GetEmployeeByI
             return Result<EmployeeDto>.Failure(AccessErrors.Forbidden());
         }
 
-        return Result<EmployeeDto>.Success(dto);
+        // پر کردن نام سازمان از مراجع در دسترس کاربر
+        var orgRef = _currentUser.VisibleOrganizations.FirstOrDefault(o => o.Id == dto.OrganizationId);
+        var result = orgRef is not null ? dto with { OrganizationName = orgRef.Name } : dto;
+
+        return Result<EmployeeDto>.Success(result);
     }
 
     /// <summary>

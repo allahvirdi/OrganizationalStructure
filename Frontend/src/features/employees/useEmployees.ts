@@ -20,10 +20,13 @@ import {
 export const employeesQueryKey = ["employees"] as const;
 
 /**
- * فهرست صفحه‌بندی‌شده پرسنل.
+ * فهرست صفحه‌بندی‌شده پرسنل با فیلترهای پیشرفته.
  */
 export function useEmployees(input: {
   searchTerm?: string;
+  personnelCode?: string;
+  nationalCode?: string;
+  organizationId?: string;
   page: number;
   pageSize: number;
 }) {

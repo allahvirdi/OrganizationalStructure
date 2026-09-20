@@ -6,6 +6,7 @@ namespace OrganizationalStructure.Application.Employees.CreateEmployee;
 /// <summary>
 /// دستور ثبت پرسنل جدید.
 /// </summary>
+/// <param name="OrganizationId">شناسه سازمان مالک پرسنل (اجباری)</param>
 /// <param name="PersonnelCode">کد پرسنلی (عدد ۸ رقمی، یکتا در مستأجر)</param>
 /// <param name="FirstName">نام</param>
 /// <param name="LastName">نام خانوادگی</param>
@@ -17,6 +18,7 @@ namespace OrganizationalStructure.Application.Employees.CreateEmployee;
 /// <param name="PezhvakMobile">موبایل پژواک (اختیاری)</param>
 /// <param name="UserId">شناسه کاربر IAM (اختیاری)</param>
 public sealed record CreateEmployeeCommand(
+    Guid OrganizationId,
     string PersonnelCode,
     string FirstName,
     string LastName,

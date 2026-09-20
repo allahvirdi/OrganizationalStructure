@@ -24,12 +24,12 @@ public sealed class RemainingHandlerTests
     }
 
     private static async Task<Guid> SeedEmployeeAsync(
-        OrganizationalStructureDbContext db, TestClock clock, TestCurrentUser user)
+        OrganizationalStructureDbContext db, TestClock clock, TestCurrentUser user, Guid orgId)
     {
         var handler = new CreateEmployeeCommandHandler(db, clock, user);
         var result = await handler.Handle(
-            new CreateEmployeeCommand("00000021", "علی", "رضایی", "0012345678",
-                null, null, null, null, null, null),
+            new CreateEmployeeCommand(orgId, "00000021", "علی", "رضایی", "0012345678",
+                "09120000000", null, null, null, null, null),
             CancellationToken.None);
         result.IsSuccess.Should().BeTrue();
         return result.Value;
@@ -57,8 +57,9 @@ public sealed class RemainingHandlerTests
     [Fact]
     public async Task SetEmployeeStatus_Existing_ShouldSucceed_Missing_ShouldFail()
     {
-        var (db, clock, user) = CreateContext();
-        var employeeId = await SeedEmployeeAsync(db, clock, user);
+        var orgId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { orgId });
+        var employeeId = await SeedEmployeeAsync(db, clock, user, orgId);
         var handler = new SetEmployeeStatusCommandHandler(db, clock);
 
         (await handler.Handle(new SetEmployeeStatusCommand(employeeId, false), CancellationToken.None))
@@ -74,8 +75,9 @@ public sealed class RemainingHandlerTests
     [Fact]
     public async Task LinkUser_Existing_ShouldSucceed_Missing_ShouldFail()
     {
-        var (db, clock, user) = CreateContext();
-        var employeeId = await SeedEmployeeAsync(db, clock, user);
+        var orgId = Guid.NewGuid();
+        var (db, clock, user) = CreateContext(new[] { orgId });
+        var employeeId = await SeedEmployeeAsync(db, clock, user, orgId);
         var handler = new LinkEmployeeUserCommandHandler(db, clock);
 
         (await handler.Handle(new LinkEmployeeUserCommand(employeeId, Guid.NewGuid()), CancellationToken.None))
@@ -93,7 +95,7 @@ public sealed class RemainingHandlerTests
     {
         var organizationId = Guid.NewGuid();
         var (db, clock, user) = CreateContext(new[] { organizationId });
-        var employeeId = await SeedEmployeeAsync(db, clock, user);
+        var employeeId = await SeedEmployeeAsync(db, clock, user, organizationId);
         var postId = await SeedPostAsync(db, clock, user, organizationId);
         var assignHandler = new Employees.AssignPost.AssignPostCommandHandler(db, clock, user);
         var endHandler = new Employees.EndAssignment.EndAssignmentCommandHandler(db, clock, user);

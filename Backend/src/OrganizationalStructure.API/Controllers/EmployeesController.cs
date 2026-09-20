@@ -217,20 +217,23 @@ public sealed class EmployeesController : ApiControllerBase
     }
 
     /// <summary>
-    /// جستجوی صفحه‌بندی‌شده پرسنل.
+    /// جستجوی صفحه‌بندی‌شده پرسنل با فیلترهای پیشرفته.
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthorizationPolicies.Employee.View)]
     [ProducesResponseType(typeof(Application.Common.PagedResult<EmployeeDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<Application.Common.PagedResult<EmployeeDto>>> Search(
         [FromQuery] string? searchTerm,
+        [FromQuery] string? personnelCode,
+        [FromQuery] string? nationalCode,
         [FromQuery] bool? isActive,
+        [FromQuery] Guid? organizationId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new SearchEmployeesQuery(searchTerm, isActive, page, pageSize),
+            new SearchEmployeesQuery(searchTerm, personnelCode, nationalCode, isActive, organizationId, page, pageSize),
             cancellationToken);
         return HandleResult(result);
     }

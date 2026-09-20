@@ -21,6 +21,7 @@ public sealed class EmployeesApiTests : IClassFixture<TestWebApplicationFactory>
 
     private static object NewEmployeePayload(string code) => new
     {
+        organizationId = TestAuthHandler.TestOrganizationId,
         personnelCode = code,
         firstName = "علی",
         lastName = "رضایی",

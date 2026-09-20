@@ -22,6 +22,8 @@ public sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
 
         builder.Property(e => e.TenantId).IsRequired();
 
+        builder.Property(e => e.OrganizationId).IsRequired();
+
         builder.Property(e => e.UserId);
 
         builder.Property(e => e.PersonnelCode)
