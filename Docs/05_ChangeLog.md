@@ -24,6 +24,42 @@
 
 ---
 
+## [2026-09-20] - Session-20260920-Phase7-EmployeeImport / Phase 7
+### Added
+- `POST /api/v1/import/employees` — ورود دسته‌جمعی پرسنل یک سازمان از فایل `.xlsx` یا `.csv` (اتمیک، با مجوز `OrganizationStructure.Employee.Import`).
+- `GET /api/v1/import/employees/template?format=xlsx|csv` — قالب فارسی با دو ردیف نمونه (CSV با BOM).
+- `ImportEmployeesCommand/Handler/Validator` + `ImportEmployeeRowDto` + `ImportEmployeesResultDto` در لایه کاربرد.
+- `EmployeesExcelParser` (ClosedXML — تنها پکیج موجود) و `EmployeesCsvParser` (پارسر RFC 4180 بدون وابستگی تازه).
+- `EmployeesImportHeaders` — مرجع واحد سرستون‌های مشترک پارسر، قالب و تست‌ها.
+- `Application/Common/PersianDigitNormalizer` — نرمال‌سازی ارقام فارسی/عربی و حذف نیم‌فاصله/nbsp/جداکننده هزارگان.
+- `Application/Common/JalaliConverter` — تبدیل تاریخ شمسی به `DateOnly` میلادی با `PersianCalendar` استاندارد (بدون پکیج تازه).
+- خطاهای جدید `Import.EmployeeRowInvalid`، `Import.DuplicatePersonnelCodeInFile`، `Import.DuplicateNationalCodeInFile`.
+- `Frontend/src/features/import/useImportEmployees.ts` + `EmployeesImportPanel.tsx` (انتخاب سازمان با نام، آپلود، دانلود قالب).
+- تست‌ها: ۳۵ تست واحد جدید (پارسر اکسل/CSV، قالب‌ها، پردازش‌گر، اعتبارسنجی ردیف، نرمال‌ساز و مبدل جلالی) + ۶ تست یکپارچگی API.
+
+### Changed
+- صفحه `/import` از تک‌فرم به **دو تب** «ساختار پست‌ها» / «پرسنل» تبدیل شد؛ هر تب فقط با مجوز خودش فعال است.
+- `MenuItem` در `Frontend/src/config/menu.tsx` فیلد `anyOfPermissions` گرفت و آیتم «ورود ساختار» با OR دو مجوز نمایش داده می‌شود.
+- `Frontend/src/features/import/api.ts` توابع/آدرس‌های `importEmployees` و قالب‌های پرسنل را افزود.
+- `Docs/api-contracts/import.md`: بخش کامل «ورود دسته‌جمعی پرسنل» (قالب، قواعد، Endpointها، جدول خطاها).
+- `Docs/Phases/Phase07.md`: Deliverables/DoD به‌روز شد (پیشرفت ۳۰٪ → ۷۰٪؛ Staging همچنان مسدود به Q-003).
+
+### Fixed
+- الزام «موبایل» در ورود پرسنل با قاعده موجود `UpdateEmployeeCommandValidator` هم‌راستا شد (ردیف بدون موبایل → خطای ردیف، نه ثبت ناقص).
+
+### Removed
+- بدون حذف.
+
+### Validation
+- `dotnet test` (Release، `UseSharedCompilation=false`): **سبز** — Domain ۳۷ · Application ۷۱ · Infrastructure ۲۴ · Architecture ۴ · API Integration ۷۶ (مجموع ۲۱۲).
+- `npx tsc --noEmit` و `npx eslint . --max-warnings 0`: بدون خطا/هشدار · `npm run build`: موفق (۱۷ روت).
+- `git diff --check`: بدون خطای whitespace (فقط هشدار LF→CRLF موجود `menu.tsx`).
+
+### Decisions / ADRs
+- بدون ADR جدید؛ اتکا به DEC-025 (نام مجوزها)، ADR-008 (مجوز در IAM)، ADR-006 (PII)، Q-003 (Staging) همچنان **Open**.
+
+---
+
 ## [2026-09-20] - Session-20260920-Phase6-PezhvakStatus / Phase 6 (ادامه)
 ### Added
 - فیلد `PezhvakIsActive` (`bool?` — غیر PII) روی Aggregate `Employee` + ستون `bit NULL` در جدول `Employees`؛ `null` = هنوز تعیین نشده.

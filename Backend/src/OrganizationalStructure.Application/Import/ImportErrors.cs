@@ -43,4 +43,33 @@ public static class ImportErrors
         "Import.RowLimitExceeded",
         $"تعداد ردیف‌های فایل از حداکثر مجاز ({maxRows}) بیشتر است.",
         ErrorType.Validation);
+
+    /// <summary>
+    /// ساخت خطای «ردیف پرسنل نامعتبر».
+    /// </summary>
+    /// <param name="row">شماره ردیف داده (یک‌مبنایی، پس از هدر)</param>
+    /// <param name="detail">توضیح علت نامعتبر بودن</param>
+    public static Error EmployeeRowError(int row, string detail) => new(
+        "Import.EmployeeRowInvalid",
+        $"ردیف {row}: {detail}",
+        ErrorType.Validation);
+
+    /// <summary>
+    /// ساخت خطای «کد پرسنلی تکراری در فایل».
+    /// </summary>
+    /// <param name="row">شماره ردیف داده</param>
+    /// <param name="code">کد پرسنلی تکراری</param>
+    public static Error DuplicatePersonnelCodeInFile(int row, string code) => new(
+        "Import.DuplicatePersonnelCodeInFile",
+        $"ردیف {row}: کد پرسنلی {code} بیش از یک بار در فایل آمده است.",
+        ErrorType.Validation);
+
+    /// <summary>
+    /// ساخت خطای «کد ملی تکراری در فایل» (بدون افشای مقدار حساس).
+    /// </summary>
+    /// <param name="row">شماره ردیف داده</param>
+    public static Error DuplicateNationalCodeInFile(int row) => new(
+        "Import.DuplicateNationalCodeInFile",
+        $"ردیف {row}: کد ملی بیش از یک بار در فایل آمده است.",
+        ErrorType.Validation);
 }

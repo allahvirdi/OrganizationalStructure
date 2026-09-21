@@ -1,14 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useOrganizations } from "../../../src/features/organizations/useOrganizations";
-import type { OrganizationOption } from "../../../src/features/organizations/api";
-import { useImportPosts } from "../../../src/features/import/useImportPosts";
-import { POSTS_TEMPLATE_URL } from "../../../src/features/import/api";
-import EmployeesImportPanel from "../../../src/features/import/EmployeesImportPanel";
-import { useMe } from "../../../src/features/auth/useAuth";
-import { hasPermission } from "../../../src/lib/permissions";
-import { ApiError } from "../../../src/lib/api/client";
+import { useOrganizations } from "../organizations/useOrganizations";
+import type { OrganizationOption } from "../organizations/api";
+import { useImportEmployees } from "./useImportEmployees";
+import {
+  EMPLOYEES_EXCEL_TEMPLATE_URL,
+  EMPLOYEES_CSV_TEMPLATE_URL,
+} from "./api";
+import { ApiError } from "../../lib/api/client";
 
 import {
   Alert,
@@ -19,8 +19,6 @@ import {
   Container,
   Divider,
   Paper,
-  Tab,
-  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
@@ -28,61 +26,10 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DownloadIcon from "@mui/icons-material/Download";
 
 /**
- * صفحه بارگذاری ساختار سازمانی از فایل اکسل.
+ * پنل بارگذاری دسته‌جمعی پرسنل از فایل اکسل یا CSV.
  */
-export default function ImportPage() {
-  const { data: user, isLoading } = useMe();
-  const canImportPosts = hasPermission(user, "OrganizationStructure.Post.Create");
-  const canImportEmployees = hasPermission(
-    user,
-    "OrganizationStructure.Employee.Import",
-  );
-  const [requestedTab, setRequestedTab] = React.useState<number | null>(null);
-  const firstAllowedTab = canImportPosts ? 0 : 1;
-  const tab =
-    requestedTab !== null &&
-    ((requestedTab === 0 && canImportPosts) ||
-      (requestedTab === 1 && canImportEmployees))
-      ? requestedTab
-      : firstAllowedTab;
-
-  if (isLoading) {
-    return (
-      <Container maxWidth="sm" sx={{ py: 8, textAlign: "center" }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
-
-  if (!canImportPosts && !canImportEmployees) {
-    return (
-      <Container maxWidth="sm" sx={{ py: 4 }}>
-        <Alert severity="warning">برای این بخش دسترسی ندارید.</Alert>
-      </Container>
-    );
-  }
-
-  return (
-    <>
-      <Container maxWidth="sm" sx={{ pt: 4, pb: 1 }}>
-        <Tabs
-          value={tab}
-          onChange={(_, newValue) => setRequestedTab(newValue)}
-          variant="fullWidth"
-        >
-          <Tab label="ساختار پست‌ها" disabled={!canImportPosts} />
-          <Tab label="پرسنل" disabled={!canImportEmployees} />
-        </Tabs>
-      </Container>
-
-      {tab === 0 && canImportPosts ? <ImportContent /> : null}
-      {tab === 1 && canImportEmployees ? <EmployeesImportPanel /> : null}
-    </>
-  );
-}
-
-function ImportContent() {
-  const importMutation = useImportPosts();
+export default function EmployeesImportPanel() {
+  const importMutation = useImportEmployees();
   const [organization, setOrganization] =
     React.useState<OrganizationOption | null>(null);
   const [organizationSearchTerm, setOrganizationSearchTerm] =
@@ -114,7 +61,7 @@ function ImportContent() {
         file,
       });
       setSuccessMessage(
-        `✓ ${result.importedCount} پست با موفقیت برای سازمان بارگذاری شد.`,
+        `✓ ${result.importedCount} پرسنل با موفقیت برای سازمان بارگذاری شد.`,
       );
       setFile(null);
       if (fileInputRef.current) {
@@ -132,10 +79,10 @@ function ImportContent() {
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h5" sx={{ mb: 1 }}>
-          بارگذاری ساختار سازمانی
+          بارگذاری پرسنل
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          ساختار پست‌های یک سازمان را از فایل اکسل (.xlsx) بارگذاری کنید.
+          اطلاعات پرسنلی یک سازمان را از فایل اکسل (.xlsx) یا CSV بارگذاری کنید.
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
@@ -170,11 +117,11 @@ function ImportContent() {
             startIcon={<UploadFileIcon />}
             sx={{ mb: 1 }}
           >
-            انتخاب فایل اکسل
+            انتخاب فایل اکسل یا CSV
             <input
               ref={fileInputRef}
               type="file"
-              accept=".xlsx"
+              accept=".xlsx,.csv"
               hidden
               onChange={(e) => {
                 const selected = e.target.files?.[0] ?? null;
@@ -191,29 +138,34 @@ function ImportContent() {
           )}
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
           <Button
             variant="contained"
             onClick={handleSubmit}
             disabled={!canSubmit}
             startIcon={
-              isSubmitting ? (
-                <CircularProgress size={20} />
-              ) : (
-                <UploadFileIcon />
-              )
+              isSubmitting ? <CircularProgress size={20} /> : <UploadFileIcon />
             }
           >
-            {isSubmitting ? "در حال بارگذاری…" : "بارگذاری ساختار"}
+            {isSubmitting ? "در حال بارگذاری…" : "بارگذاری پرسنل"}
           </Button>
 
           <Button
             variant="text"
             component="a"
-            href={POSTS_TEMPLATE_URL}
+            href={EMPLOYEES_EXCEL_TEMPLATE_URL}
             startIcon={<DownloadIcon />}
           >
-            دانلود قالب نمونه
+            قالب اکسل
+          </Button>
+
+          <Button
+            variant="text"
+            component="a"
+            href={EMPLOYEES_CSV_TEMPLATE_URL}
+            startIcon={<DownloadIcon />}
+          >
+            قالب CSV
           </Button>
         </Box>
 
@@ -233,7 +185,8 @@ function ImportContent() {
 
         <Divider sx={{ mb: 2 }} />
         <Typography variant="caption" color="text.secondary">
-          قالب فایل: ستون‌های «کد پست»، «عنوان پست»، «شرح»، «کد پست والد».
+          قالب فایل: «کد پرسنلی»، «نام»، «نام خانوادگی»، «کد ملی»، «موبایل»،
+          «تاریخ تولد (شمسی)»، «سال سابقه»، «ماه سابقه»، «موبایل پژواک».
           ردیف اول هدر است. حداکثر ۵۰۰ ردیف در هر بارگذاری.
         </Typography>
       </Paper>

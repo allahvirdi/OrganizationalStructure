@@ -18,6 +18,7 @@ export interface MenuItem {
   path: string;
   icon: SvgIconComponent;
   permission?: string;
+  anyOfPermissions?: readonly string[];
 }
 
 export const mainMenu: MenuItem[] = [
@@ -62,7 +63,10 @@ export const mainMenu: MenuItem[] = [
     label: "ورود ساختار",
     path: "/import",
     icon: FileUploadIcon,
-    permission: "OrganizationStructure.Post.Create",
+    anyOfPermissions: [
+      "OrganizationStructure.Post.Create",
+      "OrganizationStructure.Employee.Import",
+    ],
   },
 ];
 
@@ -77,8 +81,16 @@ export function filterMenuByPermissions(
   roles: readonly string[] = [],
 ): MenuItem[] {
   if (roles.includes("SystemAdmin")) return mainMenu;
-  return mainMenu.filter(
-    (item) =>
-      item.permission === undefined || hasPermission({ permissions, roles }, item.permission),
-  );
+  return mainMenu.filter((item) => {
+    if (item.anyOfPermissions && item.anyOfPermissions.length > 0) {
+      return item.anyOfPermissions.some((permission) =>
+        hasPermission({ permissions, roles }, permission),
+      );
+    }
+
+    return (
+      item.permission === undefined ||
+      hasPermission({ permissions, roles }, item.permission)
+    );
+  });
 }

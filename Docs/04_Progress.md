@@ -4,7 +4,20 @@
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
 **آخرین به‌روزرسانی:** `2026-09-20`
-**Session مربوطه:** `Session-20260920-Phase6-PezhvakStatus`
+**Session مربوطه:** `Session-20260920-Phase7-EmployeeImport`
+
+## Phase 7 — ورود دسته‌جمعی پرسنل از اکسل/CSV (2026-09-20)
+- نیاز: مسیر فایل (نه جدول واسط) برای ثبت دسته‌جمعی پرسنل یک سازمان، مستقل از Q-003 که هنوز باز است.
+- Endpoint: `POST /api/v1/import/employees` (multipart: `organizationId` + `file` با پسوند `.xlsx` یا `.csv`) → `201` با `{organizationId, importedCount}`؛ `GET /api/v1/import/employees/template?format=xlsx|csv` برای قالب فارسی.
+- مجوز: `OrganizationStructure.Employee.Import` (مصوب DEC-025). تا ثبت در IAM همه درخواست‌ها ۴۰۳ می‌گیرند — Deny by Default حفظ شده. محدودیت سازمانی (`VisibleOrganizationIds`) در هندلر دوباره بررسی می‌شود.
+- اتمیک بودن: هر خطای فایل/ردیف ⇒ هیچ پرسنلی ثبت نمی‌شود (هم‌راستا با مسیر پست‌ها). تکراری در فایل → ۴۰۰؛ تکراری در دیتابیس → ۴۰۹ `Employee.DuplicatePersonnelCode`.
+- حفاظت PII: پیام‌های خطای کد ملی/شماره فقط «شماره ردیف + علت» دارند و مقدار حساس افشا نمی‌شود.
+- بدون افزودن پکیج تازه: اکسل با ClosedXML موجود؛ CSV با پارسر دستی RFC 4180؛ تاریخ شمسی با `PersianCalendar` استاندارد دات‌نت (نه `jalaali-js` و نه کتابخانه جدید).
+- نرمال‌سازی ورودی: `PersianDigitNormalizer` (ارقام فارسی/عربی، نیم‌فاصله، nbsp، جداکننده هزارگان) و `JalaliConverter` (شمسی → `DateOnly` میلادی).
+- `PezhvakIsActive` در این مسیر ورودی ندارد و `null` می‌ماند (تعیین‌نشده) — تعیین آن فقط از ویرایش تکمیلی؛ سازگار با ADR-013 Pending.
+- Frontend: صفحه `/import` دو تب شد؛ `MenuItem.anyOfPermissions` اضافه شد تا آیتم منو با OR دو مجوز دیده شود.
+- اعتبارسنجی: Release سبز — Domain ۳۷ · Application ۷۱ · Infrastructure ۲۴ · Architecture ۴ · API Integration ۷۶ (۲۱۲ تست)؛ `tsc` + `eslint --max-warnings 0` + `next build` (۱۷ روت) تمیز؛ `git diff --check` بدون خطا.
+- انجام‌نشده: اجرای Migration (در این Session Migration جدید لازم نبود)، تست HTTP زنده با IAM واقعی، آزمون تعاملی مرورگر، و مسیر Staging Table (مسدود به Q-003). هیچ کامیتی انجام نشد؛ درخت کاری شامل تغییرات معوق Sessionهای قبل نیز هست و هنگام کامیت باید تفکیک شود. گزارش: `Session-20260920-Phase7-EmployeeImport.md`.
 
 ## ادامه — وضعیت شبکه پژواک + اجباری‌بودن شماره پژواک (2026-09-20)
 - نیاز: شماره ثبت‌شده در پژواک در **ویرایش تکمیلی** اجباری شود و وضعیت فعال بودن آن در شبکه پژواک ثبت/نمایش شود.
