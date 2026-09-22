@@ -7,6 +7,7 @@ using OrganizationalStructure.Infrastructure.Common;
 using OrganizationalStructure.Infrastructure.Integration;
 using OrganizationalStructure.Infrastructure.Persistence;
 using OrganizationalStructure.Infrastructure.Security;
+using StackExchange.Redis;
 
 namespace OrganizationalStructure.Infrastructure;
 
@@ -39,9 +40,22 @@ public static class DependencyInjection
         services.Configure<IamOptions>(configuration.GetSection(IamOptions.SectionName));
         services.AddHttpClient("iam");
         services.AddScoped<IIamClient, IamClient>();
-        // نشست BFF باید Singleton باشد؛ InMemoryBffSessionStore حافظه داخلی دارد
-        // و با AddScoped هر درخواست استور خالی می‌گرفت (علت 401 نشست).
-        services.AddSingleton<Application.Integration.Iam.IBffSessionStore, Integration.InMemoryBffSessionStore>();
+
+        // نشست BFF باید Singleton باشد؛ با AddScoped هر درخواست استور خالی می‌گرفت (علت 401 نشست).
+        // اگر ConnectionStrings:Redis مقدار داشته باشد → نشست در Redis (استقرار چندنمونه‌ای / Production)؛
+        // در غیر این صورت → حافظه داخلی (توسعه محلی و تست‌ها).
+        var redisConnection = configuration.GetConnectionString("Redis");
+        if (!string.IsNullOrWhiteSpace(redisConnection))
+        {
+            services.Configure<RedisOptions>(configuration.GetSection(RedisOptions.SectionName));
+            services.AddSingleton<IConnectionMultiplexer>(
+                _ => ConnectionMultiplexer.Connect(redisConnection));
+            services.AddSingleton<Application.Integration.Iam.IBffSessionStore, Integration.RedisBffSessionStore>();
+        }
+        else
+        {
+            services.AddSingleton<Application.Integration.Iam.IBffSessionStore, Integration.InMemoryBffSessionStore>();
+        }
 
         // ICurrentUser به وسیله لایه API (پیاده‌سازی BFF) ثبت می‌شود.
         // DbContext و interceptor به صورت Scoped و مبتنی بر ICurrentUser/ITenantContext ثبت می‌شوند.

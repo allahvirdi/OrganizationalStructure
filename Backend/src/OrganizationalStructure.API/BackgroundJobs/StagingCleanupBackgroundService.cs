@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Domain.Enums;
-using OrganizationalStructure.Infrastructure.Persistence;
 
 namespace OrganizationalStructure.API.BackgroundJobs;
 
@@ -10,6 +10,12 @@ namespace OrganizationalStructure.API.BackgroundJobs;
 /// <remarks>
 /// مطابق DEC-030: بارگذاری‌های Committed/Rejected پس از ۱۰ روز حذف فیزیکی می‌شوند.
 /// داده اصلی پرسنل در جدول Employees ثبت شده و نیازی به نگهداری واسط نیست.
+/// <para>
+/// این Job در اسکوپ پس‌زمینه اجرا می‌شود (بدون HttpContext)؛ بنابراین
+/// <c>ITenantContext</c> مقدار واقعی ندارد و فیلترهای سراسری (مستأجر/حذف نرم)
+/// با <see cref="EntityFrameworkQueryableExtensions.IgnoreQueryFilters{TSource}"/>
+/// دور زده می‌شوند — پاک‌سازی یک عملیات سیستمی میان‌مستأجری است.
+/// </para>
 /// </remarks>
 public sealed class StagingCleanupBackgroundService : BackgroundService
 {
@@ -60,16 +66,17 @@ public sealed class StagingCleanupBackgroundService : BackgroundService
     }
 
     /// <summary>
-    /// شناسایی و حذف فیزیکی بارگذاری‌های منقضی‌شده.
+    /// شناسایی و حذف فیزیکی بارگذاری‌های منقضی‌شده (میان‌مستأجری؛ فیلترهای سراسری دور زده می‌شوند).
     /// </summary>
     private async Task CleanupExpiredBatchesAsync(CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<OrganizationalStructureDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
 
         var cutoff = DateTimeOffset.UtcNow.AddDays(-RetentionDays);
 
         var expiredBatchIds = await db.ImportBatches
+            .IgnoreQueryFilters()
             .Where(b => (b.Status == ImportBatchStatus.Committed || b.Status == ImportBatchStatus.Rejected)
                         && b.ReviewedAt != null
                         && b.ReviewedAt < cutoff)
@@ -83,16 +90,19 @@ public sealed class StagingCleanupBackgroundService : BackgroundService
 
         // حذف ردیف‌های واسط مرتبط
         var deletedRows = await db.EmployeeStagingRows
+            .IgnoreQueryFilters()
             .Where(r => expiredBatchIds.Contains(r.BatchId))
             .ExecuteDeleteAsync(cancellationToken);
 
         // حذف خطاهای مرتبط
         var deletedErrors = await db.ImportErrors
+            .IgnoreQueryFilters()
             .Where(e => expiredBatchIds.Contains(e.BatchId))
             .ExecuteDeleteAsync(cancellationToken);
 
         // حذف خود بارگذاری‌ها
         var deletedBatches = await db.ImportBatches
+            .IgnoreQueryFilters()
             .Where(b => expiredBatchIds.Contains(b.Id))
             .ExecuteDeleteAsync(cancellationToken);
 

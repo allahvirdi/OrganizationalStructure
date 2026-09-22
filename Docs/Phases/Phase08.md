@@ -1,7 +1,7 @@
 # Phase 8 — Production Readiness
 
-**وضعیت:** Not Started
-**درصد پیشرفت:** 0%
+**وضعیت:** In Progress
+**درصد پیشرفت:** 35%
 **وابستگی‌ها:** همه فازها
 
 ---
@@ -29,8 +29,8 @@
 ---
 
 ## تسک‌های ≤ ۱۵ دقیقه
-1. `رفع NU1903 (ارتقای Microsoft.OpenApi/Swashbuckle)`
-2. `نشست Redis (جایگزینی InMemory برای چندنمونه‌ای)`
+1. ✅ `رفع NU1903 (ارتقای Microsoft.OpenApi/Swashbuckle)` — Microsoft.OpenApi 2.12.0؛ `dotnet list --vulnerable` سبز در هر ۴ پروژه
+2. ✅ `نشست Redis (جایگزینی InMemory برای چندنمونه‌ای)` — `RedisBffSessionStore` با `StackExchange.Redis 3.3.0`؛ انتخاب خودکار بر اساس `ConnectionStrings:Redis` + تست DI
 3. `CI/CD + Fitness Functions در CI`
 4. `Rate Limiting + Hardening نهایی + SAST/Dependency Scan`
 5. `مستندات استقرار + Runbook + Push نهایی`
