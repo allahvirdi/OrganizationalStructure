@@ -41,6 +41,7 @@
 | DEC-027 | 2026-09-15 | احراز هویت سیستمی مصرف‌کننده‌ها با Bearer JWT معتبر IAM در کنار کوکی BFF (PolicyScheme هوشمند) | Accepted | ADR-012 | کارفرما |
 | DEC-028 | 2026-09-17 | Q-009: تأمین Master Data سازمان محیط توسعه با تأیید کارفرما فقط از طریق API خود IAM (بدون تغییر کد/الگوی داده IAM): ثبت سازمان ریشه توسعه (`herasat-dev`) و تخصیص `OrganizationId` به کاربران Seed؛ IAM مرجع Master باقی می‌ماند (سازگار با DEC-011/DEC-013/DEC-017) | Accepted | — | کارفرما |
 | DEC-029 | 2026-09-20 | ADR-013 (پیشنهادی — نیازمند تأیید کارفرما): `PezhvakMobile` در **ویرایش تکمیلی** اجباری می‌شود و فیلد سه‌حالتیِ غیر PII `PezhvakIsActive` (`true`/`false`/`null`) به مدل پرسنل افزوده می‌شود؛ در **ثبت اولیه** هر دو اختیاری می‌مانند تا مسیر Import (Q-003) و رکوردهای موجود نشکنند. `null` یعنی «هنوز تعیین نشده» و با `false` (غیرفعال) تفاوت دارد تا داده تاریخی جعل نشود. | Proposed / Pending Approval | ADR-013 | کارفرما |
+| DEC-030 | 2026-09-21 | Q-003: طراحی نهایی Import از جدول واسط در `Docs/Architecture/staging-import-proposal.md` — سه جدول `ImportBatches`/`EmployeeStagingRows`/`ImportErrors` (بدون `TenantId` و بدون `PezhvakMobile`)، فرآیند یکسان بازبینی/تأیید برای هر دو منشأ (فایل + درج بیرونی)، مجوز موجود `OrganizationStructure.Employee.Import`، **ثبت معتبرها + اعلام نامعتبرها** (نه همه-یا-هیچ)، پاک‌سازی ۱۰ روزه، حذف فیزیکی تأییدشده، فرمت تاریخ بیرونی میلادی. | Accepted | — | کارفرما |
 
 ---
 

@@ -5,7 +5,7 @@
 > **قانون مهم:** Open Question به معنی مجوز برای حدس زدن نیست.
 > تا زمانی که یک سؤال باز است، AI Coder نباید بر اساس فرض شخصی آن را به تصمیم معماری، مدل داده یا Implementation تبدیل کند.
 
-**آخرین به‌روزرسانی:** `2026-09-17`
+**آخرین به‌روزرسانی:** `2026-09-21` (Q-003 بسته شد — DEC-030)
 
 ---
 
@@ -15,7 +15,7 @@
 |--------|------|-----------|--------|------------|-------|
 | Q-001 | ✅ افزودن `Region=3` به IAM مجاز شد — پیاده‌سازی در مخزن IAM به‌صورت تسک مستقل (بسته شد) | تعارض C-1 در Phase 0 | بالا (فوری) | کارفرما | Closed — DEC-019 |
 | Q-002 | ✅ پروتکل اتصال IAM: الگوی BFF ✅ (بسته شد) | متن Baseline: OIDC/OpenIddict؛ واقعیت IAM: REST + JWT | بالا | کارفرما | Closed — DEC-018 |
-| Q-003 | Schema نهایی جدول واسط (Staging) Import پرسنل چیست؟ | `Organizational-Structure-Big-Picture-Scenario` + درخواست Import | متوسط | Business / کارفرما | Open |
+| Q-003 | ✅ Schema نهایی جدول واسط تأیید شد (با تغییرات: بدون `TenantId`، بدون `PezhvakMobile`، ثبت معتبرها، پاک‌سازی ۱۰ روزه، حذف فیزیکی تأییدشده) — `Docs/Architecture/staging-import-proposal.md` (بسته شد) | `Organizational-Structure-Big-Picture-Scenario` + درخواست Import | متوسط | Business / کارفرما | Closed — DEC-030 |
 | Q-004 | ✅ IAM مرجع Role/Policy/Permission شد؛ OrgStructure بدون Authorization موازی، فقط مصرف + enforce می‌کند (بسته شد) | DEC-008 / DEC-020 | بالا | کارفرما | Closed — DEC-020 |
 | Q-005 | ✅ عدم حذف فیزیکی پرسنل؛ پایان فعالیت = غیرفعال‌سازی با حفظ سابقه؛ بدون Anonymization در MVP (بسته شد) | DEC-022 | متوسط | کارفرما | Closed — DEC-022 |
 | Q-006 | ✅ نام نهایی ۲۷ Permission مصوب کارفرما شد (بسته شد)؛ ثبت در IAM اقدام مالک IAM است | DEC-008، DEC-021، DEC-023، DEC-025 | بالا | کارفرما | Closed — DEC-025 |

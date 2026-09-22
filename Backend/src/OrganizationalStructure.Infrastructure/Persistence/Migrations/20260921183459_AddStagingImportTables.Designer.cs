@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrganizationalStructure.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using OrganizationalStructure.Infrastructure.Persistence;
 namespace OrganizationalStructure.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(OrganizationalStructureDbContext))]
-    partial class OrganizationalStructureDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260921183459_AddStagingImportTables")]
+    partial class AddStagingImportTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

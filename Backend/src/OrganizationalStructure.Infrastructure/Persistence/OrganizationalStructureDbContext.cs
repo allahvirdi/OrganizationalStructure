@@ -48,6 +48,15 @@ public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
     public DbSet<PostAuthorityAssignment> AuthorityAssignments =>
         Set<PostAuthorityAssignment>();
 
+    /// <inheritdoc />
+    public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
+
+    /// <inheritdoc />
+    public DbSet<EmployeeStagingRow> EmployeeStagingRows => Set<EmployeeStagingRow>();
+
+    /// <inheritdoc />
+    public DbSet<ImportError> ImportErrors => Set<ImportError>();
+
     /// <summary>
     /// ساخت نمونه‌ی DbContext.
     /// </summary>
@@ -145,5 +154,12 @@ public sealed class OrganizationalStructureDbContext : DbContext, IAppDbContext
         modelBuilder.Entity<Employee>().Property(e => e.Mobile).HasConversion(deterministicNullableText);
         modelBuilder.Entity<Employee>().Property(e => e.PezhvakMobile).HasConversion(deterministicNullableText);
         modelBuilder.Entity<Employee>().Property(e => e.BirthDate).HasConversion(birthDateConverter);
+
+        // PII ردیف‌های واسط — هم‌راستا با Employees (DEC-030).
+        modelBuilder.Entity<EmployeeStagingRow>().Property(r => r.FirstName).HasConversion(randomizedText);
+        modelBuilder.Entity<EmployeeStagingRow>().Property(r => r.LastName).HasConversion(randomizedText);
+        modelBuilder.Entity<EmployeeStagingRow>().Property(r => r.NationalCode).HasConversion(deterministicText);
+        modelBuilder.Entity<EmployeeStagingRow>().Property(r => r.Mobile).HasConversion(deterministicNullableText);
+        modelBuilder.Entity<EmployeeStagingRow>().Property(r => r.BirthDate).HasConversion(birthDateConverter);
     }
 }

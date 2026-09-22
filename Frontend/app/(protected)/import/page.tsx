@@ -6,6 +6,7 @@ import type { OrganizationOption } from "../../../src/features/organizations/api
 import { useImportPosts } from "../../../src/features/import/useImportPosts";
 import { POSTS_TEMPLATE_URL } from "../../../src/features/import/api";
 import EmployeesImportPanel from "../../../src/features/import/EmployeesImportPanel";
+import StagingBatchesPanel from "../../../src/features/import/StagingBatchesPanel";
 import { useMe } from "../../../src/features/auth/useAuth";
 import { hasPermission } from "../../../src/lib/permissions";
 import { ApiError } from "../../../src/lib/api/client";
@@ -38,11 +39,12 @@ export default function ImportPage() {
     "OrganizationStructure.Employee.Import",
   );
   const [requestedTab, setRequestedTab] = React.useState<number | null>(null);
-  const firstAllowedTab = canImportPosts ? 0 : 1;
+  const firstAllowedTab = canImportPosts ? 0 : canImportEmployees ? 1 : 2;
   const tab =
     requestedTab !== null &&
     ((requestedTab === 0 && canImportPosts) ||
-      (requestedTab === 1 && canImportEmployees))
+      (requestedTab === 1 && canImportEmployees) ||
+      (requestedTab === 2 && canImportEmployees))
       ? requestedTab
       : firstAllowedTab;
 
@@ -72,11 +74,13 @@ export default function ImportPage() {
         >
           <Tab label="ساختار پست‌ها" disabled={!canImportPosts} />
           <Tab label="پرسنل" disabled={!canImportEmployees} />
+          <Tab label="جدول واسط" disabled={!canImportEmployees} />
         </Tabs>
       </Container>
 
       {tab === 0 && canImportPosts ? <ImportContent /> : null}
       {tab === 1 && canImportEmployees ? <EmployeesImportPanel /> : null}
+      {tab === 2 && canImportEmployees ? <StagingBatchesPanel /> : null}
     </>
   );
 }

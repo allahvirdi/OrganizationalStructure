@@ -44,6 +44,21 @@ public interface IAppDbContext
     DbSet<PostAuthorityAssignment> AuthorityAssignments { get; }
 
     /// <summary>
+    /// مجموعه بارگذاری‌های واسط.
+    /// </summary>
+    DbSet<ImportBatch> ImportBatches { get; }
+
+    /// <summary>
+    /// مجموعه ردیف‌های واسط پرسنل.
+    /// </summary>
+    DbSet<EmployeeStagingRow> EmployeeStagingRows { get; }
+
+    /// <summary>
+    /// مجموعه خطاهای بارگذاری واسط.
+    /// </summary>
+    DbSet<ImportError> ImportErrors { get; }
+
+    /// <summary>
     /// ذخیره تغییرات در انتظار.
     /// </summary>
     /// <param name="cancellationToken">توکن لغو</param>
