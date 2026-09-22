@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const apiBaseUrl =
-  process.env.API_BASE_URL ?? "http://localhost:5297";
+  process.env.API_BASE_URL ?? "http://localhost:5197";
 
 const nextConfig: NextConfig = {
   async rewrites() {
