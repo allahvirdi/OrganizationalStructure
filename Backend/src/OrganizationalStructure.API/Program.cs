@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using OrganizationalStructure.API.BackgroundJobs;
 using OrganizationalStructure.API.Middleware;
 using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application;
@@ -44,6 +45,8 @@ builder.Services
         AuthenticationSchemes.IamBearer, null);
 
 builder.Services.AddOrgAuthorization();
+
+builder.Services.AddHostedService<StagingCleanupBackgroundService>();
 
 var app = builder.Build();
 

@@ -354,4 +354,46 @@ public sealed class ImportController : ApiControllerBase
             cancellationToken);
         return HandleResult(result);
     }
+
+    /// <summary>
+    /// ثبت نهایی بارگذاری واسط (تأیید): ثبت معتبرها + اعلام نامعتبرها.
+    /// </summary>
+    /// <param name="batchId">شناسه بارگذاری</param>
+    /// <param name="cancellationToken">توکن لغو</param>
+    [HttpPost("employees/staging/{batchId:guid}/commit")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.Import)]
+    [ProducesResponseType(typeof(StagingCommitResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<StagingCommitResultDto>> CommitBatch(
+        Guid batchId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new CommitBatchCommand(batchId), cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// رد بارگذاری واسط با یادداشت بازبین.
+    /// </summary>
+    /// <param name="batchId">شناسه بارگذاری</param>
+    /// <param name="body">بدنه درخواست شامل یادداشت اختیاری</param>
+    /// <param name="cancellationToken">توکن لغو</param>
+    [HttpPost("employees/staging/{batchId:guid}/reject")]
+    [Authorize(Policy = AuthorizationPolicies.Employee.Import)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult> RejectBatch(
+        Guid batchId,
+        [FromBody] RejectBatchRequestDto? body,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new RejectBatchCommand(batchId, body?.Notes),
+            cancellationToken);
+        return HandleResult(result);
+    }
 }

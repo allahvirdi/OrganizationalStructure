@@ -241,3 +241,37 @@ export function fetchStagingRows(input: {
     },
   );
 }
+
+/** نتیجه ثبت نهایی بارگذاری واسط. */
+export interface StagingCommitResult {
+  batchId: string;
+  committedCount: number;
+  skippedCount: number;
+  errors: { rowNumber: number; message: string }[];
+}
+
+/**
+ * ثبت نهایی بارگذاری واسط (تأیید).
+ */
+export function commitStagingBatch(batchId: string): Promise<StagingCommitResult> {
+  return apiFetch<StagingCommitResult>(
+    `/api/v1/import/employees/staging/${batchId}/commit`,
+    { method: "POST" },
+  );
+}
+
+/**
+ * رد بارگذاری واسط.
+ */
+export function rejectStagingBatch(input: {
+  batchId: string;
+  notes?: string;
+}): Promise<void> {
+  return apiFetch<void>(
+    `/api/v1/import/employees/staging/${input.batchId}/reject`,
+    {
+      method: "POST",
+      body: { notes: input.notes ?? null },
+    },
+  );
+}

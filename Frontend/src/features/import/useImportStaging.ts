@@ -6,8 +6,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  commitStagingBatch,
   fetchStagingBatches,
   fetchStagingRows,
+  rejectStagingBatch,
   uploadToStaging,
 } from "./api";
 
@@ -54,6 +56,49 @@ export function useUploadToStaging() {
       uploadToStaging(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: stagingQueryKey });
+    },
+  });
+}
+
+/**
+ * ثبت نهایی بارگذاری واسط (تأیید).
+ */
+export function useCommitStagingBatch(options?: {
+  onSuccess?: (data: import("./api").StagingCommitResult) => void;
+  onError?: (error: unknown) => void;
+}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (batchId: string) => commitStagingBatch(batchId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: stagingQueryKey });
+      options?.onSuccess?.(data);
+    },
+    onError: (error) => {
+      options?.onError?.(error);
+    },
+  });
+}
+
+/**
+ * رد بارگذاری واسط.
+ */
+export function useRejectStagingBatch(options?: {
+  onSuccess?: () => void;
+  onError?: (error: unknown) => void;
+}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { batchId: string; notes?: string }) =>
+      rejectStagingBatch(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: stagingQueryKey });
+      options?.onSuccess?.();
+    },
+    onError: (error) => {
+      options?.onError?.(error);
     },
   });
 }

@@ -155,6 +155,12 @@ public sealed record StagingRowDto
 }
 
 /// <summary>
+/// بدنه درخواست رد بارگذاری واسط.
+/// </summary>
+/// <param name="Notes">یادداشت بازبین (اختیاری)</param>
+public sealed record RejectBatchRequestDto(string? Notes);
+
+/// <summary>
 /// DTO خطای ردیف واسط.
 /// </summary>
 public sealed record StagingRowErrorDto

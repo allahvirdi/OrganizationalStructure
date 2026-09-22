@@ -1,7 +1,7 @@
 # Phase 7 — Import (MVP Secondary)
 
-**وضعیت:** In Progress
-**درصد پیشرفت:** 85%
+**وضعیت:** Done
+**درصد پیشرفت:** 100%
 **وابستگی‌ها:** Phase 3
 
 ---
@@ -12,9 +12,9 @@
 ## ۲. Deliverables
 - [x] Import ساختار پست‌ها از Excel (با قالب فارسی)
 - [x] Import از CSV و Excel (پرسنل) — `POST /api/v1/import/employees` + قالب دوفرمتی
-- [~] Import از Staging Table (Schema تأییدشده — DEC-030) — موجودیت‌ها، بارگذاری فایل/بیرونی، فهرست و ردیف‌ها + تست‌ها انجام شد؛ **باقی‌مانده: اندپوینت‌های `commit`/`reject` و Job پاک‌سازی ۱۰ روزه**
+- [x] Import از Staging Table (Schema تأییدشده — DEC-030) — موجودیت‌ها، بارگذاری فایل/بیرونی، فهرست/ردیف‌ها، `commit`/`reject`، Cleanup Job ۱۰ روزه + تست‌ها
 - [x] آماده‌سازی Batch/Validation/Error/Duplicate Handling (اتمیک + خطای ردیف‌محور؛ مسیر واسط: ثبت معتبرها + اعلام نامعتبرها)
-- [~] Audit و پیگیری وضعیت Import — فهرست بارگذاری‌ها و ردیف‌ها (`GET .../staging/batches` و `GET .../{batchId}/rows`) پیاده‌سازی شد
+- [x] Audit و پیگیری وضعیت Import — فهرست بارگذاری‌ها و ردیف‌ها + `commit`/`reject` + پاک‌سازی خودکار
 - [ ] (اختیاری) پردازش پس‌زمینه با Hangfire
 
 ## ۳. Definition of Done
@@ -38,7 +38,7 @@
 1. ✅ `Import ساختار پست‌ها از Excel + قالب فارسی + صفحه فرانت`
 2. ✅ `طراحی پیشنهادی Schema واسط` — ارائه‌شده در `Docs/Architecture/staging-import-proposal.md` (DEC-030؛ در انتظار تأیید کارفرما)
 3. ✅ `Import CSV پرسنل (فقط ستاد) + تست`
-4. [~] `Import جدول واسط + Batch/Error/Duplicate + تست` (تسک ۱-۴ انجام شد؛ تسک ۵: `commit`/`reject` و تسک ۶: پاک‌سازی باقی است)
+4. ✅ `Import جدول واسط + Batch/Error/Duplicate + تست` (کلیه تسک‌های ۱-۶ تکمیل شد)
 5. ✅ `صفحه Import پرسنل در Frontend` (تب دوم صفحه `/import`)
 6. ✅ `Progress/ChangeLog/SessionReport` (این Session)
-7. `Audit و پیگیری وضعیت Import` + `بستن فاز ۷` (پس از رفع Q-003)
+7. ✅ `Audit و پیگیری وضعیت Import` + `بستن فاز ۷`

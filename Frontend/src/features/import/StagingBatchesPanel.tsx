@@ -4,6 +4,8 @@ import * as React from "react";
 import { useOrganizations } from "../organizations/useOrganizations";
 import type { OrganizationOption } from "../organizations/api";
 import {
+  useCommitStagingBatch,
+  useRejectStagingBatch,
   useStagingBatches,
   useStagingRows,
   useUploadToStaging,
@@ -40,6 +42,8 @@ import {
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 /** وضعیت‌های بارگذاری واسط. */
 const BATCH_STATUS_LABELS: Record<number, string> = {
@@ -78,6 +82,8 @@ export default function StagingBatchesPanel() {
   const [uploadSuccess, setUploadSuccess] = React.useState<string | null>(
     null,
   );
+  const [commitMessage, setCommitMessage] = React.useState<string | null>(null);
+  const [rejectMessage, setRejectMessage] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [selectedBatch, setSelectedBatch] = React.useState<ImportBatch | null>(
@@ -96,6 +102,31 @@ export default function StagingBatchesPanel() {
   });
 
   const uploadMutation = useUploadToStaging();
+  const commitMutation = useCommitStagingBatch({
+    onSuccess: (result) => {
+      setCommitMessage(
+        `ثبت نهایی موفق: ${result.committedCount} ردیف ثبت شد، ${result.skippedCount} ردیف رد شد.`,
+      );
+      setRejectMessage(null);
+    },
+    onError: (err) => {
+      setCommitMessage(
+        err instanceof ApiError ? err.message : "خطایی در ثبت نهایی رخ داد.",
+      );
+    },
+  });
+
+  const rejectMutation = useRejectStagingBatch({
+    onSuccess: () => {
+      setRejectMessage("بارگذاری با موفقیت رد شد.");
+      setCommitMessage(null);
+    },
+    onError: (err) => {
+      setRejectMessage(
+        err instanceof ApiError ? err.message : "خطایی در رد بارگذاری رخ داد.",
+      );
+    },
+  });
 
   const defaultOrganization =
     organization ??
@@ -196,6 +227,18 @@ export default function StagingBatchesPanel() {
 
         {uploadSuccess && <Alert severity="success" sx={{ mb: 2 }}>{uploadSuccess}</Alert>}
 
+        {commitMessage && (
+          <Alert severity={commitMessage.startsWith("ثبت") ? "success" : "error"} sx={{ mb: 2 }} onClose={() => setCommitMessage(null)}>
+            {commitMessage}
+          </Alert>
+        )}
+
+        {rejectMessage && (
+          <Alert severity={rejectMessage.startsWith("بارگذاری با موفقیت") ? "success" : "error"} sx={{ mb: 2 }} onClose={() => setRejectMessage(null)}>
+            {rejectMessage}
+          </Alert>
+        )}
+
         {uploadMutation.isError && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {uploadMutation.error instanceof ApiError
@@ -233,6 +276,20 @@ export default function StagingBatchesPanel() {
                       <VisibilityIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
+                  {batch.status === 2 && (
+                    <>
+                      <Tooltip title="تأیید و ثبت نهایی">
+                        <IconButton size="small" color="success" disabled={commitMutation.isPending} onClick={() => commitMutation.mutate(batch.id)}>
+                          <CheckCircleIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="رد بارگذاری">
+                        <IconButton size="small" color="error" disabled={rejectMutation.isPending} onClick={() => rejectMutation.mutate({ batchId: batch.id, notes: undefined })}>
+                          <CancelIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
