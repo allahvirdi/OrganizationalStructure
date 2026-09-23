@@ -1,5 +1,8 @@
+using System.Threading.RateLimiting;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrganizationalStructure.API.BackgroundJobs;
@@ -12,6 +15,9 @@ using OrganizationalStructure.Infrastructure.Security;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// حذف هدر Server (Kestrel) برای جلوگیری از افشای اطلاعات سرور
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
 builder.Host.UseSerilog((context, services, configuration) =>
     configuration
@@ -48,6 +54,29 @@ builder.Services.AddOrgAuthorization();
 
 builder.Services.AddHostedService<StagingCleanupBackgroundService>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, ct) =>
+    {
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        await context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Title = "درخواست بیش از حد مجاز",
+            Detail = "لطفاً پس از چند ثانیه دوباره تلاش کنید.",
+            Status = StatusCodes.Status429TooManyRequests
+        }, ct);
+    };
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+});
+
 var app = builder.Build();
 
 // هشدار صریح در صورت ناقص بودن پیکربندی IAM تا شکست خاموش ورود رخ ندهد.
@@ -60,6 +89,8 @@ foreach (var missingIamKey in IamConfigurationValidator.GetMissingSettings(iamOp
 }
 
 app.UseExceptionHandling();
+app.UseSecurityHeaders();
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
