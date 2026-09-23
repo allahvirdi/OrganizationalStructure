@@ -1,7 +1,7 @@
 # Phase 8 — Production Readiness
 
 **وضعیت:** In Progress
-**درصد پیشرفت:** 55%
+**درصد پیشرفت:** 80%
 **وابستگی‌ها:** همه فازها
 
 ---
@@ -33,5 +33,5 @@
 2. ✅ `نشست Redis (جایگزینی InMemory برای چندنمونه‌ای)` — `RedisBffSessionStore` با `StackExchange.Redis 3.3.0`؛ انتخاب خودکار بر اساس `ConnectionStrings:Redis` + تست DI
 3. ✅ `CI/CD + Fitness Functions در CI` — GitHub Actions: backend (windows) = build + 5 test project + vulnerability scan؛ frontend (ubuntu) = npm ci + lint + build
 4. ✅ `Rate Limiting + Hardening نهایی + SAST/Dependency Scan` — Fixed Window Rate Limiter (100 req/min/IP)؛ SecurityHeadersMiddleware (OWASP Secure Headers)؛ حذف هدر Kestrel؛ تبدیل اسکن آسیب‌پذیری به فیلتر قطعی در CI + افزودن `npm audit`
-5. `مستندات استقرار + Runbook + Push نهایی`
+5. ✅ `مستندات استقرار + Runbook + Push نهایی` — `Docs/Deployment/deployment-runbook.md`: معماری استقرار، پیکربندی، پشتیبان‌گیری/بازیابی، عیب‌یابی، چک‌لیست و پیشنهادها
 6. `گزارش نهایی قابلیت ادامه + بستن پروژه`
