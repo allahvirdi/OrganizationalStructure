@@ -35,19 +35,11 @@ public sealed class CreateResponsibilityCommandHandler
         CreateResponsibilityCommand request,
         CancellationToken cancellationToken)
     {
-        var code = request.Code.Trim();
-
-        var duplicate = await _db.Responsibilities.AnyAsync(
-            r => r.Code == code,
-            cancellationToken);
-
-        if (duplicate)
-        {
-            return Result<Guid>.Failure(ResponsibilityErrors.DuplicateCode(code));
-        }
+        var id = Guid.NewGuid();
+        var code = id.ToString();
 
         var responsibility = Responsibility.Create(
-            Guid.NewGuid(),
+            id,
             _currentUser.TenantId,
             code,
             request.Title,

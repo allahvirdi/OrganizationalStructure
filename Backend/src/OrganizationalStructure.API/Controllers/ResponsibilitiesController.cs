@@ -48,7 +48,7 @@ public sealed class ResponsibilitiesController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(command, cancellationToken);
-        return HandleResult(result, id => CreatedAtAction(nameof(GetByCode), new { code = command.Code.Trim() }, id));
+        return HandleResult(result, id => CreatedAtAction(nameof(GetByCode), new { code = id.ToString() }, id));
     }
 
     /// <summary>

@@ -40,14 +40,13 @@ function NewResponsibilityContent() {
   const onSubmit = (values: ResponsibilityForm) => {
     createItem.mutate(
       {
-        code: values.code,
         title: values.title,
         description: values.description || null,
       },
       {
-        onSuccess: () =>
+        onSuccess: (newId) =>
           router.replace(
-            `/responsibilities/${encodeURIComponent(values.code)}`,
+            `/responsibilities/${encodeURIComponent(newId)}`,
           ),
       },
     );
@@ -68,14 +67,6 @@ function NewResponsibilityContent() {
             onSubmit={handleSubmit(onSubmit)}
             sx={{ display: "grid", gap: 2 }}
           >
-            <TextField
-              label="کد (Routing Key)"
-              fullWidth
-              dir="ltr"
-              error={Boolean(errors.code)}
-              helperText={errors.code?.message}
-              {...register("code")}
-            />
             <TextField
               label="عنوان"
               fullWidth

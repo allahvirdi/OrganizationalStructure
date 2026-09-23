@@ -12,12 +12,6 @@ public sealed class CreateResponsibilityCommandValidator : AbstractValidator<Cre
     /// </summary>
     public CreateResponsibilityCommandValidator()
     {
-        RuleFor(x => x.Code)
-            .NotEmpty()
-            .WithMessage("کد مسئولیت الزامی است.")
-            .MaximumLength(100)
-            .WithMessage("کد مسئولیت حداکثر ۱۰۰ کاراکتر است.");
-
         RuleFor(x => x.Title)
             .NotEmpty()
             .WithMessage("عنوان مسئولیت الزامی است.")

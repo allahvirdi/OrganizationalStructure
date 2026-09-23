@@ -112,7 +112,7 @@ public sealed class RemainingHandlerTests
     }
 
     /// <summary>
-    /// تعریف و انتساب مسئولیت (مثبت و منفی).
+    /// تعریف (با کد خودکار) و انتساب مسئولیت (مثبت و منفی).
     /// </summary>
     [Fact]
     public async Task CreateAndAssignResponsibility_ShouldWork_Missing_ShouldFail()
@@ -125,18 +125,15 @@ public sealed class RemainingHandlerTests
         var endHandler = new EndResponsibilityAssignmentCommandHandler(db, clock, user);
 
         var created = await createHandler.Handle(
-            new CreateResponsibilityCommand("SEC", "مسئول دبیرخانه", null),
+            new CreateResponsibilityCommand("مسئول دبیرخانه", null),
             CancellationToken.None);
         created.IsSuccess.Should().BeTrue();
 
-        var duplicate = await createHandler.Handle(
-            new CreateResponsibilityCommand("SEC", "تکراری", null),
-            CancellationToken.None);
-        duplicate.IsFailure.Should().BeTrue();
-        duplicate.Error!.Type.Should().Be(ErrorType.Conflict);
+        // کد به‌صورت خودکار معادل شناسه تولید می‌شود (GUID)
+        var code = created.Value.ToString();
 
         var assigned = await assignHandler.Handle(
-            new AssignResponsibilityCommand("SEC", postId, null, null),
+            new AssignResponsibilityCommand(code, postId, null, null),
             CancellationToken.None);
         assigned.IsSuccess.Should().BeTrue();
 

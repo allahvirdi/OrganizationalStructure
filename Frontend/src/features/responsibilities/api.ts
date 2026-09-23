@@ -62,10 +62,9 @@ export function fetchResponsibility(code: string): Promise<Responsibility> {
 }
 
 /**
- * تعریف مسئولیت.
+ * تعریف مسئولیت (کد به‌صورت خودکار در بک‌اند تولید می‌شود).
  */
 export function createResponsibility(input: {
-  code: string;
   title: string;
   description?: string | null;
 }): Promise<string> {

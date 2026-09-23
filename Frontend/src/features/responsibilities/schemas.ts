@@ -2,12 +2,9 @@ import { z } from "zod";
 
 /**
  * اعتبارسنجی فرم مسئولیت (همسو با Backend).
+ * کد (Routing Key) به‌صورت خودکار در بک‌اند تولید می‌شود.
  */
 export const responsibilitySchema = z.object({
-  code: z
-    .string()
-    .min(1, "کد مسئولیت الزامی است.")
-    .max(100, "کد حداکثر ۱۰۰ کاراکتر است."),
   title: z
     .string()
     .min(1, "عنوان الزامی است.")

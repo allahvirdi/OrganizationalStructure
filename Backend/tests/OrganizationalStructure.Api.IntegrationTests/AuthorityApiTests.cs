@@ -34,7 +34,7 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
     }
 
     /// <summary>
-    /// چرخه کامل مسئولیت: تعریف، انتساب Code-based، مشاهده در پست، پایان.
+    /// چرخه کامل مسئولیت: تعریف (کد خودکار)، انتساب، مشاهده در پست، پایان.
     /// </summary>
     [Fact]
     public async Task Responsibility_FullCycle_ShouldWork()
@@ -42,22 +42,25 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
         var client = _factory.CreateClient();
         var postId = await CreatePostAsync(client, "RA-001");
 
+        // کد به‌صورت خودکار در بک‌اند تولید می‌شود (معادل شناسه)
         var createResponse = await client.PostAsJsonAsync(
             "/api/v1/responsibilities",
-            new { code = "RESP-A1", title = "مسئول دبیرخانه", description = (string?)null });
+            new { title = "مسئول دبیرخانه", description = (string?)null });
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var responsibilityId = await createResponse.Content.ReadFromJsonAsync<Guid>();
+        var code = responsibilityId.ToString();
 
         var assignResponse = await client.PostAsJsonAsync(
             "/api/v1/responsibilities/assignments",
-            new { responsibilityCode = "RESP-A1", postId, startDate = (string?)null, endDate = (string?)null });
+            new { responsibilityCode = code, postId, startDate = (string?)null, endDate = (string?)null });
         assignResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var assignmentId = await assignResponse.Content.ReadFromJsonAsync<Guid>();
 
         var postResponsibilities = await client.GetAsync($"/api/v1/posts/{postId}/responsibilities");
         postResponsibilities.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await postResponsibilities.Content.ReadAsStringAsync()).Should().Contain("RESP-A1");
+        (await postResponsibilities.Content.ReadAsStringAsync()).Should().Contain(code);
 
-        var byCode = await client.GetAsync("/api/v1/responsibilities/RESP-A1");
+        var byCode = await client.GetAsync($"/api/v1/responsibilities/{code}");
         byCode.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var endResponse = await client.PostAsJsonAsync(
@@ -66,7 +69,7 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
         endResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var afterEnd = await client.GetAsync($"/api/v1/posts/{postId}/responsibilities");
-        (await afterEnd.Content.ReadAsStringAsync()).Should().NotContain("RESP-A1");
+        (await afterEnd.Content.ReadAsStringAsync()).Should().NotContain($"\"responsibilityCode\":\"{code}\"");
     }
 
     /// <summary>
@@ -78,18 +81,21 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
         var client = _factory.CreateClient();
         var postId = await CreatePostAsync(client, "RA-002");
 
-        await client.PostAsJsonAsync(
+        var createResponse = await client.PostAsJsonAsync(
             "/api/v1/responsibilities",
-            new { code = "RESP-A2", title = "t", description = (string?)null });
+            new { title = "t", description = (string?)null });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var responsibilityId = await createResponse.Content.ReadFromJsonAsync<Guid>();
+        var code = responsibilityId.ToString();
 
         var first = await client.PostAsJsonAsync(
             "/api/v1/responsibilities/assignments",
-            new { responsibilityCode = "RESP-A2", postId, startDate = (string?)null, endDate = (string?)null });
+            new { responsibilityCode = code, postId, startDate = (string?)null, endDate = (string?)null });
         first.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var second = await client.PostAsJsonAsync(
             "/api/v1/responsibilities/assignments",
-            new { responsibilityCode = "RESP-A2", postId, startDate = (string?)null, endDate = (string?)null });
+            new { responsibilityCode = code, postId, startDate = (string?)null, endDate = (string?)null });
         second.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
