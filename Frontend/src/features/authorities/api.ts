@@ -62,10 +62,9 @@ export function fetchAuthority(code: string): Promise<Authority> {
 }
 
 /**
- * تعریف اختیار.
+ * تعریف حق امضا (اختیار سازمانی) — کد به‌صورت خودکار در بک‌اند تولید می‌شود (GUID).
  */
 export function createAuthority(input: {
-  code: string;
   title: string;
   description?: string | null;
 }): Promise<string> {

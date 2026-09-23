@@ -73,7 +73,7 @@ function ResponsibilitiesContent() {
         </Box>
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
           <TextField
-            label="جستجو (کد/عنوان)"
+            label="جستجو (عنوان)"
             size="small"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -101,7 +101,6 @@ function ResponsibilitiesContent() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>کد</TableCell>
                 <TableCell>عنوان</TableCell>
                 <TableCell>وضعیت</TableCell>
                 <TableCell>عملیات</TableCell>
@@ -140,7 +139,6 @@ function ResponsibilityRow({
 
   return (
     <TableRow>
-      <TableCell dir="ltr">{item.code}</TableCell>
       <TableCell>{item.title}</TableCell>
       <TableCell>
         <Chip

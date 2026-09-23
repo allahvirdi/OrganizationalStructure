@@ -19,7 +19,7 @@ const quickActions = [
   { label: "پست‌ها", path: "/posts", icon: WorkIcon },
   { label: "پرسنل", path: "/employees", icon: PeopleIcon },
   { label: "مسئولیت‌ها", path: "/responsibilities", icon: AssignmentIcon },
-  { label: "اختیارها", path: "/authorities", icon: VerifiedUserIcon },
+  { label: "حق امضاها", path: "/authorities", icon: VerifiedUserIcon },
   { label: "داشبورد", path: "/dashboard", icon: DashboardIcon },
 ] as const;
 

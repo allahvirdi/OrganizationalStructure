@@ -30,7 +30,7 @@ public sealed class AuthoritiesController : ApiControllerBase
     }
 
     /// <summary>
-    /// تعریف اختیار جدید.
+    /// تعریف حق امضا (اختیار سازمانی) جدید.
     /// </summary>
     [HttpPost]
     [Authorize(Policy = AuthorizationPolicies.Authority.Create)]
@@ -42,7 +42,7 @@ public sealed class AuthoritiesController : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(command, cancellationToken);
-        return HandleResult(result, id => CreatedAtAction(nameof(GetByCode), new { code = command.Code.Trim() }, id));
+        return HandleResult(result, id => CreatedAtAction(nameof(GetByCode), new { code = id.ToString() }, id));
     }
 
     /// <summary>

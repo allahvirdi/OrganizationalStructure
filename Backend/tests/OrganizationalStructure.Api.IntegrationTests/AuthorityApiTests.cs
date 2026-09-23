@@ -100,7 +100,7 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
     }
 
     /// <summary>
-    /// چرخه کامل اختیار و نمایش نشان امضا در درخت.
+    /// چرخه کامل حق امضا (اختیار سازمانی) با کد خودکار و نمایش نشان امضا در درخت.
     /// </summary>
     [Fact]
     public async Task Authority_SigningBadge_ShouldAppearInSubtree()
@@ -108,13 +108,17 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
         var client = _factory.CreateClient();
         var postId = await CreatePostAsync(client, "RA-003");
 
-        await client.PostAsJsonAsync(
+        // کد به‌صورت خودکار در بک‌اند تولید می‌شود (معادل شناسه)
+        var createResponse = await client.PostAsJsonAsync(
             "/api/v1/authorities",
-            new { code = "SIGNING_AUTHORITY", title = "اختیار امضا", description = (string?)null });
+            new { title = "حق امضای مدیر", description = (string?)null });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var authorityId = await createResponse.Content.ReadFromJsonAsync<Guid>();
+        var code = authorityId.ToString();
 
         var assign = await client.PostAsJsonAsync(
             "/api/v1/authorities/assignments",
-            new { authorityCode = "SIGNING_AUTHORITY", postId, startDate = (string?)null, endDate = (string?)null });
+            new { authorityCode = code, postId, startDate = (string?)null, endDate = (string?)null });
         assign.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var subtree = await client.GetAsync($"/api/v1/posts/{postId}/subtree");
@@ -122,7 +126,7 @@ public sealed class AuthorityApiTests : IClassFixture<TestWebApplicationFactory>
         (await subtree.Content.ReadAsStringAsync()).Should().Contain("\"hasSigningAuthority\":true");
 
         var detail = await client.GetAsync($"/api/v1/posts/{postId}");
-        (await detail.Content.ReadAsStringAsync()).Should().Contain("SIGNING_AUTHORITY");
+        (await detail.Content.ReadAsStringAsync()).Should().Contain(code);
     }
 
     /// <summary>

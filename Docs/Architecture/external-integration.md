@@ -25,10 +25,10 @@
 - `GET /api/v1/employees/{id}` — پرسنل با جزئیات
 - `GET /api/v1/employees/{id}/posts` — پست‌های پرسنل
 - `GET /api/v1/posts/{id}/employees` — پرسنل پست
-- `GET /api/v1/responsibilities/{code}` — مسئولیت با کد
+- `GET /api/v1/responsibilities/{code}` — مسئولیت با کد (GUID خودکار)
 - `GET /api/v1/posts/{id}/responsibilities` — مسئولیت‌های پست
-- `GET /api/v1/authorities/{code}` — اختیار با کد
-- `GET /api/v1/posts/{id}/authorities` — اختیارهای پست
+- `GET /api/v1/authorities/{code}` — حق امضا با کد (GUID خودکار)
+- `GET /api/v1/posts/{id}/authorities` — حق امضاهای پست
 
 جزئیات کامل: `Docs/api-contracts/*.md`. نسخه‌بندی مسیر؛ تغییر ناسازگار فقط با نسخه جدید.
 

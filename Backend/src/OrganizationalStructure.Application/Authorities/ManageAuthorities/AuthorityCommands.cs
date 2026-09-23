@@ -10,18 +10,19 @@ using OrganizationalStructure.Domain.Entities;
 namespace OrganizationalStructure.Application.Authorities.ManageAuthorities;
 
 /// <summary>
-/// دستور تعریف اختیار سازمانی جدید.
+/// دستور تعریف حق امضا (اختیار سازمانی) جدید.
 /// </summary>
-/// <param name="Code">کد یکتا</param>
+/// <remarks>
+/// کد به‌صورت خودکار در پردازش‌گر تولید می‌شود (GUID) و ورودی کاربر نیست.
+/// </remarks>
 /// <param name="Title">عنوان</param>
 /// <param name="Description">شرح اختیاری</param>
 public sealed record CreateAuthorityCommand(
-    string Code,
     string Title,
     string? Description) : IRequest<Result<Guid>>;
 
 /// <summary>
-/// اعتبارسنج دستور تعریف اختیار.
+/// اعتبارسنج دستور تعریف حق امضا.
 /// </summary>
 public sealed class CreateAuthorityCommandValidator : AbstractValidator<CreateAuthorityCommand>
 {
@@ -30,17 +31,11 @@ public sealed class CreateAuthorityCommandValidator : AbstractValidator<CreateAu
     /// </summary>
     public CreateAuthorityCommandValidator()
     {
-        RuleFor(x => x.Code)
-            .NotEmpty()
-            .WithMessage("کد اختیار الزامی است.")
-            .MaximumLength(100)
-            .WithMessage("کد اختیار حداکثر ۱۰۰ کاراکتر است.");
-
         RuleFor(x => x.Title)
             .NotEmpty()
-            .WithMessage("عنوان اختیار الزامی است.")
+            .WithMessage("عنوان حق امضا الزامی است.")
             .MaximumLength(200)
-            .WithMessage("عنوان اختیار حداکثر ۲۰۰ کاراکتر است.");
+            .WithMessage("عنوان حق امضا حداکثر ۲۰۰ کاراکتر است.");
 
         RuleFor(x => x.Description)
             .MaximumLength(1000)
@@ -77,15 +72,11 @@ public sealed class CreateAuthorityCommandHandler
         CreateAuthorityCommand request,
         CancellationToken cancellationToken)
     {
-        var code = request.Code.Trim();
-
-        if (await _db.Authorities.AnyAsync(a => a.Code == code, cancellationToken))
-        {
-            return Result<Guid>.Failure(AuthorityErrors.DuplicateCode(code));
-        }
+        var id = Guid.NewGuid();
+        var code = id.ToString();
 
         var authority = Authority.Create(
-            Guid.NewGuid(),
+            id,
             _currentUser.TenantId,
             code,
             request.Title,

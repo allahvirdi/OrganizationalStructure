@@ -41,7 +41,7 @@ type CreateForm = z.infer<typeof createSchema>;
 /** گزینه انتخاب مسئولیت در فرم ایجاد پست. */
 type ResponsibilityOption = Pick<Responsibility, "code" | "title">;
 
-/** گزینه انتخاب اختیار در فرم ایجاد پست. */
+/** گزینه انتخاب حق امضا در فرم ایجاد پست. */
 type AuthorityOption = Pick<Authority, "code" | "title">;
 
 const authorityOptionsLimit = 50;
@@ -106,7 +106,7 @@ function NewPostContent() {
     pageSize: responsibilityOptionsLimit,
   });
 
-  // فهرست اختیارهای فعال برای انتخاب در فرم ایجاد.
+  // فهرست حق امضاهای فعال برای انتخاب در فرم ایجاد.
   const authorities = useAuthorities({
     isActive: true,
     page: 1,
@@ -152,7 +152,7 @@ function NewPostContent() {
         parentId: parent?.id ?? null,
       });
 
-      // انتساب مسئولیت‌ها و اختیارها به پست جدید.
+      // انتساب مسئولیت‌ها و حق امضاها به پست جدید.
       const failedAssignments: string[] = [];
 
       const authorityResults = await Promise.allSettled(
@@ -372,7 +372,7 @@ function NewPostContent() {
               }))}
               value={selectedResponsibilities}
               onChange={(_, value) => setSelectedResponsibilities(value)}
-              getOptionLabel={(option) => `${option.code} — ${option.title}`}
+              getOptionLabel={(option) => option.title}
               isOptionEqualToValue={(option, value) => option.code === value.code}
               loading={responsibilities.isFetching}
               disabled={createPost.isPending}
@@ -398,21 +398,21 @@ function NewPostContent() {
               }))}
               value={selectedAuthorities}
               onChange={(_, value) => setSelectedAuthorities(value)}
-              getOptionLabel={(option) => `${option.code} — ${option.title}`}
+              getOptionLabel={(option) => option.title}
               isOptionEqualToValue={(option, value) => option.code === value.code}
               loading={authorities.isFetching}
               disabled={createPost.isPending}
-              loadingText="در حال دریافت اختیارها..."
+              loadingText="در حال دریافت حق امضاها..."
               noOptionsText={
                 authorities.isError
-                  ? "خطا در دریافت اختیارها"
-                  : "اختیاری یافت نشد"
+                  ? "خطا در دریافت حق امضاها"
+                  : "حق امضایی یافت نشد"
               }
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="حق امضا / اختیارهای پست"
-                  helperText="اختیارهای امضا یا سازمانی موردنیاز این پست را انتخاب کنید."
+                  label="حق امضاهای پست"
+                  helperText="حق امضاهای موردنیاز این پست را انتخاب کنید."
                 />
               )}
             />

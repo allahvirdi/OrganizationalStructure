@@ -187,11 +187,11 @@ function PostEditor({
       {
         onSuccess: () => {
           setSelectedAuthority(null);
-          setAssignMessage("اختیار با موفقیت اضافه شد.");
+          setAssignMessage("حق امضا با موفقیت اضافه شد.");
           invalidatePost();
         },
         onError: (e) => {
-          setAssignError(e instanceof ApiError ? e.message : "خطا در انتساب اختیار.");
+          setAssignError(e instanceof ApiError ? e.message : "خطا در انتساب حق امضا.");
         },
       },
     );
@@ -220,10 +220,10 @@ function PostEditor({
     try {
       const today = new Date().toISOString().split("T")[0];
       await endAuthorityAssignment(assignmentId, today);
-      setAssignMessage("اختیار با موفقیت حذف شد.");
+      setAssignMessage("حق امضا با موفقیت حذف شد.");
       invalidatePost();
     } catch (e) {
-      setAssignError(e instanceof ApiError ? e.message : "خطا در حذف اختیار.");
+      setAssignError(e instanceof ApiError ? e.message : "خطا در حذف حق امضا.");
     } finally {
       setEndingAssignment(false);
     }
@@ -363,7 +363,7 @@ function PostEditor({
               }))}
               value={selectedResponsibility}
               onChange={(_, value) => setSelectedResponsibility(value)}
-              getOptionLabel={(option) => `${option.code} — ${option.title}`}
+              getOptionLabel={(option) => option.title}
               isOptionEqualToValue={(option, value) => option.code === value.code}
               loading={responsibilitiesList.isFetching}
               loadingText="در حال دریافت..."
@@ -384,11 +384,11 @@ function PostEditor({
           </Box>
           <Divider sx={{ my: 2 }} />
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }} gutterBottom>
-            اختیارها
+            حق امضاها
           </Typography>
           {post.authorities.length === 0 && (
             <Typography variant="body2" color="text.secondary">
-              اختیاری ثبت نشده است.
+              حق امضایی ثبت نشده است.
             </Typography>
           )}
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
@@ -402,7 +402,7 @@ function PostEditor({
                 disabled={endingAssignment}
                 onDelete={() => handleEndAuthority(a.id)}
                 deleteIcon={
-                  <Tooltip title="حذف اختیار">
+                  <Tooltip title="حذف حق امضا">
                     <CloseIcon fontSize="small" />
                   </Tooltip>
                 }
@@ -419,13 +419,13 @@ function PostEditor({
               }))}
               value={selectedAuthority}
               onChange={(_, value) => setSelectedAuthority(value)}
-              getOptionLabel={(option) => `${option.code} — ${option.title}`}
+              getOptionLabel={(option) => option.title}
               isOptionEqualToValue={(option, value) => option.code === value.code}
               loading={authoritiesList.isFetching}
               loadingText="در حال دریافت..."
-              noOptionsText="اختیاری یافت نشد"
+              noOptionsText="حق امضایی یافت نشد"
               renderInput={(params) => (
-                <TextField {...params} label="افزودن اختیار" size="small" />
+                <TextField {...params} label="افزودن حق امضا" size="small" />
               )}
             />
             <Button

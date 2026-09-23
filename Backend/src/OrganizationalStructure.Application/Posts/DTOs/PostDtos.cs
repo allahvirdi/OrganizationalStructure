@@ -45,7 +45,7 @@ public sealed record PostDto
 
     /// <summary>
     /// آیا پست در حال حاضر صاحب‌امضا است؟
-    /// (انتساب جاری به اختیار با کد پیشنهادی SIGNING_AUTHORITY)
+    /// (وجود حداقل یک انتساب جاری حق امضا — DEC-035)
     /// </summary>
     public bool HasSigningAuthority { get; init; }
 
@@ -114,7 +114,7 @@ public sealed record PostSummaryDto
         Array.Empty<string>();
 
     /// <summary>
-    /// عنوان اختیارهای جاری پست.
+    /// عنوان حق امضاهای جاری پست.
     /// </summary>
     public IReadOnlyList<string> AuthorityTitles { get; init; } =
         Array.Empty<string>();

@@ -4,6 +4,14 @@
 - **تاریخ:** 2026-09-15
 - **نویسنده:** Technical Lead / Domain (تصمیم کارفرما — Domain Decision)
 
+> **به‌روزرسانی ۲۰۲۶-۰۹-۲۳ (DEC-035):** `Code` مسئولیت و حق امضا (Authority) دیگر ورودی کاربر
+> نیست و به‌صورت خودکار معادل `Id` (GUID) تولید می‌شود؛ بنابراین «Business Routing Key خوانا»ی
+> توصیف‌شده در این ADR فعلاً در API پیاده نشده است. همچنین نشان «صاحب امضا»
+> (`hasSigningAuthority`) از «انتساب جاری به کد ثابت `SIGNING_AUTHORITY`» به «وجود حداقل یک
+> انتساب جاری حق امضا» تغییر کرد. ماژول Authorities در UI با نام **«حق امضا»** نمایش داده می‌شود
+> (شناسه‌های فنی — مسیر API، نام موجودیت و Permissionها — بدون تغییر ماندند تا ثبت‌نام Permission
+> در IAM نشکند).
+
 ## Context
 مدل Phase 2 مسئولیت را Value Object بدون Code (Owned در Post) و اختیار را پرچم bool (`Post.HasSigningAuthority`) مدل کرده بود. تصمیم جدید کارفرما تفکیک صریح چهار مفهوم را الزامی می‌کند: `IAM Role ≠ Post ≠ Responsibility ≠ Authority`. مسئولیت باید Business Routing Key باشد (ارجاع بر اساس مسئولیت سازمانی، نه UserId ثابت) و اختیار نیز جمعی و تاریخ‌دار باشد.
 

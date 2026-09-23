@@ -7,7 +7,6 @@ using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Application.Responsibilities.DTOs;
 using OrganizationalStructure.Domain.Abstractions;
-using OrganizationalStructure.Domain.Constants;
 
 namespace OrganizationalStructure.Application.Posts.GetPostById;
 
@@ -94,8 +93,8 @@ public sealed class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, 
             Description = post.Description,
             ParentId = post.ParentId,
             IsActive = post.IsActive,
-            HasSigningAuthority = authorities.Any(a =>
-                string.Equals(a.AuthorityCode, AuthorityCodes.SigningAuthority, StringComparison.Ordinal)),
+            // نشان «صاحب امضا»: وجود حداقل یک انتساب جاری حق امضا (DEC-035).
+            HasSigningAuthority = authorities.Count > 0,
             Responsibilities = responsibilities,
             Authorities = authorities
         };

@@ -20,12 +20,13 @@
   "parentId": null,
   "isActive": true,
   "hasSigningAuthority": true,
-  "responsibilities": [{ "id": "...", "responsibilityCode": "SECRETARIAT", "...": "انتساب جاری" }],
-  "authorities": [{ "id": "...", "authorityCode": "SIGNING_AUTHORITY", "...": "انتساب جاری" }]
+  "responsibilities": [{ "id": "…", "responsibilityCode": "…", "…": "انتساب جاری" }],
+  "authorities": [{ "id": "…", "authorityCode": "…", "…": "انتساب جاری" }]
 }
 ```
 
-> `hasSigningAuthority` از انتساب جاری به اختیار `SIGNING_AUTHORITY` محاسبه می‌شود (ADR-011).
+> `hasSigningAuthority`: وجود حداقل یک انتساب جاری **حق امضا** (Authority) برای پست (DEC-035).
+> پیش از DEC-035 این نشان به کد ثابت `SIGNING_AUTHORITY` گره خورده بود؛ با خودکارشدن کد (GUID) مبنای آن به «وجود انتساب جاری» تغییر کرد.
 
 ### PostSummaryDto (Response — فهرست/جستجو)
 ```json
@@ -96,8 +97,7 @@ Request:
   "code": "MGR-001",
   "title": "مدیر اداره",
   "description": null,
-  "parentId": null,
-  "hasSigningAuthority": false
+  "parentId": null
 }
 ```
 - موفق: `201 Created` + شناسه (GUID) + هدر `Location`

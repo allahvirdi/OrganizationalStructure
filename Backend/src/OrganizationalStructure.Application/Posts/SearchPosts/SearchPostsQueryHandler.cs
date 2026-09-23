@@ -5,7 +5,6 @@ using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Domain.Abstractions;
-using OrganizationalStructure.Domain.Constants;
 
 namespace OrganizationalStructure.Application.Posts.SearchPosts;
 
@@ -94,8 +93,8 @@ public sealed class SearchPostsQueryHandler : IRequestHandler<SearchPostsQuery, 
             .GroupBy(x => x.PostId)
             .ToDictionary(group => group.Key, group => group.Select(x => x.Title).ToList());
 
+        // نشان «صاحب امضا»: پست‌هایی که حداقل یک انتساب جاری حق امضا دارند (DEC-035).
         var hasSigningAuthority = authorityAssignments
-            .Where(x => string.Equals(x.Code, AuthorityCodes.SigningAuthority, StringComparison.Ordinal))
             .Select(x => x.PostId)
             .ToHashSet();
 

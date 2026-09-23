@@ -20,7 +20,7 @@ import {
 import { ApiError } from "../../../../src/lib/api/client";
 
 /**
- * صفحه تعریف اختیار جدید.
+ * صفحه تعریف حق امضا (اختیار سازمانی) جدید.
  */
 export default function NewAuthorityPage() {
   return (
@@ -40,13 +40,12 @@ function NewAuthorityContent() {
   const onSubmit = (values: AuthorityForm) => {
     createItem.mutate(
       {
-        code: values.code,
         title: values.title,
         description: values.description || null,
       },
       {
-        onSuccess: () =>
-          router.replace(`/authorities/${encodeURIComponent(values.code)}`),
+        onSuccess: (newId) =>
+          router.replace(`/authorities/${encodeURIComponent(newId)}`),
       },
     );
   };
@@ -58,7 +57,7 @@ function NewAuthorityContent() {
     <Container maxWidth="sm">
       <Box sx={{ py: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
-          اختیار جدید
+          حق امضای جدید
         </Typography>
         <Paper sx={{ p: 3 }}>
           <Box
@@ -66,14 +65,6 @@ function NewAuthorityContent() {
             onSubmit={handleSubmit(onSubmit)}
             sx={{ display: "grid", gap: 2 }}
           >
-            <TextField
-              label="کد"
-              fullWidth
-              dir="ltr"
-              error={Boolean(errors.code)}
-              helperText={errors.code?.message}
-              {...register("code")}
-            />
             <TextField
               label="عنوان"
               fullWidth
@@ -94,7 +85,7 @@ function NewAuthorityContent() {
               variant="contained"
               disabled={createItem.isPending}
             >
-              ثبت اختیار
+              ثبت حق امضا
             </Button>
           </Box>
         </Paper>

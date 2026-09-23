@@ -26,7 +26,7 @@ import {
 } from "../../../src/features/authorities/useAuthorities";
 
 /**
- * فهرست اختیارها.
+ * فهرست حق امضاها (اختیارهای سازمانی).
  */
 export default function AuthoritiesPage() {
   return (
@@ -61,15 +61,15 @@ function AuthoritiesContent() {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            اختیارها
+            حق امضاها
           </Typography>
           <Button component={Link} href="/authorities/new" variant="contained">
-            اختیار جدید
+            حق امضای جدید
           </Button>
         </Box>
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
           <TextField
-            label="جستجو (کد/عنوان)"
+            label="جستجو (عنوان)"
             size="small"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -97,7 +97,6 @@ function AuthoritiesContent() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>کد</TableCell>
                 <TableCell>عنوان</TableCell>
                 <TableCell>وضعیت</TableCell>
                 <TableCell>عملیات</TableCell>
@@ -136,7 +135,6 @@ function AuthorityRow({
 
   return (
     <TableRow>
-      <TableCell dir="ltr">{item.code}</TableCell>
       <TableCell>{item.title}</TableCell>
       <TableCell>
         <Chip

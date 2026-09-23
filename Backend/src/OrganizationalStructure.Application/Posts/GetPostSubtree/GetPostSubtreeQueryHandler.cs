@@ -5,7 +5,6 @@ using OrganizationalStructure.Application.Common;
 using OrganizationalStructure.Application.Common.Interfaces;
 using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Domain.Abstractions;
-using OrganizationalStructure.Domain.Constants;
 
 namespace OrganizationalStructure.Application.Posts.GetPostSubtree;
 
@@ -59,13 +58,12 @@ public sealed class GetPostSubtreeQueryHandler : IRequestHandler<GetPostSubtreeQ
             .Select(p => new { p.Id, p.ParentId, p.Code, p.Title, p.IsActive })
             .ToListAsync(cancellationToken);
 
-        var signingPostIds = await (
-            from a in _db.AuthorityAssignments.AsNoTracking()
-            join u in _db.Authorities.AsNoTracking() on a.AuthorityId equals u.Id
-            where a.OrganizationId == root.OrganizationId
-                && a.IsActive && a.EndDate == null
-                && u.Code == AuthorityCodes.SigningAuthority
-            select a.PostId)
+        // نشان «صاحب امضا»: پست‌هایی که حداقل یک انتساب جاری حق امضا دارند (DEC-035).
+        var signingPostIds = await _db.AuthorityAssignments
+            .AsNoTracking()
+            .Where(a => a.OrganizationId == root.OrganizationId
+                && a.IsActive && a.EndDate == null)
+            .Select(a => a.PostId)
             .ToListAsync(cancellationToken);
         var signingSet = signingPostIds.ToHashSet();
 

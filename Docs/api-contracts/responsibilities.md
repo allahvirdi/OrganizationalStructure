@@ -28,7 +28,7 @@
 | کد خطا | وضعیت HTTP |
 |---|---|
 | `Responsibility.NotFound` / `Responsibility.PostNotFound` | 404 |
-| `Responsibility.DuplicateCode` / `Responsibility.Inactive` / `Responsibility.AssignmentConflict` / `Responsibility.AssignmentNotFound` / `Responsibility.HasActiveAssignments` | 409 |
+| `Responsibility.Inactive` / `Responsibility.AssignmentConflict` / `Responsibility.AssignmentNotFound` / `Responsibility.HasActiveAssignments` | 409 |
 | خطای اعتبارسنجی | 400 |
 
 ---

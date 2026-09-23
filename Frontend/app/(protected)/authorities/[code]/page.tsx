@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Container,
@@ -29,9 +30,13 @@ import {
 import { fetchAuthorityAssignments } from "../../../../src/features/authorities/api";
 import type { AuthorityAssignment } from "../../../../src/features/authorities/api";
 import { ApiError } from "../../../../src/lib/api/client";
+import { fetchPosts } from "../../../../src/features/posts/api";
+import type { PostSummary } from "../../../../src/features/org-chart/api";
+import type { OrganizationOption } from "../../../../src/features/organizations/api";
+import { useOrganizations } from "../../../../src/features/organizations/useOrganizations";
 
 /**
- * صفحه جزئیات اختیار + انتساب به پست.
+ * صفحه جزئیات حق امضا (اختیار سازمانی) + انتساب به پست.
  */
 export default function AuthorityDetailPage() {
   return (
@@ -58,7 +63,7 @@ function AuthorityDetailContent() {
     return (
       <Container maxWidth="md">
         <Box sx={{ py: 6 }}>
-          <Alert severity="error">اختیار یافت نشد یا دسترسی ندارید.</Alert>
+          <Alert severity="error">حق امضا یافت نشد یا دسترسی ندارید.</Alert>
         </Box>
       </Container>
     );
@@ -69,9 +74,6 @@ function AuthorityDetailContent() {
       <Box sx={{ py: 4, display: "grid", gap: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           {item.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" dir="ltr">
-          {item.code}
         </Typography>
         <AssignmentSection code={item.code} />
       </Box>
@@ -87,17 +89,42 @@ function AssignmentSection({ code }: { code: string }) {
   });
   const assign = useAssignAuthority();
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [postId, setPostId] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+
+  // --- انتخاب سازمان (محدود به درخت دسترسی کاربر) ---
+  const [selectedOrganization, setSelectedOrganization] =
+    React.useState<OrganizationOption | null>(null);
+  const [orgSearchTerm, setOrgSearchTerm] = React.useState("");
+  const organizations = useOrganizations({ searchTerm: orgSearchTerm });
+
+  // --- انتخاب پست (جستجو در پست‌های سازمان انتخاب‌شده) ---
+  const [selectedPost, setSelectedPost] = React.useState<PostSummary | null>(null);
+  const [postSearchTerm, setPostSearchTerm] = React.useState("");
+  const postsQuery = useQuery({
+    queryKey: ["posts", "assign-options", selectedOrganization?.id, postSearchTerm],
+    enabled: dialogOpen && Boolean(selectedOrganization?.id),
+    queryFn: () =>
+      fetchPosts({
+        organizationId: selectedOrganization!.id,
+        searchTerm: postSearchTerm || undefined,
+        isActive: true,
+        page: 1,
+        pageSize: 50,
+      }),
+  });
 
   const onAssign = () => {
     setError(null);
+    if (!selectedPost) return;
     assign.mutate(
-      { authorityCode: code, postId: postId.trim() },
+      { authorityCode: code, postId: selectedPost.id },
       {
         onSuccess: () => {
           setDialogOpen(false);
-          setPostId("");
+          setSelectedOrganization(null);
+          setSelectedPost(null);
+          setOrgSearchTerm("");
+          setPostSearchTerm("");
           queryClient.invalidateQueries({
             queryKey: ["authorities", "assignments", code],
           });
@@ -107,6 +134,15 @@ function AssignmentSection({ code }: { code: string }) {
         },
       },
     );
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setSelectedOrganization(null);
+    setSelectedPost(null);
+    setOrgSearchTerm("");
+    setPostSearchTerm("");
+    setError(null);
   };
 
   return (
@@ -143,23 +179,68 @@ function AssignmentSection({ code }: { code: string }) {
           ))}
         </TableBody>
       </Table>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>انتساب اختیار به پست</DialogTitle>
-        <DialogContent sx={{ minWidth: 320 }}>
-          <TextField
-            label="شناسه پست"
-            fullWidth
-            sx={{ mt: 1 }}
-            value={postId}
-            onChange={(e) => setPostId(e.target.value)}
+      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>انتساب حق امضا به پست</DialogTitle>
+        <DialogContent sx={{ minWidth: 360, display: "grid", gap: 2, pt: "8px !important" }}>
+          {/* انتخاب سازمان — دسترسی درختی: ستاد→استان‌ها، استان→مناطق، منطقه→فقط خودش */}
+          <Autocomplete<OrganizationOption>
+            options={organizations.data ?? []}
+            value={selectedOrganization}
+            onChange={(_, value) => {
+              setSelectedOrganization(value);
+              setSelectedPost(null);
+              setPostSearchTerm("");
+            }}
+            getOptionLabel={(option) => option.name}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterOptions={(options) => options}
+            loading={organizations.isFetching}
+            loadingText="در حال دریافت سازمان‌ها..."
+            noOptionsText={
+              organizations.isError
+                ? "خطا در دریافت سازمان‌ها"
+                : "سازمانی یافت نشد"
+            }
+            onInputChange={(_, value) => setOrgSearchTerm(value)}
+            renderOption={(props, option) => (
+              <li {...props} key={option.id} style={{ paddingRight: option.depth * 16 + 16 }}>
+                {option.name}
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField {...params} label="سازمان" helperText="سازمان موردنظر را جستجو و انتخاب کنید." />
+            )}
+          />
+          {/* انتخاب پست — جستجو در پست‌های سازمان انتخاب‌شده */}
+          <Autocomplete<PostSummary>
+            options={postsQuery.data?.items ?? []}
+            value={selectedPost}
+            onChange={(_, value) => setSelectedPost(value)}
+            getOptionLabel={(option) => `${option.code} — ${option.title}`}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterOptions={(options) => options}
+            loading={postsQuery.isFetching}
+            disabled={!selectedOrganization}
+            loadingText="در حال دریافت پست‌ها..."
+            noOptionsText={
+              !selectedOrganization
+                ? "ابتدا سازمان را انتخاب کنید"
+                : postsQuery.isError
+                  ? "خطا در دریافت پست‌ها"
+                  : "پستی یافت نشد"
+            }
+            onInputChange={(_, value) => setPostSearchTerm(value)}
+            renderInput={(params) => (
+              <TextField {...params} label="پست" helperText="پست موردنظر را جستجو و انتخاب کنید." />
+            )}
           />
           {error && <Alert severity="error">{error}</Alert>}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>انصراف</Button>
+          <Button onClick={closeDialog}>انصراف</Button>
           <Button
             variant="contained"
-            disabled={assign.isPending || postId.trim() === ""}
+            disabled={assign.isPending || !selectedPost}
             onClick={onAssign}
           >
             انتساب

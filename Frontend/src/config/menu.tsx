@@ -53,7 +53,7 @@ export const mainMenu: MenuItem[] = [
   },
   {
     id: "authorities",
-    label: "اختیارها",
+    label: "حق امضاها",
     path: "/authorities",
     icon: VerifiedUserIcon,
     permission: "OrganizationStructure.Authority.View",
