@@ -4,6 +4,7 @@
 **پیشوند:** `/api/v1/responsibilities` (+ `/api/v1/posts/{postId}/responsibilities`)
 **وضعیت:** مصوب (ADR-011 — جایگزین مدل title-based قبلی)
 **تصریح‌دهی:** فعلاً بدون احراز هویت؛ Policyها در Phase 4 — Permissionهای پیشنهادی `OrganizationStructure.Responsibility.*` (Proposed)
+**تغییر ۲۰۲۶-۰۹-۲۳:** فیلد `code` از ورودی `POST` حذف شد (کد خودکار GUID)؛ دیالوگ انتساب از دراپ‌داون سازمان+پست استفاده می‌کند.
 
 ---
 
@@ -35,8 +36,9 @@
 ## Endpointها
 
 ### تعریف مسئولیت — `POST /api/v1/responsibilities`
-Request: `{ "code": "SECRETARIAT", "title": "مسئول دبیرخانه", "description": null }`
-- موفق: `201 Created` + شناسه — ناموفق: `400` / `409` (کد تکراری)
+Request: `{ "title": "مسئول دبیرخانه", "description": null }`
+> **تغییر (۲۰۲۶-۰۹-۲۳):** فیلد `code` حذف شد؛ کد به‌صورت خودکار (GUID) در بک‌اند تولید می‌شود.
+- موفق: `201 Created` + شناسه — ناموفق: `400`
 
 ### ویرایش مسئولیت — `PUT /api/v1/responsibilities/{id}`
 Request: `{ "title": "...", "description": "..." }`

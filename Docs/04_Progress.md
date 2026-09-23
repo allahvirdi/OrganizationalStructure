@@ -6,6 +6,12 @@
 **آخرین به‌روزرسانی:** `2026-09-23`
 **Session مربوطه:** `Session-20260923-Phase8-ProductionReadiness`
 
+## ادامه — خودکارسازی کد مسئولیت + بهبود فرم انتساب (2026-09-23)
+- فیلد `Code` مسئولیت از ورودی کاربر حذف شد؛ بک‌اند به‌صورت خودکار `Code = Guid` تولید می‌کند (کامیت `59cfcb0`).
+- دیالوگ انتساب مسئولیت به پست بازطراحی شد: شناسه خام پست حذف و با دو `Autocomplete` جایگزین شد — انتخاب سازمان (دسترسی درختی) + جستجوی پست در سازمان انتخاب‌شده.
+- مستند `Docs/api-contracts/responsibilities.md` برای حذف فیلد `code` از بدنه `POST` به‌روز شد.
+- اعتبارسنجی: `tsc --noEmit` ✅ · `eslint` ✅ · `next build` ✅ (۱۵ روت).
+
 ## Phase 8 — Production Readiness (2026-09-23) — ✅ Done
 - **تسک ۱:** رفع آسیب‌پذیری NU1903 (Microsoft.OpenApi 2.12.0).
 - **تسک ۲:** `RedisBffSessionStore` با `StackExchange.Redis` — انتخاب خودکار بر اساس `ConnectionStrings:Redis`؛ در نبود آن، `InMemoryBffSessionStore` برای توسعه.
