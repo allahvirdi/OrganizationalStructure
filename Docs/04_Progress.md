@@ -3,8 +3,18 @@
 > این فایل باید در **پایان هر Session** به‌روز شود.
 > هدف: امکان ادامه کار توسط AI یا توسعه‌دهنده جدید بدون نیاز به تاریخچه گفتگو.
 
-**آخرین به‌روزرسانی:** `2026-09-20`
-**Session مربوطه:** `Session-20260920-Phase7-EmployeeImport`
+**آخرین به‌روزرسانی:** `2026-09-23`
+**Session مربوطه:** `Session-20260923-Phase8-ProductionReadiness`
+
+## Phase 8 — Production Readiness (2026-09-23) — ✅ Done
+- **تسک ۱:** رفع آسیب‌پذیری NU1903 (Microsoft.OpenApi 2.12.0).
+- **تسک ۲:** `RedisBffSessionStore` با `StackExchange.Redis` — انتخاب خودکار بر اساس `ConnectionStrings:Redis`؛ در نبود آن، `InMemoryBffSessionStore` برای توسعه.
+- **تسک ۳:** پایپ‌لاین CI/CD با GitHub Actions (`.github/workflows/ci.yml`): بیلد .NET 10 + ۵ پروژه تست + اسکن آسیب‌پذیری (ویندوز، به‌دلیل LocalDB)؛ فرانت‌اند: `npm ci` + `lint` + `build` + `npm audit` (اوبونتو).
+- **تسک ۴:** Rate Limiting سراسری (Fixed Window, 100 req/min/IP)؛ `SecurityHeadersMiddleware` (OWASP: X-Content-Type-Options, X-Frame-Options, CSP, Referrer-Policy, Permissions-Policy)؛ حذف هدر `Server` Kestrel؛ اسکن وابستگی‌ها به‌صورت فیلتر قطعی در CI.
+- **تسک ۵:** مستندات استقرار و Runbook (`Docs/Deployment/deployment-runbook.md`).
+- **تسک ۶:** گزارش نهایی + بستن فاز (`Docs/SessionReports/Session-20260923-Phase8-ProductionReadiness.md`).
+- اعتبارسنجی: ۲۴۷ تست سبز (Domain ۳۷ + Application ۹۸ + Infrastructure ۲۷ + Architecture ۴ + Integration ۸۱)؛ بیلد بدون هشدار/خطا.
+- کامیت‌ها: `26dbdcc`, `b749191`, `b2350c5`, `ad38ef2`, `a621b48` — همه پوش‌شده به `origin/main`.
 
 ## Phase 7 — ورود دسته‌جمعی پرسنل از اکسل/CSV (2026-09-20)
 - نیاز: مسیر فایل (نه جدول واسط) برای ثبت دسته‌جمعی پرسنل یک سازمان، مستقل از Q-003 که هنوز باز است.
