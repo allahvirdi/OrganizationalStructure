@@ -74,5 +74,6 @@
 | هش | پیام |
 |---|---|
 | `39e361a` | `feat(authority): rename to signing authority, auto-GUID code, org+post assignment (DEC-035)` |
+| `5ad2320` | `feat(ui): debounced server-side search + incremental loading in assignment post picker` |
 
-کامیت با تأیید صریح کارفرما (DEC-002) انجام و به `origin/main` پوش شد.
+کامیت‌ها با تأیید صریح کارفرما (DEC-002) انجام و به `origin/main` پوش شدند.
