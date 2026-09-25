@@ -160,7 +160,9 @@ public sealed class IamClient : IIamClient
             TenantId = extended.TenantId,
             OrganizationId = extended.OrganizationId,
             Roles = value.Roles,
-            Permissions = extended.Permissions
+            Permissions = extended.Permissions,
+            FirstName = extended.FirstName,
+            LastName = extended.LastName
         };
     }
 
@@ -315,13 +317,18 @@ public sealed class IamClient : IIamClient
     }
 
     /// <summary>
-    /// خواندن ادعاهای تکمیلی (مستأجر/سازمان/دسترسی‌ها) از بدنه JWT پس از اعتبارسنجی موفق سمت IAM.
+    /// خواندن ادعاهای تکمیلی (مستأجر/سازمان/دسترسی‌ها/نام نمایشی) از بدنه JWT پس از اعتبارسنجی موفق سمت IAM.
     /// </summary>
     /// <remarks>
     /// نام Claimها از ثابت‌های IAM و اسناد توکن استخراج شده است
-    /// (<c>user_id</c>، <c>tenant_id</c>، <c>organization_id</c>، <c>role</c>، <c>permission</c>).
+    /// (<c>user_id</c>، <c>tenant_id</c>، <c>organization_id</c>، <c>role</c>، <c>permission</c>، <c>first_name</c>، <c>last_name</c>).
     /// </remarks>
-    private static (string? TenantId, string? OrganizationId, IReadOnlyList<string> Permissions)
+    private static (
+        string? TenantId,
+        string? OrganizationId,
+        IReadOnlyList<string> Permissions,
+        string? FirstName,
+        string? LastName)
         ReadExtendedClaims(string accessToken)
     {
         try
@@ -329,7 +336,7 @@ public sealed class IamClient : IIamClient
             var parts = accessToken.Split('.');
             if (parts.Length < 2)
             {
-                return (null, null, Array.Empty<string>());
+                return (null, null, Array.Empty<string>(), null, null);
             }
 
             var payloadJson = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
@@ -339,11 +346,13 @@ public sealed class IamClient : IIamClient
             return (
                 GetStringClaim(root, "tenant_id"),
                 GetStringClaim(root, "organization_id"),
-                GetArrayClaim(root, "permission"));
+                GetArrayClaim(root, "permission"),
+                GetStringClaim(root, "first_name"),
+                GetStringClaim(root, "last_name"));
         }
         catch (Exception ex) when (ex is FormatException or JsonException or ArgumentException)
         {
-            return (null, null, Array.Empty<string>());
+            return (null, null, Array.Empty<string>(), null, null);
         }
     }
 

@@ -27,6 +27,7 @@ import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import { useColorMode } from "../theme/ThemeRegistry";
 import { filterMenuByPermissions } from "../config/menu";
 import { useLogout, useMe } from "../features/auth/useAuth";
+import { displayUserName } from "../lib/api/auth";
 
 const drawerWidth = 272;
 
@@ -183,11 +184,11 @@ function UserCard() {
         }}
       >
         <Avatar sx={{ bgcolor: "secondary.main", width: 36, height: 36 }}>
-          ک
+          {displayUserName(user).charAt(0)}
         </Avatar>
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
-            کاربر جاری
+            {displayUserName(user)}
           </Typography>
           <Typography variant="caption" color="text.secondary" noWrap dir="ltr">
             {user?.userId?.slice(0, 8) ?? "—"}

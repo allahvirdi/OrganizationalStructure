@@ -21,6 +21,16 @@ public static class ClaimNames
     public const string UserName = "username";
 
     /// <summary>
+    /// نام.
+    /// </summary>
+    public const string FirstName = "first_name";
+
+    /// <summary>
+    /// نام خانوادگی.
+    /// </summary>
+    public const string LastName = "last_name";
+
+    /// <summary>
     /// شناسه سازمان (از IAM).
     /// </summary>
     public const string OrganizationId = "organization_id";

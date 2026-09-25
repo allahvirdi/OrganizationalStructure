@@ -198,6 +198,8 @@ public sealed class AuthController : ApiControllerBase
             userId,
             user.FindFirst(ClaimNames.TenantId)?.Value,
             user.FindFirst(ClaimNames.OrganizationId)?.Value,
+            user.FindFirst(ClaimNames.FirstName)?.Value,
+            user.FindFirst(ClaimNames.LastName)?.Value,
             user.FindAll(ClaimNames.Role).Select(c => c.Value).ToArray(),
             user.FindAll("permission").Select(c => c.Value).ToArray()));
     }
@@ -245,6 +247,8 @@ public sealed class AuthController : ApiControllerBase
             OrganizationId = validation.OrganizationId,
             Roles = validation.Roles,
             Permissions = validation.Permissions,
+            FirstName = validation.FirstName,
+            LastName = validation.LastName,
             VisibleOrganizationIds = scope.Select(organization => organization.Id).ToArray(),
             VisibleOrganizations = scope
         }, cancellationToken);
@@ -322,12 +326,16 @@ public sealed record LoginResultDto(
 /// <param name="UserId">شناسه کاربر</param>
 /// <param name="TenantId">شناسه مستأجر</param>
 /// <param name="OrganizationId">شناسه سازمان</param>
+/// <param name="FirstName">نام کاربر (Claim اختیاری first_name توکن IAM؛ فقط برای نمایش)</param>
+/// <param name="LastName">نام خانوادگی کاربر (Claim اختیاری last_name توکن IAM؛ فقط برای نمایش)</param>
 /// <param name="Roles">نقش‌ها</param>
 /// <param name="Permissions">دسترسی‌ها (برای تصمیم‌های نمایشی UI مانند ماسک PII؛ enforce اصلی سمت سرور است)</param>
 public sealed record CurrentUserDto(
     string? UserId,
     string? TenantId,
     string? OrganizationId,
+    string? FirstName,
+    string? LastName,
     string[] Roles,
     string[] Permissions);
 

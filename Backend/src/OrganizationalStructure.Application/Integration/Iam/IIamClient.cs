@@ -114,6 +114,16 @@ public sealed record IamValidationResult
     public IReadOnlyList<string> Permissions { get; init; } = Array.Empty<string>();
 
     /// <summary>
+    /// نام کاربر (Claim اختیاری first_name توکن IAM؛ برای نمایش در UI نگه‌داری می‌شود — داده مرجع، نه Master).
+    /// </summary>
+    public string? FirstName { get; init; }
+
+    /// <summary>
+    /// نام خانوادگی کاربر (Claim اختیاری last_name توکن IAM؛ برای نمایش در UI نگه‌داری می‌شود — داده مرجع، نه Master).
+    /// </summary>
+    public string? LastName { get; init; }
+
+    /// <summary>
     /// پیام خطا.
     /// </summary>
     public string? Error { get; init; }

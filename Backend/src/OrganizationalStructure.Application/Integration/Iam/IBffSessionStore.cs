@@ -58,6 +58,16 @@ public sealed record BffSession
     public IReadOnlyList<string> Permissions { get; init; } = Array.Empty<string>();
 
     /// <summary>
+    /// نام کاربر (Claim اختیاری first_name توکن IAM؛ فقط برای نمایش، بدون خاصیت دامنه‌ای).
+    /// </summary>
+    public string? FirstName { get; init; }
+
+    /// <summary>
+    /// نام خانوادگی کاربر (Claim اختیاری last_name توکن IAM؛ فقط برای نمایش، بدون خاصیت دامنه‌ای).
+    /// </summary>
+    public string? LastName { get; init; }
+
+    /// <summary>
     /// شناسه‌های سازمان‌های داخل Scope مشاهده (خود سازمان + زیرمجموعه‌ها).
     /// </summary>
     public IReadOnlyList<Guid> VisibleOrganizationIds { get; init; } = Array.Empty<Guid>();

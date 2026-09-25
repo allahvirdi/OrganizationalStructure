@@ -11,6 +11,35 @@ import { createAppTheme } from "./theme";
 
 const COLOR_MODE_KEY = "orgstructure-color-mode";
 
+/** مشترکین تغییر حالت تم در همان صفحه */
+const colorModeListeners = new Set<() => void>();
+
+function subscribeColorMode(callback: () => void): () => void {
+  colorModeListeners.add(callback);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === COLOR_MODE_KEY) {
+      callback();
+    }
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    colorModeListeners.delete(callback);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+function getColorModeSnapshot(): PaletteMode {
+  try {
+    return window.localStorage.getItem(COLOR_MODE_KEY) === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
+
+function getColorModeServerSnapshot(): PaletteMode {
+  return "light";
+}
+
 /**
  * ساخت کش Emotion راست‌به‌چپ.
  */
@@ -40,28 +69,28 @@ export function useColorMode(): ColorModeContextValue {
 /**
  * فراهم‌کننده تم MUI برای App Router با کش راست‌به‌چپ و تزریق SSR.
  */
-// حالت اولیه از localStorage خوانده می‌شود (برای SSR یکسان است)
-  const initialMode = (): PaletteMode => {
-    if (typeof window !== "undefined") {
-      return window.localStorage.getItem(COLOR_MODE_KEY) === "dark" ? "dark" : "light";
-    }
-    return "light";
-  };
-
-  export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
-    const [cache] = React.useState(createRtlCache);
-    const seenRef = React.useRef<Set<string>>(new Set());
-    // حالت اولیه از localStorage خوانده می‌شود (برای SSR یکسان است)
-    const [mode, setMode] = React.useState<PaletteMode>(initialMode);
+export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
+  const [cache] = React.useState(createRtlCache);
+  const seenRef = React.useRef<Set<string>>(new Set());
+  // استفاده از useSyncExternalStore برای خواندن امن localStorage در کلاینت
+  // با fallback به light در SSR بدون هیدریشن میس‌مچ و بدون هشدار useEffect
+  const mode = React.useSyncExternalStore(
+    subscribeColorMode,
+    getColorModeSnapshot,
+    getColorModeServerSnapshot,
+  );
 
   const theme = React.useMemo(() => createAppTheme(mode), [mode]);
 
   const toggleMode = React.useCallback(() => {
-    setMode((prev) => {
-      const next = prev === "light" ? "dark" : "light";
+    try {
+      const current = getColorModeSnapshot();
+      const next = current === "light" ? "dark" : "light";
       window.localStorage.setItem(COLOR_MODE_KEY, next);
-      return next;
-    });
+      colorModeListeners.forEach((listener) => listener());
+    } catch {
+      // نادیده گرفتن در صورت محدودیت حافظه محلی
+    }
   }, []);
 
   useServerInsertedHTML(() => {
@@ -96,7 +125,7 @@ export function useColorMode(): ColorModeContextValue {
     <CacheProvider value={cache}>
       <ColorModeContext.Provider value={{ mode, toggleMode }}>
         <ThemeProvider theme={theme}>
-          <CssBaseline />
+          <CssBaseline enableColorScheme />
           {children}
         </ThemeProvider>
       </ColorModeContext.Provider>

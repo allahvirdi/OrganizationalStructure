@@ -13,8 +13,21 @@ export interface CurrentUser {
   userId?: string | null;
   tenantId?: string | null;
   organizationId?: string | null;
+  /** نام (Claim اختیاری first_name توکن IAM؛ ممکن است برای نشست‌های قدیمی خالی باشد). */
+  firstName?: string | null;
+  /** نام خانوادگی (Claim اختیاری last_name توکن IAM؛ ممکن است برای نشست‌های قدیمی خالی باشد). */
+  lastName?: string | null;
   roles: string[];
   permissions?: string[] | null;
+}
+
+/**
+ * نام نمایشی کاربر جاری: «نام نام‌خانوادگی»؛ در نبود آن، userId کوتاه‌شده.
+ */
+export function displayUserName(user: CurrentUser | null | undefined): string {
+  const full = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
+  if (full) return full;
+  return user?.userId ? user.userId.slice(0, 8) : "—";
 }
 
 /**

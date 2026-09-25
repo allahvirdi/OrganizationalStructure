@@ -91,6 +91,16 @@ export function createAppTheme(mode: PaletteMode) {
     typography: {
       fontFamily: fontStack,
       button: { fontFamily: fontStack, fontWeight: 700, textTransform: "none" },
+      body1: { fontWeight: 400 },
+      body2: { fontWeight: 500 },
+      subtitle1: { fontWeight: 700 },
+      subtitle2: { fontWeight: 700 },
+      h1: { fontWeight: 800 },
+      h2: { fontWeight: 800 },
+      h3: { fontWeight: 700 },
+      h4: { fontWeight: 700 },
+      h5: { fontWeight: 700 },
+      h6: { fontWeight: 700 },
     },
     shape: {
       // sx numeric radii use this multiplier; component overrides below use pixels.
@@ -115,6 +125,14 @@ export function createAppTheme(mode: PaletteMode) {
       /**
        * سطح کارت قالب (.surface): گوشی ۱۶ + حاشیه + سایه card.
        */
+      MuiTableCell: {
+        styleOverrides: {
+          head: {
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+          },
+        },
+      },
       MuiPaper: {
         styleOverrides: {
           root: {
@@ -212,6 +230,9 @@ export function createAppTheme(mode: PaletteMode) {
        */
       MuiCssBaseline: {
         styleOverrides: {
+          html: {
+            backgroundColor: isDark ? "#111b22" : "#f7f9fb",
+          },
           body: {
             fontFamily: fontStack,
           },

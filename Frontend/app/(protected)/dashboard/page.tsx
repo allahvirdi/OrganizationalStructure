@@ -10,6 +10,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { useMe } from "../../../src/features/auth/useAuth";
+import { displayUserName } from "../../../src/lib/api/auth";
 
 /**
  * دسترسی سریع داشبورد — اتصال بصری به تمام صفحات منو.
@@ -77,6 +78,7 @@ function DashboardContent() {
               gridTemplateColumns: { xs: "minmax(0, 1fr)", sm: "repeat(2, minmax(0, 1fr))" },
             }}
           >
+            <InfoRow label="نام و نام خانوادگی" value={displayUserName(user)} />
             <InfoRow label="شناسه کاربر" value={user?.userId ?? "—"} ltr />
             <InfoRow label="مستأجر" value={user?.tenantId ?? "—"} ltr />
             <InfoRow label="سازمان" value={user?.organizationId ?? "—"} ltr />
@@ -161,7 +163,10 @@ function InfoRow({
         px: 1.5,
         py: 1,
         borderRadius: 2,
-        bgcolor: "rgba(23, 36, 44, 0.03)",
+        bgcolor: (theme) =>
+          theme.palette.mode === "dark"
+            ? "rgba(255, 255, 255, 0.05)"
+            : "rgba(23, 36, 44, 0.03)",
       }}
     >
       <Typography variant="caption" color="text.secondary">

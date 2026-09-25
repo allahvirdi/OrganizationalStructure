@@ -219,11 +219,14 @@ function AssignmentSection({ code }: { code: string }) {
                 : "سازمانی یافت نشد"
             }
             onInputChange={(_, value) => setOrgSearchTerm(value)}
-            renderOption={(props, option) => (
-              <li {...props} key={option.id} style={{ paddingRight: option.depth * 16 + 16 }}>
-                {option.name}
-              </li>
-            )}
+            renderOption={(props, option) => {
+              const { key, ...optionProps } = props;
+              return (
+                <li {...optionProps} key={key} style={{ paddingRight: option.depth * 16 + 16 }}>
+                  {option.name}
+                </li>
+              );
+            }}
             renderInput={(params) => (
               <TextField {...params} label="سازمان" helperText="سازمان موردنظر را جستجو و انتخاب کنید." />
             )}

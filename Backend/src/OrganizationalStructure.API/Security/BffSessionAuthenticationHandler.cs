@@ -99,6 +99,8 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
                 OrganizationId = validation.OrganizationId ?? session.OrganizationId,
                 Roles = validation.Roles.Count > 0 ? validation.Roles : session.Roles,
                 Permissions = validation.Permissions.Count > 0 ? validation.Permissions : session.Permissions,
+                FirstName = validation.FirstName ?? session.FirstName,
+                LastName = validation.LastName ?? session.LastName,
                 VisibleOrganizationIds = scope,
                 VisibleOrganizations = visibleOrganizations
             };
@@ -115,6 +117,16 @@ public sealed class BffSessionAuthenticationHandler : AuthenticationHandler<Auth
         if (!string.IsNullOrWhiteSpace(session.TenantId))
         {
             claims.Add(new Claim(ClaimNames.TenantId, session.TenantId));
+        }
+
+        if (!string.IsNullOrWhiteSpace(session.FirstName))
+        {
+            claims.Add(new Claim(ClaimNames.FirstName, session.FirstName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(session.LastName))
+        {
+            claims.Add(new Claim(ClaimNames.LastName, session.LastName));
         }
 
         if (!string.IsNullOrWhiteSpace(session.OrganizationId))
