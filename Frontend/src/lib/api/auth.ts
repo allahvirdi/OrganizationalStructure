@@ -53,8 +53,13 @@ export function logout(): Promise<void> {
 }
 
 /**
- * دریافت کاربر جاری (401 در صورت عدم احراز).
+ * دریافت کاربر جاری.
+ *
+ * نبودِ نشست خطا نیست: سرور در این حالت `204 No Content` برمی‌گرداند و `null` برگردانده می‌شود
+ * (تمایز «ناشناس» از «خطای واقعی» بدون خطای ۴۰۱ در کنسول مرورگر).
  */
-export function fetchMe(): Promise<CurrentUser> {
-  return apiFetch<CurrentUser>("/api/v1/auth/me");
+export function fetchMe(): Promise<CurrentUser | null> {
+  return apiFetch<CurrentUser | null>("/api/v1/auth/me").then(
+    (user) => user ?? null,
+  );
 }

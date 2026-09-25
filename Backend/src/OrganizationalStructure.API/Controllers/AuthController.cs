@@ -167,17 +167,35 @@ public sealed class AuthController : ApiControllerBase
     }
 
     /// <summary>
-    /// اطلاعات کاربر جاری از نشست معتبر.
+    /// اطلاعات کاربر جاری از نشست معتبر (بررسی نشست).
     /// </summary>
+    /// <remarks>
+    /// نبودِ نشست یک «وضعیت عادی» است، نه خطا: برای کاربر ناشناس `204 No Content` برگردانده
+    /// می‌شود تا رابط کاربری بودن/نبودن نشست را بدون خطای ۴۰۱ در مرورگر تشخیص دهد.
+    /// اگر کوکی نشست ارسال شده ولی نامعتبر/منقضی باشد، همان کوکی پاک می‌شود تا تکرار نشود.
+    /// سایر Endpointها همان رفتار ۴۰۱ (fail-closed) را حفظ می‌کنند.
+    /// </remarks>
     [HttpGet("me")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(CurrentUserDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult<CurrentUserDto> Me()
     {
         var user = HttpContext.User;
+        var userId = user.FindFirst(ClaimNames.UserId)?.Value;
+
+        if (user.Identity?.IsAuthenticated != true || string.IsNullOrWhiteSpace(userId))
+        {
+            if (Request.Cookies.ContainsKey(BffSessionAuthenticationHandler.SessionCookieName))
+            {
+                Response.Cookies.Delete(BffSessionAuthenticationHandler.SessionCookieName);
+            }
+
+            return NoContent();
+        }
+
         return Ok(new CurrentUserDto(
-            user.FindFirst(ClaimNames.UserId)?.Value,
+            userId,
             user.FindFirst(ClaimNames.TenantId)?.Value,
             user.FindFirst(ClaimNames.OrganizationId)?.Value,
             user.FindAll(ClaimNames.Role).Select(c => c.Value).ToArray(),

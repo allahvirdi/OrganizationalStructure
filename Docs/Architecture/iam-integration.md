@@ -57,7 +57,7 @@
 | ۱ | مقداردهی `Iam:BaseAddress` | `appsettings.Development.json` (skip-worktree) یا متغیر `Iam__BaseAddress` | هشدار راه‌اندازی برای «Iam:BaseAddress» و خطای «خطا در ارتباط با سامانه هویت.» |
 | ۲ | هم‌ترازی `Iam:ClientSecret` با کلاینت `personnel-bff` در IAM | همان‌جا؛ مرجع سمت IAM: `Authentication:BffClient:Secret` | پاسخ ۴۰۱ `invalid_client` روی `POST /api/token/validate` |
 | ۳ | وجود Claim `organization_id` در JWT و درخت سازمانی غیرخالی | سمت IAM (Master Data — Q-009، بسته‌شده با DEC-028) | ۴۰۱ با `title = Auth.NoScope` |
-| ۴ | ثبت `IBffSessionStore` به‌صورت **Singleton** | `Infrastructure/DependencyInjection.cs` | `/api/v1/auth/me` با پیام «نشست معتبر نیست» (۴۰۱) علی‌رغم لاگین موفق — استور Scoped یعنی هر درخواست استور خالی |
+| ۴ | ثبت `IBffSessionStore` به‌صورت **Singleton** | `Infrastructure/DependencyInjection.cs` | نشست معتبر وجود دارد ولی پاسخ به‌صورت «ناشناس» برمی‌گردد (پیش از DEC-036: ۴۰۱ «نشست معتبر نیست»؛ اکنون: ۲۰۴ روی `/api/v1/auth/me`) علی‌رغم لاگین موفق — استور Scoped یعنی هر درخواست استور خالی |
 
 مسیر کامل یک ورود موفق:
 
@@ -75,7 +75,8 @@ POST /api/v1/auth/login
 - `IamClient` بدنه خطای IAM را حتی در پاسخ‌های ناموفق می‌خواند تا پیام دقیق (مثلاً «نام کاربری یا رمز عبور نامعتبر است.») از دست نرود.
 - Master Data سازمان محیط توسعه (Q-009 — DEC-028): سازمان `شرکت هرسات (محیط توسعه)` با کد `herasat-dev` (شناسه `fd0e79eb-27b9-4e19-b348-070fa091d5dc`) از طریق API خودِ IAM (`POST /api/organizations` + `POST /api/users/{id}/assign-organization`) ثبت و به کاربران Seed تخصیص یافت؛ بدون تغییر کد/الگوی داده IAM.
 - مسیر صحیح API تخصیص سازمان در IAM: `POST api/users/{userId}/assign-organization` (کنترلر `AssignmentsController` با Route `api/users`) — نه `api/assignments/...`.
+- **بررسی نشست (DEC-036):** `GET /api/v1/auth/me` برای کاربر ناشناس `204 No Content` برمی‌گرداند (نه ۴۰۱) و اگر کوکی نشست ارسال شده باشد آن را پاک می‌کند؛ بنابراین بازدیدکنندهٔ واردنشده خطای گمراه‌کننده در کنسول مرورگر نمی‌بیند. سایر Endpointها همان ۴۰۱ fail-closed را حفظ می‌کنند (تست زنده: `/auth/me` = ۲۰۴ و `/posts` = ۴۰۱ برای کاربر ناشناس).
 
 ## ۷. پیگیری
 - Q-002 (پروتکل)، Q-004 و Q-006 (نقش/Permission) از `Docs/open-questions.md`.
-- Q-009 بسته شد (DEC-028)؛ Q-010 (قرارداد خطای Auth) باز است.
+- Q-009 بسته شد (DEC-028)؛ Q-010 (قرارداد خطای Auth) با DEC-033 بسته شد (ارائهٔ خطای ۴۰۱ با پیام گویا برای ورود ناموفق).
