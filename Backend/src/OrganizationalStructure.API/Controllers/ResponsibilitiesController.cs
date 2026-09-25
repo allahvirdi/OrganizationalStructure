@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrganizationalStructure.API.Security;
 using OrganizationalStructure.Application.Common;
+using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Application.Responsibilities.AssignResponsibility;
 using OrganizationalStructure.Application.Responsibilities.CreateResponsibility;
 using OrganizationalStructure.Application.Responsibilities.DisableResponsibility;
@@ -11,6 +12,7 @@ using OrganizationalStructure.Application.Responsibilities.EndResponsibilityAssi
 using OrganizationalStructure.Application.Responsibilities.GetPostResponsibilities;
 using OrganizationalStructure.Application.Responsibilities.GetResponsibilityAssignments;
 using OrganizationalStructure.Application.Responsibilities.GetResponsibilityByCode;
+using OrganizationalStructure.Application.Responsibilities.ResolveResponsibility;
 using OrganizationalStructure.Application.Responsibilities.SearchResponsibilities;
 using OrganizationalStructure.Application.Responsibilities.UpdateResponsibility;
 
@@ -187,6 +189,29 @@ public sealed class ResponsibilitiesController : ApiControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(new GetPostResponsibilitiesQuery(postId, onlyActive), cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// مسیریابی مسئولیت (FindResponsible): یافتن پست و پرسنل مسئول
+    /// برای یک کد مسئولیت در یک سازمان مشخص.
+    /// </summary>
+    /// <remarks>
+    /// این Endpoint نقطه اتصال اصلی سامانه ارجاعات برای مسیریابی بر اساس مسئولیت است (ADR-015).
+    /// زنجیره: Responsibility → Assignment جاری → Post → Active Employee → IAM User.
+    /// </remarks>
+    [HttpGet("resolve")]
+    [Authorize(Policy = AuthorizationPolicies.Responsibility.View)]
+    [ProducesResponseType(typeof(IReadOnlyList<ResolvedResponsibleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyList<ResolvedResponsibleDto>>> Resolve(
+        [FromQuery] Guid organizationId,
+        [FromQuery] string responsibilityCode,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _sender.Send(
+            new ResolveResponsibilityQuery(organizationId, responsibilityCode),
+            cancellationToken);
         return HandleResult(result);
     }
 }

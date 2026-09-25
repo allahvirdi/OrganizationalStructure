@@ -46,4 +46,12 @@ public static class PostErrors
         "Post.CycleDetected",
         "این جابجایی باعث ایجاد چرخه در ساختار درختی می‌شود.",
         ErrorType.Conflict);
+
+    /// <summary>
+    /// ساخت خطای «پست والد ندارد (ریشه)».
+    /// </summary>
+    public static Error NoParent(Guid postId) => new(
+        "Post.NoParent",
+        $"پست با شناسه {postId} ریشه درخت است و والد (رئیس مستقیم) ندارد.",
+        ErrorType.NotFound);
 }

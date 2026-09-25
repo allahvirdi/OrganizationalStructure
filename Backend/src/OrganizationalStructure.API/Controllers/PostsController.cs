@@ -5,6 +5,8 @@ using OrganizationalStructure.Application.Posts.CreatePost;
 using OrganizationalStructure.Application.Posts.DTOs;
 using OrganizationalStructure.Application.Posts.GetPostById;
 using OrganizationalStructure.Application.Posts.GetPostChildren;
+using OrganizationalStructure.Application.Posts.GetPostManager;
+using OrganizationalStructure.Application.Posts.GetPostPeers;
 using OrganizationalStructure.Application.Posts.GetPostSubtree;
 using OrganizationalStructure.Application.Posts.MovePost;
 using OrganizationalStructure.Application.Posts.SearchPosts;
@@ -172,6 +174,37 @@ public sealed class PostsController : ApiControllerBase
         var result = await _sender.Send(
             new SearchPostsQuery(organizationId, searchTerm, isActive, page, pageSize),
             cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// دریافت رئیس مستقیم (پست والد) یک پست.
+    /// </summary>
+    [HttpGet("{id:guid}/manager")]
+    [Authorize(Policy = AuthorizationPolicies.Post.ViewHierarchy)]
+    [ProducesResponseType(typeof(PostSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PostSummaryDto>> GetManager(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetPostManagerQuery(id), cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// دریافت هم‌سطح‌های مستقیم یک پست (پست‌هایی با والد مشترک).
+    /// </summary>
+    [HttpGet("{id:guid}/peers")]
+    [Authorize(Policy = AuthorizationPolicies.Post.ViewHierarchy)]
+    [ProducesResponseType(typeof(IReadOnlyList<PostSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyList<PostSummaryDto>>> GetPeers(
+        Guid id,
+        [FromQuery] bool includeSelf = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _sender.Send(new GetPostPeersQuery(id, includeSelf), cancellationToken);
         return HandleResult(result);
     }
 }
