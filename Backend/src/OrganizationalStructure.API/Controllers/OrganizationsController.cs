@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrganizationalStructure.Application.Organizations.DTOs;
 using OrganizationalStructure.Application.Organizations.GetOrganizationOptions;
+using OrganizationalStructure.Application.Organizations.GetOrganizationStructure;
 using OrganizationalStructure.API.Security;
 
 namespace OrganizationalStructure.API.Controllers;
@@ -48,6 +49,29 @@ public sealed class OrganizationsController : ApiControllerBase
     {
         var result = await _sender.Send(
             new GetOrganizationOptionsQuery(searchTerm), cancellationToken);
+        return HandleResult(result);
+    }
+
+    /// <summary>
+    /// دریافت ساختار کامل یک سازمان (لیست تخت پست‌ها + مسئولیت‌ها).
+    /// </summary>
+    /// <remarks>
+    /// مصرف‌کننده اصلی: سامانه ارجاعات (ADR-015، §3.5 قرارداد).
+    /// خروجی لیست تخت پست‌ها با رابطه والد، مسئولیت‌های جاری و پرچم صاحب‌امضا است.
+    /// مصرف‌کننده خود درخت را از روی این لیست می‌سازد.
+    /// </remarks>
+    /// <param name="id">شناسه سازمان</param>
+    /// <param name="cancellationToken">توکن لغو</param>
+    [HttpGet("{id:guid}/structure")]
+    [Authorize(Policy = AuthorizationPolicies.Post.ViewHierarchy)]
+    [ProducesResponseType(typeof(OrganizationStructureDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<OrganizationStructureDto>> GetStructure(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new GetOrganizationStructureQuery(id), cancellationToken);
         return HandleResult(result);
     }
 }

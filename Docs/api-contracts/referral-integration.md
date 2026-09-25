@@ -116,8 +116,13 @@
 
 ## ۶. وضعیت پیاده‌سازی
 
-- **پیاده‌شده:** `GET /posts/{id}`, `GET /posts/{id}/children`, `GET /posts/{id}/subtree` (پایه درخت).
-- **نیازمند توسعه:** `GET /posts/{id}/manager`, `GET /posts/{id}/peers`, `GET /responsibilities/{code}/resolve`.
-- **اولویت:** این سرویس‌ها پیش‌نیاز اصلی شروع توسعه سامانه ارجاعات هستند.
+- **پیاده‌شده (قبل از قرارداد):** `GET /posts/{id}`, `GET /posts/{id}/children`, `GET /posts/{id}/subtree` (پایه درخت).
+- **پیاده‌شده (کامیت `ba695c7`):**
+  - `GET /posts/{id}/manager` ✅
+  - `GET /posts/{id}/peers` ✅
+  - `GET /responsibilities/resolve?organizationId=&responsibilityCode=` ✅
+- **پیاده‌شده (به‌روزرسانی):**
+  - `GET /organizations/{id}/structure` ✅
+- **همه §3.1 تا §3.5 قرارداد پیاده‌سازی شده‌اند.**
 
 </think>
