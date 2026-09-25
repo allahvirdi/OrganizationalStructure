@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
   Autocomplete,
@@ -34,6 +34,10 @@ import { fetchPosts } from "../../../../src/features/posts/api";
 import type { PostSummary } from "../../../../src/features/org-chart/api";
 import type { OrganizationOption } from "../../../../src/features/organizations/api";
 import { useOrganizations } from "../../../../src/features/organizations/useOrganizations";
+import { useDebouncedValue } from "../../../../src/lib/hooks/useDebouncedValue";
+
+/** اندازهٔ صفحهٔ گزینه‌های پست در انتخابگر انتساب. */
+const postOptionsPageSize = 25;
 
 /**
  * صفحه جزئیات حق امضا (اختیار سازمانی) + انتساب به پست.
@@ -95,23 +99,36 @@ function AssignmentSection({ code }: { code: string }) {
   const [selectedOrganization, setSelectedOrganization] =
     React.useState<OrganizationOption | null>(null);
   const [orgSearchTerm, setOrgSearchTerm] = React.useState("");
-  const organizations = useOrganizations({ searchTerm: orgSearchTerm });
+  const debouncedOrgSearchTerm = useDebouncedValue(orgSearchTerm);
+  const organizations = useOrganizations({ searchTerm: debouncedOrgSearchTerm });
 
-  // --- انتخاب پست (جستجو در پست‌های سازمان انتخاب‌شده) ---
+  // --- انتخاب پست (جستجوی سروری + بارگذاری تدریجی در سازمان انتخاب‌شده) ---
   const [selectedPost, setSelectedPost] = React.useState<PostSummary | null>(null);
   const [postSearchTerm, setPostSearchTerm] = React.useState("");
-  const postsQuery = useQuery({
-    queryKey: ["posts", "assign-options", selectedOrganization?.id, postSearchTerm],
+  const debouncedPostSearchTerm = useDebouncedValue(postSearchTerm);
+  const postsQuery = useInfiniteQuery({
+    queryKey: [
+      "posts",
+      "assign-options",
+      selectedOrganization?.id,
+      debouncedPostSearchTerm,
+    ],
     enabled: dialogOpen && Boolean(selectedOrganization?.id),
-    queryFn: () =>
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
       fetchPosts({
         organizationId: selectedOrganization!.id,
-        searchTerm: postSearchTerm || undefined,
+        searchTerm: debouncedPostSearchTerm || undefined,
         isActive: true,
-        page: 1,
-        pageSize: 50,
+        page: pageParam,
+        pageSize: postOptionsPageSize,
       }),
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
   });
+
+  const postOptions = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const postTotalCount = postsQuery.data?.pages[0]?.totalCount ?? 0;
 
   const onAssign = () => {
     setError(null);
@@ -211,9 +228,9 @@ function AssignmentSection({ code }: { code: string }) {
               <TextField {...params} label="سازمان" helperText="سازمان موردنظر را جستجو و انتخاب کنید." />
             )}
           />
-          {/* انتخاب پست — جستجو در پست‌های سازمان انتخاب‌شده */}
+          {/* انتخاب پست — جستجوی سروری با بارگذاری تدریجی در سازمان انتخاب‌شده */}
           <Autocomplete<PostSummary>
-            options={postsQuery.data?.items ?? []}
+            options={postOptions}
             value={selectedPost}
             onChange={(_, value) => setSelectedPost(value)}
             getOptionLabel={(option) => `${option.code} — ${option.title}`}
@@ -230,8 +247,37 @@ function AssignmentSection({ code }: { code: string }) {
                   : "پستی یافت نشد"
             }
             onInputChange={(_, value) => setPostSearchTerm(value)}
+            slotProps={{
+              listbox: {
+                onScroll: (event: React.UIEvent<HTMLUListElement>) => {
+                  const listbox = event.currentTarget;
+                  const reachedEnd =
+                    listbox.scrollTop + listbox.clientHeight >=
+                    listbox.scrollHeight - 8;
+                  if (
+                    reachedEnd &&
+                    postsQuery.hasNextPage &&
+                    !postsQuery.isFetchingNextPage
+                  ) {
+                    void postsQuery.fetchNextPage();
+                  }
+                },
+              },
+            }}
             renderInput={(params) => (
-              <TextField {...params} label="پست" helperText="پست موردنظر را جستجو و انتخاب کنید." />
+              <TextField
+                {...params}
+                label="پست"
+                helperText={
+                  !selectedOrganization
+                    ? "ابتدا سازمان را انتخاب کنید."
+                    : `پست‌های یافت‌شده: ${postTotalCount}${
+                        postsQuery.hasNextPage
+                          ? " — برای نتایج بیشتر اسکرول کنید"
+                          : ""
+                      }`
+                }
+              />
             )}
           />
           {error && <Alert severity="error">{error}</Alert>}

@@ -20,6 +20,7 @@
 - `hasSigningAuthority` که به کد ثابت `SIGNING_AUTHORITY` گره خورده بود، به «وجود حداقل یک انتساب جاری حق امضا» تغییر کرد (در `GetPostById`، `GetPostSubtree`، `SearchPosts`)؛ در غیر این صورت با کد GUID هیچ‌گاه روشن نمی‌شد. ثابت `AuthorityCodes.SigningAuthority` فقط به‌عنوان مرجع تاریخی باقی ماند.
 - نمایش کد GUID از فرانت‌اند حذف شد (ستون «کد» در فهرست مسئولیت‌ها/حق امضاها، زیرعنوان کد در صفحات جزئیات) و برچسب جستجو به «جستجو (عنوان)» تغییر کرد.
 - تست‌ها: `AuthorityApiTests.Authority_SigningBadge_ShouldAppearInSubtree` برای کد خودکار بازنویسی شد.
+- **بهبود انتخابگر پست (همان Session):** در دیالوگ‌های انتساب مسئولیت و حق امضا، انتخابگر پست به جستجوی سروری با **debounce** و **بارگذاری تدریجی (اسکرول)** ارتقا یافت (`useInfiniteQuery`، صفحه ۲۵تایی) و تعداد کل نتایج نمایش داده می‌شود؛ انتخابگر سازمان هم debounce شد. هوک مشترک جدید: `Frontend/src/lib/hooks/useDebouncedValue.ts`.
 - اعتبارسنجی: بیلد بک‌اند بدون هشدار/خطا · **۲۴۷ تست سبز** (Domain 37 + Application 98 + Infrastructure 27 + Architecture 4 + Integration 81) · `tsc` ✅ · `eslint` ✅ · `next build` ✅ (۱۶ روت).
 
 ## Phase 8 — Production Readiness (2026-09-23) — ✅ Done

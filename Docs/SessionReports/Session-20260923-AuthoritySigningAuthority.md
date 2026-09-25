@@ -17,6 +17,7 @@
 - [x] اصلاح `CreatedAtAction` کنترلر برای استفاده از شناسهٔ تولیدشده.
 - [x] حذف فیلد `code` از اسکیمای Zod، کلاینت API و فرم ایجاد؛ ریدایرکت با شناسهٔ برگشتی.
 - [x] بازطراحی دیالوگ انتساب حق امضا به پست (سازمان + پست با جستجوی سروری، محدود به درخت دسترسی کاربر).
+- [x] ارتقای انتخابگر پست در هر دو دیالوگ انتساب: debounce جستجو + بارگذاری تدریجی با `useInfiniteQuery` + نمایش تعداد نتایج.
 - [x] اصلاح مبنای `hasSigningAuthority` در سه هندلر پست + مستندسازی ثابت قدیمی.
 - [x] حذف نمایش کد GUID از فرانت‌اند (ستون فهرست‌ها و زیرعنوان صفحات جزئیات).
 - [x] به‌روزرسانی تست یکپارچگی و اجرای کامل مجموعهٔ تست‌ها/بیلدها.
@@ -34,6 +35,7 @@
 | `Backend/.../Domain/Constants/AuthorityCodes.cs` | ثبت توضیح «مرجع تاریخی» برای کد `SIGNING_AUTHORITY` |
 | `Backend/tests/.../AuthorityApiTests.cs` | بازنویسی تست نشان امضا با کد خودکار |
 | `Frontend/src/features/authorities/schemas.ts` + `api.ts` | حذف `code` از ورودی ایجاد |
+| `Frontend/src/lib/hooks/useDebouncedValue.ts` (جدید) | هوک تأخیر جستجو (debounce) |
 | `Frontend/app/(protected)/authorities/new/page.tsx` | حذف فیلد کد + ریدایرکت با شناسه + عنوان «حق امضای جدید» |
 | `Frontend/app/(protected)/authorities/[code]/page.tsx` | دیالوگ انتساب سازمان+پست؛ حذف زیرعنوان کد |
 | `Frontend/app/(protected)/authorities/page.tsx` | عنوان/دکمه/جستجو + حذف ستون کد |
