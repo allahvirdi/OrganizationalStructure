@@ -3,7 +3,7 @@
 > این فایل خلاصه و لینک به سند اصلی معماری است.
 > جزئیات کامل در `Architecture Baseline` (نسخه ۲.۴) نگهداری می‌شود.
 
-**آخرین به‌روزرسانی:** `2026-09-20`
+**آخرین به‌روزرسانی:** `2026-09-25`
 
 ---
 
@@ -62,6 +62,8 @@ Backend/
 | ADR-011 | تفکیک Responsibility/Authority مستقل با Assignment | Accepted |
 | ADR-012 | احراز سیستمی با Bearer JWT + PolicyScheme هوشمند | Accepted |
 | ADR-013 | وضعیت شبکه پژواک + الزامی‌بودن شماره پژواک در ویرایش تکمیلی | Proposed — Pending Approval |
+| ADR-014 | افزودن School=4 به OrganizationType در IAM (سطح «مدرسه») | Accepted |
+| ADR-015 | مرز سامانه‌ای — سامانه ارجاعات مستقل در کنار ساختار سازمانی | Accepted |
 
 ---
 
