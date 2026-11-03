@@ -45,18 +45,29 @@ public sealed class GetPostEmployeesQueryHandler
             query = query.Where(x => x.Assignment.ToDate == null);
         }
 
-        var items = await query
+        var rawItems = await query
             .OrderBy(x => x.Employee.PersonnelCode)
-            .Select(x => new PostEmployeeDto
+            .Select(x => new
             {
-                EmployeeId = x.Employee.Id,
-                PersonnelCode = x.Employee.PersonnelCode,
-                FullName = x.Employee.FirstName + " " + x.Employee.LastName,
-                FromDate = x.Assignment.FromDate,
-                ToDate = x.Assignment.ToDate,
-                IsPrimary = x.Assignment.IsPrimary
+                x.Employee.Id,
+                x.Employee.PersonnelCode,
+                x.Employee.FirstName,
+                x.Employee.LastName,
+                x.Assignment.FromDate,
+                x.Assignment.ToDate,
+                x.Assignment.IsPrimary
             })
             .ToListAsync(cancellationToken);
+
+        var items = rawItems.Select(x => new PostEmployeeDto
+        {
+            EmployeeId = x.Id,
+            PersonnelCode = x.PersonnelCode,
+            FullName = $"{x.FirstName} {x.LastName}".Trim(),
+            FromDate = x.FromDate,
+            ToDate = x.ToDate,
+            IsPrimary = x.IsPrimary
+        }).ToList();
 
         return Result<IReadOnlyList<PostEmployeeDto>>.Success(items);
     }
