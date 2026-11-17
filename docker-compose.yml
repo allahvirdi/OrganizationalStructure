@@ -1,0 +1,46 @@
+services:
+  orgstructure-backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    image: orgstructure-backend:latest
+    container_name: orgstructure-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:5197"
+      ASPNETCORE_HTTP_PORTS: "5197"
+      ConnectionStrings__OrganizationalStructureDb: "Server=enterprise-iam-db,1433;Database=OrgStructureDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;Encrypt=False"
+      PiiEncryption__Key: "lzpYTCNyGKz7dlRCg25LYzOWrd2maQ7PRLjOdDoY5e0="
+      Iam__BaseAddress: "http://enterprise-iam-backend:5000"
+      Iam__ClientId: "personnel-bff"
+      Iam__ClientSecret: "3Gz3pu3egOHTFYkVnJ1gYG8u9oDtV67+quC3nj6uZzg="
+      Iam__TimeoutSeconds: "10"
+    ports:
+      - "5197:5197"
+    networks:
+      - iam-network
+    restart: unless-stopped
+
+  orgstructure-frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    image: orgstructure-frontend:latest
+    container_name: orgstructure-frontend
+    depends_on:
+      - orgstructure-backend
+    environment:
+      NODE_ENV: "production"
+      PORT: "6300"
+      HOSTNAME: "0.0.0.0"
+      API_BASE_URL: "http://orgstructure-backend:5197"
+    ports:
+      - "6300:6300"
+    networks:
+      - iam-network
+    restart: unless-stopped
+
+networks:
+  iam-network:
+    external: true
+    name: docker_iam-network

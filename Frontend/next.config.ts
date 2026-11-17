@@ -4,6 +4,7 @@ const apiBaseUrl =
   process.env.API_BASE_URL ?? "http://localhost:5197";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   async rewrites() {
     return [
       {
