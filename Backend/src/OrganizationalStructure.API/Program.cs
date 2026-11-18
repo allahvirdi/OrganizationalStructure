@@ -79,6 +79,20 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<OrganizationalStructure.Infrastructure.Persistence.OrganizationalStructureDbContext>();
+        await db.Database.MigrateAsync();
+        app.Logger.LogInformation("✅ پایگاه‌داده ساختار سازمانی با موفقیت به‌روزرسانی شد.");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "خطا در اعمال مایگریشن‌های ساختار سازمانی");
+    }
+}
+
 // هشدار صریح در صورت ناقص بودن پیکربندی IAM تا شکست خاموش ورود رخ ندهد.
 var iamOptions = app.Services.GetRequiredService<IOptions<IamOptions>>().Value;
 foreach (var missingIamKey in IamConfigurationValidator.GetMissingSettings(iamOptions))
