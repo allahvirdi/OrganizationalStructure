@@ -1,7 +1,7 @@
 services:
   orgstructure-backend:
     build:
-      context: ./Backend
+      context: ./Backend/src
       dockerfile: Dockerfile
     image: orgstructure-backend:latest
     container_name: orgstructure-backend
@@ -13,7 +13,7 @@ services:
       PiiEncryption__Key: "lzpYTCNyGKz7dlRCg25LYzOWrd2maQ7PRLjOdDoY5e0="
       Iam__BaseAddress: "http://enterprise-iam-backend:5000"
       Iam__ClientId: "personnel-bff"
-      Iam__ClientSecret: "3Gz3pu3egOHTFYkVnJ1gYG8u9oDtV67+quC3nj6uZzg="
+      Iam__ClientSecret: "DEV_ONLY_personnel_bff_secret_change_me_2026"
       Iam__TimeoutSeconds: "10"
     ports:
       - "5197:5197"
